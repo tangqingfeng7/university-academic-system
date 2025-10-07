@@ -97,7 +97,7 @@ university-academic-system/
 ### 1. 克隆项目
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/tangqingfeng7/university-academic-system
 cd university-academic-system
 ```
 
