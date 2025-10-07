@@ -1,0 +1,162 @@
+package com.university.academic.exception;
+
+import lombok.Getter;
+
+/**
+ * 错误码枚举
+ * 统一定义系统中所有的业务错误码
+ *
+ * @author Academic System Team
+ */
+@Getter
+public enum ErrorCode {
+
+    // ========== 通用错误码 1000-1999 ==========
+    SUCCESS(200, "操作成功"),
+    SYSTEM_ERROR(500, "系统异常，请稍后重试"),
+    PARAM_ERROR(400, "参数错误"),
+    NOT_FOUND(404, "资源不存在"),
+    METHOD_NOT_ALLOWED(405, "请求方法不支持"),
+    UNAUTHORIZED(401, "未授权，请先登录"),
+    FORBIDDEN(403, "没有权限访问"),
+    REQUEST_TIMEOUT(408, "请求超时"),
+    TOO_MANY_REQUESTS(429, "请求过于频繁，请稍后再试"),
+
+    // ========== 认证相关错误码 2000-2099 ==========
+    LOGIN_FAILED(2001, "用户名或密码错误"),
+    ACCOUNT_DISABLED(2002, "账户已被禁用"),
+    ACCOUNT_LOCKED(2003, "账户已被锁定，请稍后再试"),
+    TOKEN_EXPIRED(2004, "登录已过期，请重新登录"),
+    TOKEN_INVALID(2005, "无效的令牌"),
+    PASSWORD_ERROR(2006, "密码错误"),
+    OLD_PASSWORD_ERROR(2007, "原密码错误"),
+    PASSWORD_SAME(2008, "新密码不能与原密码相同"),
+    PASSWORD_SAME_AS_OLD(2008, "新密码不能与原密码相同"),
+    PASSWORD_MISMATCH(2009, "两次输入的密码不一致"),
+    FIRST_LOGIN_CHANGE_PASSWORD(2010, "首次登录，请修改密码"),
+    USERNAME_ALREADY_EXISTS(2011, "用户名已存在"),
+    USER_NOT_FOUND(2012, "用户不存在"),
+
+    // ========== 学生管理错误码 3000-3099 ==========
+    STUDENT_NOT_FOUND(3001, "学生不存在"),
+    STUDENT_NO_ALREADY_EXISTS(3002, "学号已存在"),
+    STUDENT_ALREADY_DELETED(3003, "学生已被删除"),
+    STUDENT_HAS_COURSES(3004, "学生有在读课程，无法删除"),
+    STUDENT_IMPORT_ERROR(3005, "学生数据导入失败"),
+    STUDENT_EXPORT_ERROR(3006, "学生数据导出失败"),
+
+    // ========== 教师管理错误码 3100-3199 ==========
+    TEACHER_NOT_FOUND(3101, "教师不存在"),
+    TEACHER_NO_ALREADY_EXISTS(3102, "工号已存在"),
+    TEACHER_HAS_COURSES(3103, "教师有授课任务，无法删除"),
+
+    // ========== 课程管理错误码 3200-3299 ==========
+    COURSE_NOT_FOUND(3201, "课程不存在"),
+    COURSE_NO_ALREADY_EXISTS(3202, "课程编号已存在"),
+    COURSE_HAS_OFFERINGS(3203, "课程已有开课计划，无法删除"),
+    COURSE_HAS_STUDENTS(3204, "课程已有学生选课，无法删除"),
+    PREREQUISITE_NOT_MET(3205, "未满足先修课程要求"),
+    PREREQUISITE_CIRCULAR(3206, "先修课程设置存在循环依赖"),
+    PREREQUISITE_SELF(3207, "不能将课程设置为自己的先修课程"),
+
+    // ========== 院系专业错误码 3300-3399 ==========
+    DEPARTMENT_NOT_FOUND(3301, "院系不存在"),
+    DEPARTMENT_CODE_ALREADY_EXISTS(3302, "院系代码已存在"),
+    DEPARTMENT_HAS_MAJORS(3303, "院系下有专业，无法删除"),
+    MAJOR_NOT_FOUND(3304, "专业不存在"),
+    MAJOR_CODE_ALREADY_EXISTS(3305, "专业代码已存在"),
+    MAJOR_HAS_STUDENTS(3306, "专业下有学生，无法删除"),
+
+    // ========== 学期管理错误码 3400-3499 ==========
+    SEMESTER_NOT_FOUND(3401, "学期不存在"),
+    SEMESTER_ALREADY_EXISTS(3402, "学期已存在"),
+    SEMESTER_HAS_OFFERINGS(3403, "学期有开课计划，无法删除"),
+    SEMESTER_NOT_ACTIVE(3404, "当前没有活动学期"),
+    SEMESTER_DATE_ERROR(3405, "学期日期设置错误"),
+
+    // ========== 开课计划错误码 3500-3599 ==========
+    OFFERING_NOT_FOUND(3501, "开课计划不存在"),
+    OFFERING_ALREADY_PUBLISHED(3502, "开课计划已发布"),
+    OFFERING_ALREADY_CANCELLED(3503, "开课计划已取消"),
+    OFFERING_TIME_CONFLICT(3504, "上课时间冲突"),
+    OFFERING_TEACHER_CONFLICT(3505, "教师时间冲突"),
+    OFFERING_CLASSROOM_CONFLICT(3506, "教室时间冲突"),
+    OFFERING_HAS_STUDENTS(3507, "开课计划已有学生选课"),
+    OFFERING_CAPACITY_ERROR(3508, "容量设置错误"),
+
+    // ========== 选课管理错误码 3600-3699 ==========
+    SELECTION_NOT_FOUND(3601, "选课记录不存在"),
+    SELECTION_ALREADY_EXISTS(3602, "已选过该课程"),
+    SELECTION_PERIOD_NOT_START(3603, "选课未开始"),
+    SELECTION_PERIOD_ENDED(3604, "选课已结束"),
+    SELECTION_COURSE_FULL(3605, "课程已满"),
+    SELECTION_TIME_CONFLICT(3606, "选课时间冲突"),
+    SELECTION_CREDITS_EXCEED(3607, "超过学分上限"),
+    SELECTION_COURSES_EXCEED(3608, "超过课程数量上限"),
+    SELECTION_PREREQUISITE_NOT_MET(3609, "未满足先修课程要求"),
+    SELECTION_ALREADY_DROPPED(3610, "已退选该课程"),
+    SELECTION_DROP_DEADLINE_PASSED(3611, "已超过退课截止日期"),
+    SELECTION_CANNOT_DROP(3612, "无法退选该课程"),
+
+    // ========== 成绩管理错误码 3700-3799 ==========
+    GRADE_NOT_FOUND(3701, "成绩记录不存在"),
+    GRADE_ALREADY_EXISTS(3702, "成绩记录已存在"),
+    GRADE_SCORE_INVALID(3703, "成绩分数无效（0-100）"),
+    GRADE_ALREADY_SUBMITTED(3704, "成绩已提交，无法修改"),
+    GRADE_ALREADY_PUBLISHED(3705, "成绩已公布"),
+    GRADE_NOT_PUBLISHED(3706, "成绩未公布"),
+    GRADE_IMPORT_ERROR(3707, "成绩导入失败"),
+    GRADE_EXPORT_ERROR(3708, "成绩导出失败"),
+
+    // ========== 通知管理错误码 3800-3899 ==========
+    NOTIFICATION_NOT_FOUND(3801, "通知不存在"),
+    NOTIFICATION_ALREADY_READ(3802, "通知已读"),
+
+    // ========== 系统配置错误码 3900-3999 ==========
+    CONFIG_NOT_FOUND(3901, "配置项不存在"),
+    CONFIG_KEY_ALREADY_EXISTS(3902, "配置键已存在"),
+    CONFIG_VALUE_INVALID(3903, "配置值无效"),
+
+    // ========== 文件操作错误码 4000-4099 ==========
+    FILE_UPLOAD_ERROR(4001, "文件上传失败"),
+    FILE_DOWNLOAD_ERROR(4002, "文件下载失败"),
+    FILE_TYPE_NOT_SUPPORTED(4003, "不支持的文件类型"),
+    FILE_SIZE_EXCEED(4004, "文件大小超过限制"),
+    FILE_NOT_FOUND(4005, "文件不存在"),
+    EXPORT_ERROR(4006, "数据导出失败"),
+
+    // ========== 数据操作错误码 4100-4199 ==========
+    DATA_NOT_FOUND(4101, "数据不存在"),
+    DATA_ALREADY_EXISTS(4102, "数据已存在"),
+    DATA_IN_USE(4103, "数据正在使用中，无法删除"),
+    DATA_CONSTRAINT_VIOLATION(4104, "数据约束冲突"),
+    OPTIMISTIC_LOCK_FAILURE(4105, "数据已被其他用户修改，请刷新后重试");
+
+    /**
+     * 错误码
+     */
+    private final Integer code;
+
+    /**
+     * 错误信息
+     */
+    private final String message;
+
+    ErrorCode(Integer code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    /**
+     * 根据错误码获取错误信息
+     */
+    public static String getMessageByCode(Integer code) {
+        for (ErrorCode errorCode : ErrorCode.values()) {
+            if (errorCode.getCode().equals(code)) {
+                return errorCode.getMessage();
+            }
+        }
+        return "未知错误";
+    }
+}
+

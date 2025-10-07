@@ -1,0 +1,117 @@
+server:
+  port: ${SERVER_PORT:8080}
+  # 启用响应压缩
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml
+    min-response-size: 1024
+  # HTTP/2支持
+  http2:
+    enabled: true
+  # 优雅关闭
+  shutdown: graceful
+
+spring:
+  application:
+    name: academic-system
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:academic_system}?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai&cachePrepStmts=true&useServerPrepStmts=true&rewriteBatchedStatements=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 连接池名称
+      pool-name: AcademicHikariCP-Prod
+      # 最小空闲连接数（生产环境）
+      minimum-idle: 10
+      # 最大连接池大小（生产环境）
+      maximum-pool-size: 50
+      # 空闲连接超时时间（10分钟）
+      idle-timeout: 600000
+      # 连接超时时间（30秒）
+      connection-timeout: 30000
+      # 连接最大存活时间（30分钟）
+      max-lifetime: 1800000
+      # 连接测试查询
+      connection-test-query: SELECT 1
+      # 自动提交
+      auto-commit: true
+      # 泄露检测阈值（2分钟）
+      leak-detection-threshold: 120000
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        # 批处理大小
+        jdbc:
+          batch_size: 20
+        # 二级缓存（如需要）
+        cache:
+          use_second_level_cache: false
+        # SQL格式化关闭
+        format_sql: false
+
+  # Jackson配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:your-production-secret-key-must-be-changed}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# 业务规则配置
+academic:
+  rules:
+    max-credits-per-semester: ${MAX_CREDITS:30}
+    max-courses-per-semester: ${MAX_COURSES:8}
+    drop-deadline-days: ${DROP_DEADLINE:14}
+    login-failure-limit: ${LOGIN_FAILURE_LIMIT:3}
+    account-lock-minutes: ${ACCOUNT_LOCK_MINUTES:15}
+
+# 日志配置
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.university.academic: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.security: INFO
+  file:
+    name: ${LOG_PATH:logs}/academic-system.log
+  logback:
+    rollingpolicy:
+      # 日志文件最大大小
+      max-file-size: 10MB
+      # 保留历史日志文件数量
+      max-history: 30
+      # 总日志文件大小上限
+      total-size-cap: 1GB
+
+# Swagger配置（生产环境建议关闭）
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: false
+
