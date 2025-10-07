@@ -286,7 +286,7 @@ npm run test
 
 如有问题或建议，请联系：
 - Email: traceck1@gmail.com
-- Issue: https://github.com/traceck1/university-academic-system/issues
+- Issue: https://github.com/tangqingfeng7/university-academic-system/issues
 
 ## 🙏 致谢
 
