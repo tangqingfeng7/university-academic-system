@@ -21,6 +21,8 @@
         :data="tableData"
         :total="total"
         :loading="loading"
+        :page="queryParams.page"
+        :size="queryParams.size"
         @page-change="handlePageChange"
         @size-change="handleSizeChange"
       >

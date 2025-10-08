@@ -60,6 +60,11 @@ public class GradeDTO {
     private String courseName;
 
     /**
+     * 课程类型 (REQUIRED/ELECTIVE/PUBLIC)
+     */
+    private String courseType;
+
+    /**
      * 学分
      */
     private Integer credits;

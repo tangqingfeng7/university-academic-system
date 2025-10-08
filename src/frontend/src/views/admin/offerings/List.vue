@@ -21,6 +21,8 @@
         :data="tableData"
         :total="total"
         :loading="loading"
+        :page="queryParams.page"
+        :size="queryParams.size"
         @page-change="handlePageChange"
         @size-change="handleSizeChange"
       >
@@ -240,8 +242,13 @@ const handleReset = () => {
 }
 
 // 分页
-const handlePageChange = (page) => {
-  queryParams.page = page
+const handlePageChange = (pageData) => {
+  if (typeof pageData === 'object') {
+    queryParams.page = pageData.page
+    queryParams.size = pageData.size
+  } else {
+    queryParams.page = pageData
+  }
   fetchOfferingList()
 }
 
