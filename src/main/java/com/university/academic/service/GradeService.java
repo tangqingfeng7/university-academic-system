@@ -327,6 +327,17 @@ public class GradeService {
     }
 
     /**
+     * 统计教师待批改成绩数
+     *
+     * @param teacherId 教师ID
+     * @return 待批改成绩数量
+     */
+    @Transactional(readOnly = true)
+    public long countPendingGradesByTeacher(Long teacherId) {
+        return gradeRepository.countPendingByTeacherId(teacherId);
+    }
+
+    /**
      * 成绩录入数据结构
      */
     @lombok.Data

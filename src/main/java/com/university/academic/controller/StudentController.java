@@ -57,18 +57,21 @@ public class StudentController {
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long majorId,
-            @RequestParam(required = false) String className) {
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) Integer enrollmentYear) {
 
-        log.info("查询学生列表: page={}, size={}, keyword={}, majorId={}, className={}", page, size, keyword, majorId, className);
+        log.info("查询学生列表: page={}, size={}, keyword={}, majorId={}, className={}, enrollmentYear={}", 
+                page, size, keyword, majorId, className, enrollmentYear);
 
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<Student> studentPage;
         // 如果有任何筛选条件，使用搜索方法
-        if ((keyword != null && !keyword.trim().isEmpty()) || majorId != null || (className != null && !className.trim().isEmpty())) {
+        if ((keyword != null && !keyword.trim().isEmpty()) || majorId != null || 
+            (className != null && !className.trim().isEmpty()) || enrollmentYear != null) {
             String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword : "";
-            studentPage = studentService.searchStudents(searchKeyword, majorId, className, pageable);
+            studentPage = studentService.searchStudents(searchKeyword, majorId, className, enrollmentYear, pageable);
         } else {
             studentPage = studentService.findAll(pageable);
         }
@@ -343,13 +346,16 @@ public class StudentController {
     public ResponseEntity<byte[]> exportStudents(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long majorId,
-            @RequestParam(required = false) String className) {
-        log.info("导出学生数据: keyword={}, majorId={}, className={}", keyword, majorId, className);
+            @RequestParam(required = false) String className,
+            @RequestParam(required = false) Integer enrollmentYear) {
+        log.info("导出学生数据: keyword={}, majorId={}, className={}, enrollmentYear={}", 
+                keyword, majorId, className, enrollmentYear);
 
         List<Student> students;
-        if ((keyword != null && !keyword.trim().isEmpty()) || majorId != null || (className != null && !className.trim().isEmpty())) {
+        if ((keyword != null && !keyword.trim().isEmpty()) || majorId != null || 
+            (className != null && !className.trim().isEmpty()) || enrollmentYear != null) {
             String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword : "";
-            students = studentService.searchStudents(searchKeyword, majorId, className, Pageable.unpaged()).getContent();
+            students = studentService.searchStudents(searchKeyword, majorId, className, enrollmentYear, Pageable.unpaged()).getContent();
         } else {
             students = studentService.findAll();
         }

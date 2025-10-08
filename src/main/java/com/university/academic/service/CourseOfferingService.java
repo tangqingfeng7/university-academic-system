@@ -98,17 +98,6 @@ public class CourseOfferingService {
     }
 
     /**
-     * 查询教师在指定学期的开课计划
-     *
-     * @param teacherId  教师ID
-     * @param semesterId 学期ID
-     * @return 开课计划列表
-     */
-    public List<CourseOffering> findByTeacherAndSemester(Long teacherId, Long semesterId) {
-        return offeringRepository.findByTeacherIdAndSemesterId(teacherId, semesterId);
-    }
-
-    /**
      * 创建开课计划
      *
      * @param offering 开课计划对象
@@ -546,6 +535,29 @@ public class CourseOfferingService {
             }
         }
         return false;
+    }
+
+    /**
+     * 统计指定学期的开课数量
+     *
+     * @param semesterId 学期ID
+     * @return 开课数量
+     */
+    @Transactional(readOnly = true)
+    public long countBySemester(Long semesterId) {
+        return offeringRepository.countBySemesterId(semesterId);
+    }
+
+    /**
+     * 查询教师在指定学期的所有授课
+     *
+     * @param teacherId  教师ID
+     * @param semesterId 学期ID
+     * @return 开课计划列表
+     */
+    @Transactional(readOnly = true)
+    public List<CourseOffering> findByTeacherAndSemester(Long teacherId, Long semesterId) {
+        return offeringRepository.findByTeacherIdAndSemesterId(teacherId, semesterId);
     }
 }
 

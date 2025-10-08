@@ -176,5 +176,20 @@ public interface CourseSelectionRepository extends JpaRepository<CourseSelection
     Optional<CourseSelection> findByStudentNoAndOfferingId(
             @Param("studentNo") String studentNo,
             @Param("offeringId") Long offeringId);
+
+    /**
+     * 统计学生在指定学期的选课数量（所有状态）
+     *
+     * @param studentId  学生ID
+     * @param semesterId 学期ID
+     * @return 选课数量
+     */
+    @Query("SELECT COUNT(cs) " +
+            "FROM CourseSelection cs " +
+            "WHERE cs.student.id = :studentId " +
+            "AND cs.offering.semester.id = :semesterId")
+    long countByStudentIdAndSemesterId(
+            @Param("studentId") Long studentId,
+            @Param("semesterId") Long semesterId);
 }
 

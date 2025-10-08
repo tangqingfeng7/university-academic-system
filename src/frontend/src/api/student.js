@@ -103,10 +103,11 @@ export function importStudents(file) {
 }
 
 // 导出学生（Excel）
-export function exportStudents() {
+export function exportStudents(params) {
   return request({
     url: '/admin/students/export',
     method: 'get',
+    params,
     responseType: 'blob'
   })
 }

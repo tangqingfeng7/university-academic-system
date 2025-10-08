@@ -181,6 +181,14 @@ public interface CourseOfferingRepository extends JpaRepository<CourseOffering, 
     long count();
 
     /**
+     * 统计指定学期的开课计划数量
+     *
+     * @param semesterId 学期ID
+     * @return 开课计划数量
+     */
+    long countBySemesterId(Long semesterId);
+
+    /**
      * 查询已发布的开课计划
      *
      * @param semesterId 学期ID

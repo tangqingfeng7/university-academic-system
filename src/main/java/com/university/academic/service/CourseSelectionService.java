@@ -520,5 +520,17 @@ public class CourseSelectionService {
         }
         return false;
     }
+
+    /**
+     * 统计学生在指定学期的选课数量
+     *
+     * @param studentId  学生ID
+     * @param semesterId 学期ID
+     * @return 选课数量
+     */
+    @Transactional(readOnly = true)
+    public long countByStudentAndSemester(Long studentId, Long semesterId) {
+        return selectionRepository.countByStudentIdAndSemesterId(studentId, semesterId);
+    }
 }
 

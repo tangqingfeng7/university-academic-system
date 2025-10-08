@@ -335,5 +335,15 @@ public class CourseService {
         coursePrerequisiteRepository.delete(prerequisite);
         log.info("删除先修课程成功: {} -> {}", courseId, prerequisiteCourseId);
     }
+
+    /**
+     * 统计课程总数（别名方法，保持API一致性）
+     *
+     * @return 课程总数
+     */
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return count();
+    }
 }
 

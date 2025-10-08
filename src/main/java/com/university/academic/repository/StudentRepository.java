@@ -82,21 +82,24 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
                                          Pageable pageable);
 
     /**
-     * 根据多条件搜索学生（专业+班级）
+     * 根据多条件搜索学生（专业+班级+入学年份）
      *
-     * @param majorId   专业ID
-     * @param className 班级名称
-     * @param keyword   关键词
-     * @param pageable  分页参数
+     * @param majorId        专业ID
+     * @param className      班级名称
+     * @param enrollmentYear 入学年份
+     * @param keyword        关键词
+     * @param pageable       分页参数
      * @return 学生分页数据
      */
     @EntityGraph(attributePaths = {"user", "major", "major.department"})
     @Query("SELECT s FROM Student s WHERE s.deleted = false " +
             "AND (:majorId IS NULL OR s.major.id = :majorId) " +
             "AND (:className IS NULL OR s.className = :className) " +
+            "AND (:enrollmentYear IS NULL OR s.enrollmentYear = :enrollmentYear) " +
             "AND (s.studentNo LIKE %:keyword% OR s.name LIKE %:keyword%)")
     Page<Student> searchStudentsByConditions(@Param("majorId") Long majorId,
                                               @Param("className") String className,
+                                              @Param("enrollmentYear") Integer enrollmentYear,
                                               @Param("keyword") String keyword,
                                               Pageable pageable);
 

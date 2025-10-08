@@ -113,5 +113,16 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     @Query("SELECT g FROM Grade g " +
             "WHERE g.courseSelection.offering.semester.id = :semesterId")
     List<Grade> findBySemesterId(@Param("semesterId") Long semesterId);
+
+    /**
+     * 统计教师待批改成绩数量（状态为DRAFT的成绩）
+     *
+     * @param teacherId 教师ID
+     * @return 待批改成绩数量
+     */
+    @Query("SELECT COUNT(g) FROM Grade g " +
+            "WHERE g.courseSelection.offering.teacher.id = :teacherId " +
+            "AND g.status = 'DRAFT'")
+    long countPendingByTeacherId(@Param("teacherId") Long teacherId);
 }
 

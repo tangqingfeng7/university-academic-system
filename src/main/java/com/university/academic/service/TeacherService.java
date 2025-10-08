@@ -273,5 +273,15 @@ public class TeacherService {
     public Teacher findByUserIdWithDetails(Long userId) {
         return findByUserId(userId);
     }
+
+    /**
+     * 统计教师总数（别名方法，保持API一致性）
+     *
+     * @return 教师总数
+     */
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return count();
+    }
 }
 

@@ -94,16 +94,17 @@ public class StudentService {
     /**
      * 搜索学生
      *
-     * @param keyword   关键词
-     * @param majorId   专业ID（可选）
-     * @param className 班级名称（可选）
-     * @param pageable  分页参数
+     * @param keyword        关键词
+     * @param majorId        专业ID（可选）
+     * @param className      班级名称（可选）
+     * @param enrollmentYear 入学年份（可选）
+     * @param pageable       分页参数
      * @return 学生分页数据
      */
     @Transactional(readOnly = true)
-    public Page<Student> searchStudents(String keyword, Long majorId, String className, Pageable pageable) {
+    public Page<Student> searchStudents(String keyword, Long majorId, String className, Integer enrollmentYear, Pageable pageable) {
         // 使用统一的条件查询方法
-        return studentRepository.searchStudentsByConditions(majorId, className, keyword, pageable);
+        return studentRepository.searchStudentsByConditions(majorId, className, enrollmentYear, keyword, pageable);
     }
 
     /**
@@ -310,5 +311,15 @@ public class StudentService {
     public Student findByUserIdWithDetails(Long userId) {
         return studentRepository.findByUserIdWithDetails(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND));
+    }
+
+    /**
+     * 统计未删除的学生总数
+     *
+     * @return 学生总数
+     */
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return studentRepository.countByDeletedFalse();
     }
 }
