@@ -2,13 +2,12 @@ package com.university.academic.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.university.academic.entity.Course;
-import com.university.academic.entity.CourseOffering;
-import com.university.academic.entity.Semester;
-import com.university.academic.entity.Teacher;
+import com.university.academic.dto.CreateNotificationRequest;
+import com.university.academic.entity.*;
 import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.CourseOfferingRepository;
+import com.university.academic.repository.CourseSelectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,9 +29,11 @@ import java.util.*;
 public class CourseOfferingService {
 
     private final CourseOfferingRepository offeringRepository;
+    private final CourseSelectionRepository selectionRepository;
     private final SemesterService semesterService;
     private final CourseService courseService;
     private final TeacherService teacherService;
+    private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -274,11 +275,60 @@ public class CourseOfferingService {
             throw new BusinessException(ErrorCode.OFFERING_ALREADY_CANCELLED);
         }
 
-        // TODO: 如果有学生选课，需要通知学生并退选
-        // 这部分功能在实现选课模块后添加
+        // 如果有学生选课，需要通知学生并退选
         if (offering.getEnrolled() > 0) {
-            log.warn("取消开课计划，有 {} 名学生已选课，需要通知并退选", offering.getEnrolled());
-            // 后续实现：通知学生、退选、发送消息等
+            log.info("取消开课计划，有 {} 名学生已选课，开始处理退选", offering.getEnrolled());
+            
+            // 1. 获取所有选课记录
+            List<CourseSelection> selections = selectionRepository.findByOfferingId(id);
+            
+            // 2. 将所有SELECTED状态的选课记录改为DROPPED
+            int droppedCount = 0;
+            for (CourseSelection selection : selections) {
+                if (selection.getStatus() == CourseSelection.SelectionStatus.SELECTED) {
+                    selection.setStatus(CourseSelection.SelectionStatus.DROPPED);
+                    selectionRepository.save(selection);
+                    droppedCount++;
+                }
+            }
+            
+            // 3. 更新已选人数
+            offering.setEnrolled(0);
+            
+            // 4. 发送通知给所有相关学生
+            if (droppedCount > 0) {
+                try {
+                    String notificationTitle = String.format("课程取消通知：%s", offering.getCourse().getName());
+                    String notificationContent = String.format(
+                            "您好，由于特殊原因，课程《%s》（%s学期，授课教师：%s）已被取消。" +
+                            "您的选课已被自动退选，给您带来不便敬请谅解。如有疑问，请联系教务处。",
+                            offering.getCourse().getName(),
+                            offering.getSemester().getSemesterName(),
+                            offering.getTeacher().getName()
+                    );
+                    
+                    // 获取第一个学生的用户ID用作发布者（实际应该是管理员或系统账户）
+                    Long publisherId = selections.stream()
+                            .filter(s -> s.getStudent().getUser() != null)
+                            .map(s -> s.getStudent().getUser().getId())
+                            .findFirst()
+                            .orElse(1L); // 默认使用ID为1的管理员账户
+                    
+                    CreateNotificationRequest notificationRequest = CreateNotificationRequest.builder()
+                            .title(notificationTitle)
+                            .content(notificationContent)
+                            .type("COURSE")
+                            .targetRole("STUDENT")
+                            .build();
+                    
+                    notificationService.publishNotification(notificationRequest, publisherId);
+                    
+                    log.info("已发送课程取消通知，退选学生数：{}", droppedCount);
+                } catch (Exception e) {
+                    log.error("发送课程取消通知失败", e);
+                    // 不影响取消流程，继续执行
+                }
+            }
         }
 
         // 设置为已取消状态

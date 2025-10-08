@@ -65,9 +65,19 @@ public class GradeDTO {
     private Integer credits;
 
     /**
+     * 学期ID
+     */
+    private Long semesterId;
+
+    /**
      * 学期名称
      */
     private String semesterName;
+
+    /**
+     * 授课教师姓名
+     */
+    private String teacherName;
 
     /**
      * 平时成绩

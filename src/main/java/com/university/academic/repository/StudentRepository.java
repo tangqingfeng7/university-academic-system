@@ -116,6 +116,16 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByUserId(Long userId);
 
     /**
+     * 根据用户ID查询学生 - 预加载所有关联
+     *
+     * @param userId 用户ID
+     * @return 学生对象
+     */
+    @EntityGraph(attributePaths = {"user", "major", "major.department"})
+    @Query("SELECT s FROM Student s WHERE s.user.id = :userId AND s.deleted = false")
+    Optional<Student> findByUserIdWithDetails(@Param("userId") Long userId);
+
+    /**
      * 根据ID查询学生详情 - 预加载所有关联
      *
      * @param id 学生ID

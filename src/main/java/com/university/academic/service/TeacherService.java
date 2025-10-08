@@ -261,5 +261,17 @@ public class TeacherService {
         return teacherRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_NOT_FOUND));
     }
+
+    /**
+     * 根据用户ID查询教师（预加载所有关联）
+     * 注：findByUserId已包含预加载，此方法作为别名保持API一致性
+     *
+     * @param userId 用户ID
+     * @return 教师对象
+     */
+    @Transactional(readOnly = true)
+    public Teacher findByUserIdWithDetails(Long userId) {
+        return findByUserId(userId);
+    }
 }
 

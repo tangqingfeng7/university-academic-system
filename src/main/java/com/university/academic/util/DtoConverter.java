@@ -344,8 +344,12 @@ public class DtoConverter {
                         offering.getCourse().getName() : null)
                 .credits(offering != null && offering.getCourse() != null ? 
                         offering.getCourse().getCredits() : null)
+                .semesterId(offering != null && offering.getSemester() != null ? 
+                        offering.getSemester().getId() : null)
                 .semesterName(offering != null && offering.getSemester() != null ? 
                         offering.getSemester().getSemesterName() : null)
+                .teacherName(offering != null && offering.getTeacher() != null ? 
+                        offering.getTeacher().getName() : null)
                 .regularScore(grade.getRegularScore())
                 .midtermScore(grade.getMidtermScore())
                 .finalScore(grade.getFinalScore())

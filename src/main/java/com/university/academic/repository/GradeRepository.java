@@ -60,26 +60,38 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
                                          @Param("semesterId") Long semesterId);
 
     /**
-     * 查询学生的已公布成绩
+     * 查询学生的已公布成绩（预加载所有关联）
      *
      * @param studentId 学生ID
      * @return 成绩列表
      */
-    @Query("SELECT g FROM Grade g " +
-            "WHERE g.courseSelection.student.id = :studentId " +
+    @Query("SELECT DISTINCT g FROM Grade g " +
+            "LEFT JOIN FETCH g.courseSelection cs " +
+            "LEFT JOIN FETCH cs.student st " +
+            "LEFT JOIN FETCH cs.offering co " +
+            "LEFT JOIN FETCH co.course c " +
+            "LEFT JOIN FETCH co.semester s " +
+            "LEFT JOIN FETCH co.teacher t " +
+            "WHERE st.id = :studentId " +
             "AND g.status = 'PUBLISHED'")
     List<Grade> findPublishedByStudentId(@Param("studentId") Long studentId);
 
     /**
-     * 查询学生在指定学期的已公布成绩
+     * 查询学生在指定学期的已公布成绩（预加载所有关联）
      *
      * @param studentId  学生ID
      * @param semesterId 学期ID
      * @return 成绩列表
      */
-    @Query("SELECT g FROM Grade g " +
-            "WHERE g.courseSelection.student.id = :studentId " +
-            "AND g.courseSelection.offering.semester.id = :semesterId " +
+    @Query("SELECT DISTINCT g FROM Grade g " +
+            "LEFT JOIN FETCH g.courseSelection cs " +
+            "LEFT JOIN FETCH cs.student st " +
+            "LEFT JOIN FETCH cs.offering co " +
+            "LEFT JOIN FETCH co.course c " +
+            "LEFT JOIN FETCH co.semester s " +
+            "LEFT JOIN FETCH co.teacher t " +
+            "WHERE st.id = :studentId " +
+            "AND s.id = :semesterId " +
             "AND g.status = 'PUBLISHED'")
     List<Grade> findPublishedByStudentAndSemester(@Param("studentId") Long studentId,
                                                    @Param("semesterId") Long semesterId);

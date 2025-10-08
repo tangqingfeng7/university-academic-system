@@ -53,12 +53,12 @@ public class ProfileController {
 
         switch (user.getRole()) {
             case STUDENT:
-                Student student = studentService.findByUserId(user.getId());
+                Student student = studentService.findByUserIdWithDetails(user.getId());
                 StudentDTO studentDTO = dtoConverter.toStudentDTO(student);
                 return Result.success(studentDTO);
                 
             case TEACHER:
-                Teacher teacher = teacherService.findByUserId(user.getId());
+                Teacher teacher = teacherService.findByUserIdWithDetails(user.getId());
                 TeacherDTO teacherDTO = dtoConverter.toTeacherDTO(teacher);
                 return Result.success(teacherDTO);
                 

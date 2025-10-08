@@ -133,7 +133,7 @@ public class NotificationService {
      */
     @Transactional(readOnly = true)
     public Notification findById(Long id) {
-        return notificationRepository.findById(id)
+        return notificationRepository.findByIdWithPublisher(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
     }
 
@@ -147,8 +147,8 @@ public class NotificationService {
     public void markAsRead(Long notificationId, Long userId) {
         log.info("标记通知已读: notificationId={}, userId={}", notificationId, userId);
 
-        // 验证通知存在
-        Notification notification = notificationRepository.findById(notificationId)
+        // 验证通知存在（使用预加载版本）
+        Notification notification = notificationRepository.findByIdWithPublisher(notificationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
 
         // 检查是否已读
@@ -218,7 +218,7 @@ public class NotificationService {
     public void deactivate(Long id) {
         log.info("停用通知: id={}", id);
 
-        Notification notification = notificationRepository.findById(id)
+        Notification notification = notificationRepository.findByIdWithPublisher(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
 
         notification.setActive(false);

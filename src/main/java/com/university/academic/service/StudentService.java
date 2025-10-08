@@ -5,6 +5,7 @@ import com.university.academic.entity.Student;
 import com.university.academic.entity.User;
 import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
+import com.university.academic.repository.CourseSelectionRepository;
 import com.university.academic.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import java.util.List;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final CourseSelectionRepository selectionRepository;
     private final MajorService majorService;
     private final UserService userService;
 
@@ -220,8 +222,15 @@ public class StudentService {
     public void deleteStudent(Long id) {
         Student student = findById(id);
         
-        // TODO: 检查是否有在读课程，如有则不允许删除
-        // 后续实现课程选择模块后添加此检查
+        // 检查是否有在读课程，如有则不允许删除
+        // 查询学生是否有状态为SELECTED的选课记录
+        boolean hasActiveCourses = selectionRepository.findByStudentId(id).stream()
+                .anyMatch(selection -> selection.getStatus() == com.university.academic.entity.CourseSelection.SelectionStatus.SELECTED);
+        
+        if (hasActiveCourses) {
+            log.warn("学生 {} 有在读课程，无法删除", student.getName());
+            throw new BusinessException(ErrorCode.STUDENT_HAS_COURSES);
+        }
         
         // 软删除
         student.setDeleted(true);
@@ -288,6 +297,18 @@ public class StudentService {
     @Transactional(readOnly = true)
     public Student findByUserId(Long userId) {
         return studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND));
+    }
+
+    /**
+     * 根据用户ID查询学生（预加载所有关联）
+     *
+     * @param userId 用户ID
+     * @return 学生对象
+     */
+    @Transactional(readOnly = true)
+    public Student findByUserIdWithDetails(Long userId) {
+        return studentRepository.findByUserIdWithDetails(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND));
     }
 }

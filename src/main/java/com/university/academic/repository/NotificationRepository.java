@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 通知公告数据访问接口
@@ -18,6 +19,15 @@ import java.util.List;
  */
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
+    /**
+     * 根据ID查询通知（预加载发布者信息）
+     *
+     * @param id 通知ID
+     * @return 通知对象
+     */
+    @Query("SELECT n FROM Notification n LEFT JOIN FETCH n.publisher WHERE n.id = :id")
+    Optional<Notification> findByIdWithPublisher(@Param("id") Long id);
 
     /**
      * 查询有效的通知（按发布时间倒序）

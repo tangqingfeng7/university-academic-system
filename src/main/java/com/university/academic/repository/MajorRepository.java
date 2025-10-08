@@ -78,5 +78,14 @@ public interface MajorRepository extends JpaRepository<Major, Long> {
      */
     @Query("SELECT m FROM Major m LEFT JOIN FETCH m.department")
     Page<Major> findAllWithDepartment(Pageable pageable);
+
+    /**
+     * 统计专业下未删除的学生数量
+     *
+     * @param majorId 专业ID
+     * @return 学生数量
+     */
+    @Query("SELECT COUNT(s) FROM Student s WHERE s.major.id = :majorId AND s.deleted = false")
+    long countStudentsByMajorId(@Param("majorId") Long majorId);
 }
 

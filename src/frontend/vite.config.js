@@ -25,7 +25,8 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
+    host: '127.0.0.1', // 强制使用IPv4，避免IPv6权限问题
+    port: 5173, // 使用Vite默认端口
     open: true,
     proxy: {
       '/api': {

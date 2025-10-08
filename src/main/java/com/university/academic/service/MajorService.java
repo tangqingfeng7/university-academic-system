@@ -162,8 +162,12 @@ public class MajorService {
     public void deleteMajor(Long id) {
         Major major = findById(id);
 
-        // TODO: 检查是否有关联的学生，如有则不允许删除
-        // 后续实现Student模块后添加此检查
+        // 检查是否有关联的学生，如有则不允许删除
+        long studentCount = majorRepository.countStudentsByMajorId(id);
+        if (studentCount > 0) {
+            log.warn("专业 {} 下有 {} 名学生，无法删除", major.getName(), studentCount);
+            throw new BusinessException(ErrorCode.MAJOR_HAS_STUDENTS);
+        }
 
         majorRepository.delete(major);
         log.info("删除专业成功: {} - {}", major.getCode(), major.getName());
