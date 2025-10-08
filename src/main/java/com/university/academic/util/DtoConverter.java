@@ -255,6 +255,8 @@ public class DtoConverter {
                 .courseId(offering.getCourse() != null ? offering.getCourse().getId() : null)
                 .courseNo(offering.getCourse() != null ? offering.getCourse().getCourseNo() : null)
                 .courseName(offering.getCourse() != null ? offering.getCourse().getName() : null)
+                .courseType(offering.getCourse() != null && offering.getCourse().getType() != null ? 
+                        offering.getCourse().getType().name() : null)
                 .credits(offering.getCourse() != null ? offering.getCourse().getCredits() : null)
                 .teacherId(offering.getTeacher() != null ? offering.getTeacher().getId() : null)
                 .teacherNo(offering.getTeacher() != null ? offering.getTeacher().getTeacherNo() : null)
