@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getCurrentUser, logout as logoutApi } from '@/api/auth'
+import { getCurrentUser, logout as logoutApi, changePassword as changePasswordApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'
 
 export const useUserStore = defineStore('user', () => {
@@ -63,6 +63,17 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 修改密码
+  const changePassword = async (data) => {
+    try {
+      await changePasswordApi(data)
+      return true
+    } catch (error) {
+      console.error('修改密码失败:', error)
+      throw error
+    }
+  }
+
   return {
     token,
     userInfo,
@@ -71,7 +82,8 @@ export const useUserStore = defineStore('user', () => {
     setUserInfo,
     setPermissions,
     getUserInfo,
-    logout
+    logout,
+    changePassword
   }
 })
 

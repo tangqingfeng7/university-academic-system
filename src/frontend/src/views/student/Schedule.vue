@@ -100,14 +100,20 @@ const weekDays = [
   { label: '周日', value: 7 }
 ]
 
-// 节次定义（1-12节）
+// 节次定义（12节课）
 const periods = [
-  { label: '1-2节', value: '1-2', time: '08:00-09:40' },
-  { label: '3-4节', value: '3-4', time: '10:00-11:40' },
-  { label: '5-6节', value: '5-6', time: '14:00-15:40' },
-  { label: '7-8节', value: '7-8', time: '16:00-17:40' },
-  { label: '9-10节', value: '9-10', time: '19:00-20:40' },
-  { label: '11-12节', value: '11-12', time: '21:00-22:40' }
+  { label: '第1节', value: 1, time: '08:20-09:00' },
+  { label: '第2节', value: 2, time: '09:05-09:45' },
+  { label: '第3节', value: 3, time: '10:05-10:45' },
+  { label: '第4节', value: 4, time: '10:50-11:30' },
+  { label: '第5节', value: 5, time: '11:35-12:15' },
+  { label: '第6节', value: 6, time: '14:30-15:10' },
+  { label: '第7节', value: 7, time: '15:15-15:55' },
+  { label: '第8节', value: 8, time: '16:15-16:55' },
+  { label: '第9节', value: 9, time: '17:00-17:40' },
+  { label: '第10节', value: 10, time: '19:30-20:10' },
+  { label: '第11节', value: 11, time: '20:15-20:55' },
+  { label: '第12节', value: 12, time: '21:00-21:40' }
 ]
 
 // 加载学期列表
@@ -335,7 +341,7 @@ onMounted(() => {
 
 .course-cell {
   padding: 4px;
-  height: 100px;
+  height: 70px;
   position: relative;
 }
 

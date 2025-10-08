@@ -15,6 +15,8 @@ public enum ErrorCode {
     SUCCESS(200, "操作成功"),
     SYSTEM_ERROR(500, "系统异常，请稍后重试"),
     PARAM_ERROR(400, "参数错误"),
+    INVALID_PARAM(400, "参数无效"),
+    INVALID_OPERATION(400, "无效的操作"),
     NOT_FOUND(404, "资源不存在"),
     METHOD_NOT_ALLOWED(405, "请求方法不支持"),
     UNAUTHORIZED(401, "未授权，请先登录"),

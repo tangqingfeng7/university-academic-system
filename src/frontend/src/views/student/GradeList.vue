@@ -67,42 +67,40 @@
         v-loading="loading"
         :data="gradeList"
         style="width: 100%"
-        :header-cell-style="{ 
-          background: 'var(--bg-secondary)', 
-          color: 'var(--text-secondary)',
-          fontWeight: '500',
-          fontSize: '14px'
-        }"
       >
-        <el-table-column prop="semesterName" label="学期" width="140" />
+        <el-table-column prop="semesterName" label="学期" width="160" show-overflow-tooltip />
         
-        <el-table-column prop="courseNo" label="课程编号" width="110" />
+        <el-table-column prop="courseNo" label="课程编号" width="120" />
         
-        <el-table-column prop="courseName" label="课程名称" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="courseName" label="课程名称" min-width="180" show-overflow-tooltip />
         
-        <el-table-column prop="courseType" label="类型" width="90">
+        <el-table-column prop="courseType" label="类型" width="80" align="center">
           <template #default="{ row }">
-            <el-tag :type="getCourseTypeTag(row.courseType)" size="small">
+            <span class="course-type-badge" :class="getCourseTypeClass(row.courseType)">
               {{ getCourseTypeName(row.courseType) }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="credits" label="学分" width="70" align="center" />
+        <el-table-column prop="credits" label="学分" width="80" align="center">
+          <template #default="{ row }">
+            <span class="score-text">{{ row.credits }}</span>
+          </template>
+        </el-table-column>
 
-        <el-table-column prop="regularScore" label="平时" width="70" align="center">
+        <el-table-column prop="regularScore" label="平时" width="80" align="center">
           <template #default="{ row }">
             <span class="score-text">{{ formatScore(row.regularScore) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="midtermScore" label="期中" width="70" align="center">
+        <el-table-column prop="midtermScore" label="期中" width="80" align="center">
           <template #default="{ row }">
             <span class="score-text">{{ formatScore(row.midtermScore) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="finalScore" label="期末" width="70" align="center">
+        <el-table-column prop="finalScore" label="期末" width="80" align="center">
           <template #default="{ row }">
             <span class="score-text">{{ formatScore(row.finalScore) }}</span>
           </template>
@@ -122,15 +120,15 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="状态" width="90" align="center">
+        <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.passed ? 'success' : 'danger'" size="small">
+            <span class="status-badge" :class="row.passed ? 'status-pass' : 'status-fail'">
               {{ row.passed ? '通过' : '未通过' }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="teacherName" label="授课教师" width="110" />
+        <el-table-column prop="teacherName" label="授课教师" width="120" />
       </el-table>
 
       <!-- 空状态 -->
@@ -274,6 +272,16 @@ const getCourseTypeTag = (type) => {
   return tagMap[type] || ''
 }
 
+// 课程类型样式类
+const getCourseTypeClass = (type) => {
+  const classMap = {
+    REQUIRED: 'type-required',
+    ELECTIVE: 'type-elective',
+    PUBLIC: 'type-public'
+  }
+  return classMap[type] || ''
+}
+
 // 格式化分数
 const formatScore = (score) => {
   return score != null ? score.toFixed(1) : '-'
@@ -411,47 +419,28 @@ onMounted(() => {
   .grade-table-container {
     background: var(--bg-primary);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
     overflow: hidden;
 
     :deep(.el-table) {
       background: transparent;
 
-      .el-table__header-wrapper {
-        .el-table__header {
-          th {
-            border-bottom: 1px solid var(--border-light);
-          }
-        }
-      }
-
-      .el-table__body-wrapper {
-        .el-table__body {
-          td {
-            border-bottom: 1px solid var(--border-light);
-          }
-        }
-      }
-
-      .el-table__row {
-        transition: background-color var(--transition-fast);
-
-        &:hover {
-          background: var(--bg-secondary);
-        }
+      // 表格单元格内边距
+      .el-table__cell {
+        padding: 14px 12px;
       }
     }
   }
 
   .score-text {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--text-primary);
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
 
   .score-total {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .score-excellent {
@@ -468,6 +457,60 @@ onMounted(() => {
 
   .score-fail {
     color: var(--error-color);
+  }
+
+  // 确保标签不显示多余的点
+  :deep(.el-tag) {
+    &::before,
+    &::after {
+      content: none !important;
+      display: none !important;
+    }
+  }
+
+  // 课程类型徽章样式
+  .course-type-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    
+    &.type-required {
+      background: rgba(255, 59, 48, 0.1);
+      color: var(--error-color);
+    }
+    
+    &.type-elective {
+      background: rgba(255, 149, 0, 0.1);
+      color: var(--warning-color);
+    }
+    
+    &.type-public {
+      background: rgba(142, 142, 147, 0.1);
+      color: var(--text-secondary);
+    }
+  }
+
+  // 状态徽章样式
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    
+    &.status-pass {
+      background: rgba(52, 199, 89, 0.1);
+      color: var(--success-color);
+    }
+    
+    &.status-fail {
+      background: rgba(255, 59, 48, 0.1);
+      color: var(--error-color);
+    }
   }
 }
 </style>

@@ -4,6 +4,81 @@
 // ===================================
 
 // ===================================
+// 菜单组件 - Apple 风格
+// ===================================
+
+.el-menu {
+  border: none;
+  
+  // 菜单项
+  .el-menu-item {
+    transition: all var(--transition-fast);
+    
+    &:hover {
+      background-color: var(--bg-secondary);
+    }
+    
+    &.is-active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+  }
+  
+  // 子菜单
+  .el-sub-menu {
+    .el-sub-menu__title {
+      transition: all var(--transition-fast);
+      
+      &:hover {
+        background-color: var(--bg-secondary);
+      }
+    }
+  }
+  
+  // 收起状态
+  &.el-menu--collapse {
+    .el-menu-item,
+    .el-sub-menu__title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
+      
+      .el-icon {
+        margin-right: 0;
+      }
+      
+      span {
+        display: none;
+      }
+    }
+    
+    .el-sub-menu {
+      .el-sub-menu__icon-arrow {
+        display: none;
+      }
+    }
+  }
+}
+
+// 弹出菜单
+.el-menu--popup {
+  padding: 8px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  
+  .el-menu-item {
+    border-radius: var(--radius-md);
+    margin-bottom: 2px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ===================================
 // 表格组件 - Apple 风格
 // ===================================
 
@@ -363,6 +438,11 @@
   border: 1px solid var(--border-light) !important;
   padding: 8px !important;
   margin-top: 4px !important;
+  background: var(--bg-primary) !important;
+
+  .el-select-dropdown__list {
+    padding: 0;
+  }
 
   .el-select-dropdown__item {
     border-radius: var(--radius-md);
@@ -371,6 +451,8 @@
     transition: all var(--transition-fast);
     font-size: 15px;
     color: var(--text-primary);
+    line-height: 1.5;
+    min-height: auto;
 
     &:hover {
       background: var(--bg-secondary);
@@ -382,9 +464,27 @@
       font-weight: 500;
     }
 
+    &.is-disabled {
+      color: var(--text-tertiary);
+      cursor: not-allowed;
+    }
+
     &:last-child {
       margin-bottom: 0;
     }
+  }
+
+  .el-select-dropdown__empty {
+    padding: 10px 12px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+}
+
+// 确保下拉框的 popper 层级正确
+.el-popper {
+  &.el-select__popper {
+    z-index: 3000 !important;
   }
 }
 
@@ -482,6 +582,17 @@
   font-size: 13px;
   letter-spacing: -0.01em;
 
+  // 移除可能产生点的伪元素
+  &::before,
+  &::after {
+    display: none !important;
+  }
+
+  // 移除标签内部的图标（如果有）
+  .el-tag__close {
+    margin-left: 4px;
+  }
+
   // 深色效果
   &.el-tag--dark {
     &.el-tag--primary {
@@ -562,6 +673,29 @@
 // ===================================
 
 .el-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  // 总数显示
+  .el-pagination__total {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 8px;
+  }
+
+  // 每页显示数量
+  .el-pagination__sizes {
+    margin-right: 8px;
+
+    .el-select {
+      .el-select__wrapper {
+        min-width: 100px;
+      }
+    }
+  }
+
   .el-pager {
     li {
       border-radius: var(--radius-md);
@@ -606,6 +740,19 @@
     &:disabled {
       background: transparent;
       color: var(--text-tertiary);
+    }
+  }
+
+  // 跳转输入框
+  .el-pagination__jump {
+    margin-left: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+
+    .el-input {
+      width: 50px;
+      margin: 0 8px;
     }
   }
 }

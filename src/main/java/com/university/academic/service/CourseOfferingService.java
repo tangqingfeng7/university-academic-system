@@ -492,9 +492,10 @@ public class CourseOfferingService {
     /**
      * 检查时间段是否重叠
      * 例如: "1-2" 和 "2-3" 有重叠，"1-2" 和 "3-4" 无重叠
+     * 支持单节次格式: "1" 和 "1-2" 有重叠
      *
-     * @param period1 时间段1 (格式: "1-2")
-     * @param period2 时间段2
+     * @param period1 时间段1 (格式: "1-2" 或 "1")
+     * @param period2 时间段2 (格式: "1-2" 或 "1")
      * @return true-重叠，false-不重叠
      */
     private boolean isPeriodOverlap(String period1, String period2) {
@@ -503,9 +504,9 @@ public class CourseOfferingService {
             String[] parts2 = period2.split("-");
             
             int start1 = Integer.parseInt(parts1[0]);
-            int end1 = Integer.parseInt(parts1[1]);
+            int end1 = parts1.length > 1 ? Integer.parseInt(parts1[1]) : start1; // 单节次时start=end
             int start2 = Integer.parseInt(parts2[0]);
-            int end2 = Integer.parseInt(parts2[1]);
+            int end2 = parts2.length > 1 ? Integer.parseInt(parts2[1]) : start2; // 单节次时start=end
             
             // 检查是否有重叠
             return !(end1 < start2 || end2 < start1);

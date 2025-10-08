@@ -101,6 +101,12 @@ const router = createRouter({
           meta: { title: '通知管理' }
         },
         {
+          path: 'leave-requests',
+          name: 'AdminLeaveRequests',
+          component: () => import('@/views/admin/LeaveRequests.vue'),
+          meta: { title: '请假审批' }
+        },
+        {
           path: 'profile',
           name: 'AdminProfile',
           component: () => import('@/views/common/Profile.vue'),
@@ -151,6 +157,12 @@ const router = createRouter({
           name: 'TeacherNotifications',
           component: () => import('@/views/teacher/NotificationCenter.vue'),
           meta: { title: '通知管理' }
+        },
+        {
+          path: 'leave-requests',
+          name: 'TeacherLeaveRequests',
+          component: () => import('@/views/teacher/LeaveRequests.vue'),
+          meta: { title: '请假申请' }
         },
         {
           path: 'profile',
@@ -209,6 +221,12 @@ const router = createRouter({
           name: 'StudentNotifications',
           component: () => import('@/views/student/NotificationList.vue'),
           meta: { title: '通知公告' }
+        },
+        {
+          path: 'leave-requests',
+          name: 'StudentLeaveRequests',
+          component: () => import('@/views/student/LeaveRequests.vue'),
+          meta: { title: '请假申请' }
         },
         {
           path: 'profile',
