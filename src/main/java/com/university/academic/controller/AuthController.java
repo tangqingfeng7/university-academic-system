@@ -4,9 +4,13 @@ import com.university.academic.dto.ChangePasswordRequest;
 import com.university.academic.dto.LoginRequest;
 import com.university.academic.dto.LoginResponse;
 import com.university.academic.dto.RefreshTokenRequest;
+import com.university.academic.entity.Student;
+import com.university.academic.entity.Teacher;
 import com.university.academic.entity.User;
 import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
+import com.university.academic.repository.StudentRepository;
+import com.university.academic.repository.TeacherRepository;
 import com.university.academic.repository.UserRepository;
 import com.university.academic.util.JwtUtil;
 import com.university.academic.vo.Result;
@@ -32,6 +36,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -70,6 +76,9 @@ public class AuthController {
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
 
         // 构建响应
+        // 获取真实姓名
+        String name = getUserRealName(user);
+
         LoginResponse response = LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -78,6 +87,7 @@ public class AuthController {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .role(user.getRole().name())
+                .name(name)
                 .firstLogin(user.getFirstLogin())
                 .build();
 
@@ -217,14 +227,36 @@ public class AuthController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        // 获取真实姓名
+        String name = getUserRealName(user);
+
         LoginResponse response = LoginResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
                 .role(user.getRole().name())
+                .name(name)
                 .firstLogin(user.getFirstLogin())
                 .build();
 
         return Result.success(response);
+    }
+
+    /**
+     * 获取用户真实姓名
+     */
+    private String getUserRealName(User user) {
+        if (user.getRole() == User.UserRole.STUDENT) {
+            return studentRepository.findByUserId(user.getId())
+                    .map(Student::getName)
+                    .orElse(user.getUsername());
+        } else if (user.getRole() == User.UserRole.TEACHER) {
+            return teacherRepository.findByUserId(user.getId())
+                    .map(Teacher::getName)
+                    .orElse(user.getUsername());
+        } else {
+            // 管理员返回用户名
+            return user.getUsername();
+        }
     }
 }
 

@@ -33,6 +33,7 @@ export const useUserStore = defineStore('user', () => {
         userId: res.data.userId,
         username: res.data.username,
         role: res.data.role,
+        name: res.data.name,
         firstLogin: res.data.firstLogin
       }
       setUserInfo(userInfo)

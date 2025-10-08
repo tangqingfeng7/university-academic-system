@@ -1,116 +1,117 @@
 <template>
-  <div class="notification-container">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span class="card-title">
-            <el-icon><Bell /></el-icon>
-            通知公告
+  <div class="notification-list-container">
+    <!-- 通知列表 -->
+    <div v-loading="loading" class="notification-list">
+      <div
+        v-for="(notification, index) in notificationList"
+        :key="notification.id"
+        class="notification-card animate-fade-in-up"
+        :style="{ 'animation-delay': `${index * 0.05}s` }"
+        :class="{ 'unread': !notification.read }"
+        @click="handleView(notification)"
+      >
+        <div class="notification-header">
+          <div class="notification-meta">
+            <el-badge 
+              :is-dot="!notification.read" 
+              type="primary"
+              :offset="[4, 0]"
+            >
+              <el-tag 
+                :type="getTypeStyle(notification.type)" 
+                size="small"
+              >
+                {{ notification.typeDescription }}
+              </el-tag>
+            </el-badge>
+          </div>
+          <el-tag 
+            v-if="notification.read"
+            type="info" 
+            size="small"
+          >
+            已读
+          </el-tag>
+        </div>
+
+        <h3 class="notification-title">{{ notification.title }}</h3>
+
+        <div class="notification-info">
+          <span class="info-item">
+            <el-icon><User /></el-icon>
+            {{ notification.publisherName }}
+          </span>
+          <span class="info-item">
+            <el-icon><Clock /></el-icon>
+            {{ formatDateTime(notification.publishTime) }}
           </span>
         </div>
-      </template>
-
-      <!-- 通知列表 -->
-      <el-table
-        v-loading="loading"
-        :data="notificationList"
-        style="width: 100%"
-        @row-click="handleRowClick"
-      >
-        <el-table-column prop="title" label="标题" min-width="200">
-          <template #default="{ row }">
-            <div class="title-cell">
-              <el-badge :is-dot="!row.read" type="primary">
-                <span :class="{ 'unread-title': !row.read }">{{ row.title }}</span>
-              </el-badge>
-            </div>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="typeDescription" label="类型" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getTypeTag(row.type)" size="small">
-              {{ row.typeDescription }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="publisherName" label="发布人" width="120" />
-
-        <el-table-column prop="publishTime" label="发布时间" width="180">
-          <template #default="{ row }">
-            {{ formatDateTime(row.publishTime) }}
-          </template>
-        </el-table-column>
-
-        <el-table-column label="状态" width="80">
-          <template #default="{ row }">
-            <el-tag v-if="row.read" type="info" size="small">已读</el-tag>
-            <el-tag v-else type="success" size="small">未读</el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="操作" width="100" fixed="right">
-          <template #default="{ row }">
-            <el-button
-              type="primary"
-              size="small"
-              @click.stop="handleView(row)"
-            >
-              查看
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.size"
-          :page-sizes="[10, 20, 50]"
-          :total="pagination.total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
       </div>
-    </el-card>
+
+      <!-- 空状态 -->
+      <el-empty
+        v-if="!loading && notificationList.length === 0"
+        description="暂无通知"
+        :image-size="160"
+      />
+    </div>
+
+    <!-- 分页 -->
+    <div v-if="pagination.total > 0" class="pagination-wrapper">
+      <el-pagination
+        v-model:current-page="pagination.page"
+        v-model:page-size="pagination.size"
+        :page-sizes="[10, 20, 50]"
+        :total="pagination.total"
+        layout="total, sizes, prev, pager, next"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 通知详情对话框 -->
     <el-dialog
       v-model="detailDialogVisible"
       :title="currentNotification?.title"
-      width="60%"
-      :before-close="handleClose"
+      width="700px"
+      @close="handleClose"
     >
       <div v-if="currentNotification" class="notification-detail">
-        <div class="detail-meta">
-          <el-descriptions :column="2" border>
-            <el-descriptions-item label="类型">
-              <el-tag :type="getTypeTag(currentNotification.type)" size="small">
-                {{ currentNotification.typeDescription }}
-              </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="发布人">
-              {{ currentNotification.publisherName }}
-            </el-descriptions-item>
-            <el-descriptions-item label="发布时间">
-              {{ formatDateTime(currentNotification.publishTime) }}
-            </el-descriptions-item>
-            <el-descriptions-item label="目标角色">
-              {{ getRoleName(currentNotification.targetRole) }}
-            </el-descriptions-item>
-          </el-descriptions>
+        <div class="detail-header">
+          <div class="detail-tags">
+            <el-tag 
+              :type="getTypeStyle(currentNotification.type)" 
+              size="large"
+            >
+              {{ currentNotification.typeDescription }}
+            </el-tag>
+          </div>
+          
+          <div class="detail-meta">
+            <div class="meta-row">
+              <span class="meta-label">发布人</span>
+              <span class="meta-value">{{ currentNotification.publisherName }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">发布时间</span>
+              <span class="meta-value">{{ formatDateTime(currentNotification.publishTime) }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">目标角色</span>
+              <span class="meta-value">{{ getRoleName(currentNotification.targetRole) }}</span>
+            </div>
+          </div>
         </div>
 
-        <el-divider />
+        <div class="detail-divider"></div>
 
         <div class="detail-content" v-html="formatContent(currentNotification.content)"></div>
       </div>
 
       <template #footer>
-        <el-button @click="detailDialogVisible = false">关闭</el-button>
+        <el-button size="large" @click="detailDialogVisible = false">
+          关闭
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -119,7 +120,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Bell } from '@element-plus/icons-vue'
+import { User, Clock } from '@element-plus/icons-vue'
 import { 
   getMyNotifications, 
   getNotificationDetail, 
@@ -153,7 +154,7 @@ const fetchNotifications = async () => {
     pagination.value.total = res.data.totalElements || 0
   } catch (error) {
     console.error('获取通知列表失败:', error)
-    ElMessage.error('获取通知列表失败: ' + (error.message || '未知错误'))
+    ElMessage.error('获取通知列表失败')
   } finally {
     loading.value = false
   }
@@ -173,13 +174,8 @@ const handleView = async (row) => {
     }
   } catch (error) {
     console.error('获取通知详情失败:', error)
-    ElMessage.error('获取通知详情失败: ' + (error.message || '未知错误'))
+    ElMessage.error('获取通知详情失败')
   }
-}
-
-// 行点击事件
-const handleRowClick = (row) => {
-  handleView(row)
 }
 
 // 对话框关闭
@@ -212,26 +208,26 @@ const formatDateTime = (dateTime) => {
   return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
-// 格式化内容（保留换行）
+// 格式化内容
 const formatContent = (content) => {
   if (!content) return ''
   return content.replace(/\n/g, '<br>')
 }
 
-// 类型标签
-const getTypeTag = (type) => {
-  const tagMap = {
+// 类型样式
+const getTypeStyle = (type) => {
+  const styleMap = {
     SYSTEM: 'danger',
     COURSE: 'primary',
     GRADE: 'warning'
   }
-  return tagMap[type] || 'info'
+  return styleMap[type] || 'info'
 }
 
 // 角色名称
 const getRoleName = (role) => {
   const nameMap = {
-    ALL: '全部',
+    ALL: '全部用户',
     ADMIN: '管理员',
     TEACHER: '教师',
     STUDENT: '学生'
@@ -250,71 +246,156 @@ defineExpose({
 })
 </script>
 
-<style scoped>
-.notification-container {
-  padding: 20px;
-}
+<style scoped lang="scss">
+.notification-list-container {
+  padding: var(--spacing-lg) 0;
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  // ===================================
+  // 通知列表
+  // ===================================
 
-.card-title {
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-  font-weight: bold;
-  color: #303133;
-}
+  .notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: var(--spacing-xl);
+    min-height: 300px;
+  }
 
-.card-title .el-icon {
-  margin-right: 8px;
-  font-size: 20px;
-  color: #409EFF;
-}
+  .notification-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    border: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all var(--transition-base);
 
-.title-cell {
-  cursor: pointer;
-}
+    &.unread {
+      border-color: var(--primary-lighter);
+      background: linear-gradient(
+        to right,
+        rgba(0, 122, 255, 0.02) 0%,
+        transparent 100%
+      );
+    }
 
-.unread-title {
-  font-weight: bold;
-  color: #303133;
-}
+    &:hover {
+      box-shadow: var(--shadow-card);
+      border-color: var(--border-color);
+    }
+  }
 
-:deep(.el-table__row) {
-  cursor: pointer;
-}
+  .notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
 
-:deep(.el-table__row:hover) {
-  background-color: #f5f7fa;
-}
+  .notification-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
 
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
+  .notification-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
 
-.notification-detail {
-  padding: 10px 0;
-}
+  .notification-info {
+    display: flex;
+    gap: 20px;
+  }
 
-.detail-meta {
-  margin-bottom: 20px;
-}
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
 
-.detail-content {
-  padding: 20px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  line-height: 1.8;
-  color: #606266;
-  min-height: 200px;
-  max-height: 500px;
-  overflow-y: auto;
+    .el-icon {
+      font-size: 16px;
+    }
+  }
+
+  // ===================================
+  // 分页
+  // ===================================
+
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+  }
+
+  // ===================================
+  // 通知详情
+  // ===================================
+
+  .notification-detail {
+    padding: var(--spacing-md) 0;
+  }
+
+  .detail-header {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .detail-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+  }
+
+  .meta-label {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    min-width: 80px;
+  }
+
+  .meta-value {
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .detail-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: var(--spacing-xl) 0;
+  }
+
+  .detail-content {
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    line-height: 1.8;
+    color: var(--text-primary);
+    font-size: 15px;
+    min-height: 200px;
+    max-height: 500px;
+    overflow-y: auto;
+
+    :deep(br) {
+      display: block;
+      margin: 8px 0;
+    }
+  }
 }
 </style>
-

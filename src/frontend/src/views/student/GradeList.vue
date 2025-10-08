@@ -1,124 +1,116 @@
 <template>
-  <div class="grade-list-container">
-    <el-card class="search-card">
-      <el-form :inline="true">
-        <el-form-item label="学期筛选">
-          <el-select
-            v-model="selectedSemester"
-            placeholder="请选择学期（默认显示全部）"
-            clearable
-            @change="handleSemesterChange"
-            style="width: 250px"
-          >
-            <el-option label="全部学期" :value="null" />
-            <el-option
-              v-for="semester in semesters"
-              :key="semester.id"
-              :label="semester.academicYear + ' ' + getSemesterTypeName(semester.semesterType)"
-              :value="semester.id"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-    </el-card>
+  <div class="grade-list-page">
+    <!-- 页面头部 -->
+    <div class="page-header animate-fade-in-down">
+      <div class="header-content">
+        <h1 class="page-title">成绩</h1>
+        <p class="page-subtitle">查看你的课程成绩和学业表现</p>
+      </div>
+      <el-button 
+        type="primary" 
+        :icon="Download" 
+        size="large"
+        :loading="exportLoading"
+        @click="handleExport"
+      >
+        导出成绩单
+      </el-button>
+    </div>
+
+    <!-- 筛选器 -->
+    <div class="filter-section animate-fade-in-up" style="animation-delay: 0.1s;">
+      <el-select
+        v-model="selectedSemester"
+        placeholder="全部学期"
+        clearable
+        size="large"
+        @change="handleSemesterChange"
+        style="width: 200px"
+      >
+        <el-option label="全部学期" :value="null" />
+        <el-option
+          v-for="semester in semesters"
+          :key="semester.id"
+          :label="semester.academicYear + ' ' + getSemesterTypeName(semester.semesterType)"
+          :value="semester.id"
+        />
+      </el-select>
+    </div>
 
     <!-- 统计卡片 -->
-    <el-row :gutter="20" style="margin-top: 20px">
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-item">
-            <div class="stat-label">总课程数</div>
-            <div class="stat-value">{{ statistics.totalCourses || 0 }}</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-item">
-            <div class="stat-label">已通过课程</div>
-            <div class="stat-value success">{{ statistics.passedCourses || 0 }}</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-item">
-            <div class="stat-label">总学分</div>
-            <div class="stat-value">{{ statistics.totalCredits || 0 }}</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="stat-card">
-          <div class="stat-item">
-            <div class="stat-label">平均绩点</div>
-            <div class="stat-value primary">{{ formatGPA(statistics.gpa || statistics.overallGPA) }}</div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div 
+      class="stats-grid animate-fade-in-up" 
+      style="animation-delay: 0.2s;"
+      v-loading="loading"
+    >
+      <div class="stat-card">
+        <div class="stat-label">课程总数</div>
+        <div class="stat-value">{{ statistics.totalCourses || 0 }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">已通过</div>
+        <div class="stat-value stat-success">{{ statistics.passedCourses || 0 }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">总学分</div>
+        <div class="stat-value">{{ statistics.totalCredits || 0 }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">平均绩点</div>
+        <div class="stat-value stat-primary">{{ formatGPA(statistics.gpa || statistics.overallGPA) }}</div>
+      </div>
+    </div>
 
     <!-- 成绩列表 -->
-    <el-card style="margin-top: 20px">
-      <template #header>
-        <div class="card-header">
-          <span>成绩列表</span>
-          <el-button type="primary" @click="handleExport" :loading="exportLoading">
-            <el-icon><Download /></el-icon>
-            导出成绩单
-          </el-button>
-        </div>
-      </template>
-
+    <div class="grade-table-container animate-fade-in-up" style="animation-delay: 0.3s;">
       <el-table
         v-loading="loading"
         :data="gradeList"
-        stripe
         style="width: 100%"
+        :header-cell-style="{ 
+          background: 'var(--bg-secondary)', 
+          color: 'var(--text-secondary)',
+          fontWeight: '500',
+          fontSize: '14px'
+        }"
       >
-        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="semesterName" label="学期" width="140" />
         
-        <el-table-column prop="semesterName" label="学期" width="150">
+        <el-table-column prop="courseNo" label="课程编号" width="110" />
+        
+        <el-table-column prop="courseName" label="课程名称" min-width="200" show-overflow-tooltip />
+        
+        <el-table-column prop="courseType" label="类型" width="90">
           <template #default="{ row }">
-            {{ row.semesterName }}
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="courseNo" label="课程编号" width="120" />
-        
-        <el-table-column prop="courseName" label="课程名称" min-width="200" />
-        
-        <el-table-column prop="courseType" label="课程类型" width="100">
-          <template #default="{ row }">
-            <el-tag :type="getCourseTypeTag(row.courseType)">
+            <el-tag :type="getCourseTypeTag(row.courseType)" size="small">
               {{ getCourseTypeName(row.courseType) }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="credits" label="学分" width="80" align="center" />
+        <el-table-column prop="credits" label="学分" width="70" align="center" />
 
-        <el-table-column prop="regularScore" label="平时成绩" width="100" align="center">
+        <el-table-column prop="regularScore" label="平时" width="70" align="center">
           <template #default="{ row }">
-            {{ formatScore(row.regularScore) }}
+            <span class="score-text">{{ formatScore(row.regularScore) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="midtermScore" label="期中成绩" width="100" align="center">
+        <el-table-column prop="midtermScore" label="期中" width="70" align="center">
           <template #default="{ row }">
-            {{ formatScore(row.midtermScore) }}
+            <span class="score-text">{{ formatScore(row.midtermScore) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="finalScore" label="期末成绩" width="100" align="center">
+        <el-table-column prop="finalScore" label="期末" width="70" align="center">
           <template #default="{ row }">
-            {{ formatScore(row.finalScore) }}
+            <span class="score-text">{{ formatScore(row.finalScore) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="totalScore" label="总评成绩" width="100" align="center">
+        <el-table-column prop="totalScore" label="总评" width="80" align="center">
           <template #default="{ row }">
-            <span :class="getScoreClass(row.totalScore)">
+            <span :class="['score-text', 'score-total', getScoreClass(row.totalScore)]">
               {{ formatScore(row.totalScore) }}
             </span>
           </template>
@@ -126,30 +118,33 @@
 
         <el-table-column prop="gradePoint" label="绩点" width="80" align="center">
           <template #default="{ row }">
-            {{ formatGradePoint(row.gradePoint) }}
+            <span class="score-text">{{ formatGradePoint(row.gradePoint) }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="状态" width="80" align="center">
+        <el-table-column label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.passed ? 'success' : 'danger'">
-              {{ row.passed ? '通过' : '不通过' }}
+            <el-tag :type="row.passed ? 'success' : 'danger'" size="small">
+              {{ row.passed ? '通过' : '未通过' }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="teacherName" label="授课教师" width="120" />
+        <el-table-column prop="teacherName" label="授课教师" width="110" />
       </el-table>
 
-      <div v-if="gradeList.length === 0 && !loading" class="empty-text">
-        暂无成绩记录
-      </div>
-    </el-card>
+      <!-- 空状态 -->
+      <el-empty
+        v-if="!loading && gradeList.length === 0"
+        description="暂无成绩记录"
+        :image-size="160"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Download } from '@element-plus/icons-vue'
 import { 
@@ -192,16 +187,14 @@ const fetchGradeList = async () => {
   try {
     let res
     if (selectedSemester.value) {
-      // 获取指定学期成绩
       res = await getSemesterGrades(selectedSemester.value)
     } else {
-      // 获取所有成绩
       res = await getMyGrades()
     }
     gradeList.value = res.data || []
   } catch (error) {
     console.error('获取成绩列表失败:', error)
-    ElMessage.error('获取成绩列表失败: ' + (error.message || '未知错误'))
+    ElMessage.error('获取成绩列表失败')
   } finally {
     loading.value = false
   }
@@ -212,10 +205,8 @@ const fetchStatistics = async () => {
   try {
     let res
     if (selectedSemester.value) {
-      // 获取学期统计
       res = await getSemesterStatistics(selectedSemester.value)
     } else {
-      // 获取总统计
       res = await getTranscriptStatistics()
     }
     statistics.value = res.data || {}
@@ -236,7 +227,6 @@ const handleExport = async () => {
   try {
     const blob = await exportTranscript()
     
-    // 创建下载链接
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -249,7 +239,7 @@ const handleExport = async () => {
     ElMessage.success('成绩单导出成功')
   } catch (error) {
     console.error('导出成绩单失败:', error)
-    ElMessage.error('导出成绩单失败: ' + (error.message || '未知错误'))
+    ElMessage.error('导出成绩单失败')
   } finally {
     exportLoading.value = false
   }
@@ -258,8 +248,8 @@ const handleExport = async () => {
 // 格式化学期类型
 const getSemesterTypeName = (type) => {
   const typeMap = {
-    1: '春季学期',
-    2: '秋季学期'
+    1: '春季',
+    2: '秋季'
   }
   return typeMap[type] || '未知'
 }
@@ -317,69 +307,167 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.grade-list-container {
-  padding: 20px;
-}
+<style scoped lang="scss">
+.grade-list-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-xl);
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  // ===================================
+  // 页面头部
+  // ===================================
 
-.stat-card {
-  text-align: center;
-}
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-2xl);
+  }
 
-.stat-item {
-  padding: 10px 0;
-}
+  .header-content {
+    flex: 1;
+  }
 
-.stat-label {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 8px;
-}
+  .page-title {
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.03em;
+  }
 
-.stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #303133;
-}
+  .page-subtitle {
+    font-size: 17px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
+  }
 
-.stat-value.success {
-  color: #67C23A;
-}
+  // ===================================
+  // 筛选器
+  // ===================================
 
-.stat-value.primary {
-  color: #409EFF;
-}
+  .filter-section {
+    margin-bottom: var(--spacing-xl);
+  }
 
-.empty-text {
-  text-align: center;
-  padding: 40px 0;
-  color: #909399;
-  font-size: 14px;
-}
+  // ===================================
+  // 统计卡片
+  // ===================================
 
-.score-excellent {
-  color: #67C23A;
-  font-weight: bold;
-}
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: var(--spacing-2xl);
 
-.score-good {
-  color: #409EFF;
-  font-weight: bold;
-}
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
 
-.score-pass {
-  color: #E6A23C;
-}
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
 
-.score-fail {
-  color: #F56C6C;
-  font-weight: bold;
+  .stat-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-base);
+
+    &:hover {
+      box-shadow: var(--shadow-sm);
+    }
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+
+    &.stat-success {
+      color: var(--success-color);
+    }
+
+    &.stat-primary {
+      color: var(--primary-color);
+    }
+  }
+
+  // ===================================
+  // 成绩表格
+  // ===================================
+
+  .grade-table-container {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+
+    :deep(.el-table) {
+      background: transparent;
+
+      .el-table__header-wrapper {
+        .el-table__header {
+          th {
+            border-bottom: 1px solid var(--border-light);
+          }
+        }
+      }
+
+      .el-table__body-wrapper {
+        .el-table__body {
+          td {
+            border-bottom: 1px solid var(--border-light);
+          }
+        }
+      }
+
+      .el-table__row {
+        transition: background-color var(--transition-fast);
+
+        &:hover {
+          background: var(--bg-secondary);
+        }
+      }
+    }
+  }
+
+  .score-text {
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .score-total {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .score-excellent {
+    color: var(--success-color);
+  }
+
+  .score-good {
+    color: var(--primary-color);
+  }
+
+  .score-pass {
+    color: var(--warning-color);
+  }
+
+  .score-fail {
+    color: var(--error-color);
+  }
 }
 </style>
-

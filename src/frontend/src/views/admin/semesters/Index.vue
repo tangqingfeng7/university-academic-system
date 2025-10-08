@@ -1,69 +1,142 @@
 <template>
-  <div class="semester-manage">
-    <div class="page-header">
-      <h2>学期管理</h2>
-      <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
+  <div class="semester-management">
+    <!-- 页面头部 - Apple 风格 -->
+    <div class="page-header animate-fade-in-down">
+      <div class="header-content">
+        <h1 class="page-title">学期</h1>
+        <p class="page-subtitle">管理学年学期和选课时间设置</p>
+      </div>
+      <el-button 
+        type="primary" 
+        :icon="Plus" 
+        size="large"
+        @click="handleAdd"
+      >
         新建学期
       </el-button>
     </div>
 
-    <el-card>
-      <el-table
-        v-loading="loading"
-        :data="semesterList"
-        stripe
-        border
+    <!-- 当前活动学期横幅 - 简洁版 -->
+    <div 
+      v-if="activeSemester" 
+      class="active-semester-card animate-fade-in-up"
+      style="animation-delay: 0.1s;"
+    >
+      <div class="card-content">
+        <div class="semester-badge">
+          <el-icon><Select /></el-icon>
+          <span>当前学期</span>
+        </div>
+        <h2 class="semester-name">{{ activeSemester.academicYear }} {{ activeSemester.semesterType === 1 ? '春季学期' : '秋季学期' }}</h2>
+        <div class="semester-meta">
+          <span class="meta-item">{{ activeSemester.startDate }} - {{ activeSemester.endDate }}</span>
+          <span class="meta-divider">·</span>
+          <span class="meta-item">选课时间：{{ formatDateTime(activeSemester.courseSelectionStart) }} - {{ formatDateTime(activeSemester.courseSelectionEnd) }}</span>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-wrapper">
+          <div class="progress-info">
+            <span class="progress-label">学期进度</span>
+            <span class="progress-value">{{ getSemesterProgress(activeSemester) }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: getSemesterProgress(activeSemester) + '%' }"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 学期列表 -->
+    <div v-loading="loading" class="semester-list">
+      <div
+        v-for="(semester, index) in sortedSemesterList"
+        :key="semester.id"
+        class="semester-item animate-fade-in-up"
+        :style="{ 'animation-delay': `${0.2 + index * 0.05}s` }"
       >
-        <el-table-column prop="academicYear" label="学年" width="120" />
-        <el-table-column label="学期" width="100">
-          <template #default="{ row }">
-            {{ row.semesterType === 1 ? '春季' : '秋季' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="startDate" label="开始日期" width="120" />
-        <el-table-column prop="endDate" label="结束日期" width="120" />
-        <el-table-column label="选课时间" width="240">
-          <template #default="{ row }">
-            {{ row.courseSelectionStart }} 至 {{ row.courseSelectionEnd }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag v-if="row.active" type="success">当前学期</el-tag>
-            <el-tag v-else type="info">非活动</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
-          <template #default="{ row }">
-            <el-button 
-              v-if="!row.active" 
-              type="primary" 
-              size="small" 
-              @click="handleActivate(row)"
+        <div class="semester-main">
+          <div class="semester-info">
+            <div class="semester-header">
+              <h3 class="semester-title">
+                {{ semester.academicYear }}
+                <span class="semester-type">{{ semester.semesterType === 1 ? '春季学期' : '秋季学期' }}</span>
+              </h3>
+              <el-tag 
+                v-if="semester.active" 
+                type="primary"
+                size="small"
+              >
+                活动中
+              </el-tag>
+              <el-tag 
+                v-else-if="isUpcoming(semester)" 
+                type="warning"
+                size="small"
+              >
+                未来学期
+              </el-tag>
+              <el-tag 
+                v-else 
+                type="info"
+                size="small"
+              >
+                已结束
+              </el-tag>
+            </div>
+            
+            <div class="semester-details">
+              <div class="detail-item">
+                <span class="detail-label">学期时间</span>
+                <span class="detail-value">{{ semester.startDate }} 至 {{ semester.endDate }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">选课时间</span>
+                <span class="detail-value">{{ formatDateTime(semester.courseSelectionStart) }} 至 {{ formatDateTime(semester.courseSelectionEnd) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="semester-actions">
+            <el-button
+              v-if="!semester.active"
+              type="primary"
+              size="default"
+              plain
+              @click="handleActivate(semester)"
             >
               设为当前
             </el-button>
-            <el-button 
-              type="primary" 
-              size="small" 
-              plain
-              @click="handleEdit(row)"
+            <el-button
+              type="default"
+              size="default"
+              @click="handleEdit(semester)"
             >
               编辑
             </el-button>
-            <el-button 
-              type="danger" 
-              size="small" 
+            <el-button
+              type="danger"
+              size="default"
               plain
-              @click="handleDelete(row)"
+              @click="handleDelete(semester)"
             >
               删除
             </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <el-empty
+        v-if="!loading && semesterList.length === 0"
+        description="还没有创建任何学期"
+        :image-size="160"
+      >
+        <el-button type="primary" :icon="Plus" @click="handleAdd">
+          创建第一个学期
+        </el-button>
+      </el-empty>
+    </div>
 
     <!-- 新建/编辑学期对话框 -->
     <el-dialog
@@ -77,84 +150,113 @@
         :model="formData"
         :rules="formRules"
         label-width="120px"
+        label-position="top"
       >
-        <el-form-item label="学年" prop="academicYear">
-          <el-input 
-            v-model="formData.academicYear" 
-            placeholder="例如：2024-2025"
-          />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="学年" prop="academicYear">
+              <el-input 
+                v-model="formData.academicYear" 
+                placeholder="例如：2024-2025"
+                size="large"
+              />
+            </el-form-item>
+          </el-col>
 
-        <el-form-item label="学期类型" prop="semesterType">
-          <el-radio-group v-model="formData.semesterType">
-            <el-radio :label="1">春季</el-radio>
-            <el-radio :label="2">秋季</el-radio>
-          </el-radio-group>
-        </el-form-item>
+          <el-col :span="12">
+            <el-form-item label="学期类型" prop="semesterType">
+              <el-select v-model="formData.semesterType" size="large" style="width: 100%">
+                <el-option :label="'春季学期'" :value="1" />
+                <el-option :label="'秋季学期'" :value="2" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-        <el-form-item label="开始日期" prop="startDate">
-          <el-date-picker
-            v-model="formData.startDate"
-            type="date"
-            placeholder="选择日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="开始日期" prop="startDate">
+              <el-date-picker
+                v-model="formData.startDate"
+                type="date"
+                placeholder="选择开始日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                size="large"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
 
-        <el-form-item label="结束日期" prop="endDate">
-          <el-date-picker
-            v-model="formData.endDate"
-            type="date"
-            placeholder="选择日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
-        </el-form-item>
+          <el-col :span="12">
+            <el-form-item label="结束日期" prop="endDate">
+              <el-date-picker
+                v-model="formData.endDate"
+                type="date"
+                placeholder="选择结束日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                size="large"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-        <el-form-item label="选课开始时间" prop="courseSelectionStart">
-          <el-date-picker
-            v-model="formData.courseSelectionStart"
-            type="datetime"
-            placeholder="选择日期时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 100%"
-          />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="选课开始时间" prop="courseSelectionStart">
+              <el-date-picker
+                v-model="formData.courseSelectionStart"
+                type="datetime"
+                placeholder="选择开始时间"
+                format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                size="large"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
 
-        <el-form-item label="选课结束时间" prop="courseSelectionEnd">
-          <el-date-picker
-            v-model="formData.courseSelectionEnd"
-            type="datetime"
-            placeholder="选择日期时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 100%"
-          />
-        </el-form-item>
+          <el-col :span="12">
+            <el-form-item label="选课结束时间" prop="courseSelectionEnd">
+              <el-date-picker
+                v-model="formData.courseSelectionEnd"
+                type="datetime"
+                placeholder="选择结束时间"
+                format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                size="large"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
 
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button 
-          type="primary" 
-          :loading="submitLoading"
-          @click="handleSubmit"
-        >
-          确定
-        </el-button>
+        <div class="dialog-footer">
+          <el-button size="large" @click="dialogVisible = false">
+            取消
+          </el-button>
+          <el-button 
+            type="primary" 
+            size="large"
+            :loading="submitLoading"
+            @click="handleSubmit"
+          >
+            {{ editingId ? '保存' : '创建' }}
+          </el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Select } from '@element-plus/icons-vue'
 import {
   getAllSemesters,
   createSemester,
@@ -183,7 +285,7 @@ const formData = ref({
 const formRules = {
   academicYear: [
     { required: true, message: '请输入学年', trigger: 'blur' },
-    { pattern: /^\d{4}-\d{4}$/, message: '学年格式不正确，例如：2024-2025', trigger: 'blur' }
+    { pattern: /^\d{4}-\d{4}$/, message: '学年格式：YYYY-YYYY，例如：2024-2025', trigger: 'blur' }
   ],
   semesterType: [
     { required: true, message: '请选择学期类型', trigger: 'change' }
@@ -202,7 +304,38 @@ const formRules = {
   ]
 }
 
-// 获取学期列表
+// 计算属性
+const activeSemester = computed(() => {
+  return semesterList.value.find(s => s.active)
+})
+
+const sortedSemesterList = computed(() => {
+  return [...semesterList.value]
+    .filter(s => !s.active)
+    .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+})
+
+// 方法
+const isUpcoming = (semester) => {
+  return new Date(semester.startDate) > new Date()
+}
+
+const formatDateTime = (dateTime) => {
+  if (!dateTime) return '-'
+  return dateTime.replace('T', ' ').substring(0, 16)
+}
+
+const getSemesterProgress = (semester) => {
+  const start = new Date(semester.startDate).getTime()
+  const end = new Date(semester.endDate).getTime()
+  const now = Date.now()
+  
+  if (now < start) return 0
+  if (now > end) return 100
+  
+  return Math.round(((now - start) / (end - start)) * 100)
+}
+
 const fetchSemesterList = async () => {
   try {
     loading.value = true
@@ -216,14 +349,12 @@ const fetchSemesterList = async () => {
   }
 }
 
-// 新建学期
 const handleAdd = () => {
   dialogTitle.value = '新建学期'
   editingId.value = null
   dialogVisible.value = true
 }
 
-// 编辑学期
 const handleEdit = (row) => {
   dialogTitle.value = '编辑学期'
   editingId.value = row.id
@@ -238,13 +369,12 @@ const handleEdit = (row) => {
   dialogVisible.value = true
 }
 
-// 删除学期
 const handleDelete = (row) => {
   ElMessageBox.confirm(
     `确定要删除学期"${row.academicYear} ${row.semesterType === 1 ? '春季' : '秋季'}"吗？`,
-    '提示',
+    '删除确认',
     {
-      confirmButtonText: '确定',
+      confirmButtonText: '删除',
       cancelButtonText: '取消',
       type: 'warning'
     }
@@ -255,20 +385,19 @@ const handleDelete = (row) => {
       fetchSemesterList()
     } catch (error) {
       console.error('删除失败:', error)
-      ElMessage.error('删除失败')
+      ElMessage.error(error.response?.data?.message || '删除失败')
     }
   }).catch(() => {})
 }
 
-// 设置为当前学期
 const handleActivate = (row) => {
   ElMessageBox.confirm(
-    `确定要将"${row.academicYear} ${row.semesterType === 1 ? '春季' : '秋季'}"设为当前学期吗？`,
-    '提示',
+    `确定要将"${row.academicYear} ${row.semesterType === 1 ? '春季' : '秋季'}"设为当前活动学期吗？`,
+    '设置确认',
     {
-      confirmButtonText: '确定',
+      confirmButtonText: '设置',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'info'
     }
   ).then(async () => {
     try {
@@ -277,12 +406,11 @@ const handleActivate = (row) => {
       fetchSemesterList()
     } catch (error) {
       console.error('设置失败:', error)
-      ElMessage.error('设置失败')
+      ElMessage.error(error.response?.data?.message || '设置失败')
     }
   }).catch(() => {})
 }
 
-// 提交表单
 const handleSubmit = async () => {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
@@ -302,13 +430,12 @@ const handleSubmit = async () => {
     fetchSemesterList()
   } catch (error) {
     console.error('提交失败:', error)
-    ElMessage.error('提交失败')
+    ElMessage.error(error.response?.data?.message || '提交失败')
   } finally {
     submitLoading.value = false
   }
 }
 
-// 重置表单
 const resetForm = () => {
   formRef.value?.resetFields()
   formData.value = {
@@ -327,22 +454,226 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.semester-manage {
-  padding: 20px;
-}
+<style scoped lang="scss">
+.semester-management {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-xl);
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
+  // ===================================
+  // 页面头部 - Apple 风格
+  // ===================================
 
-.page-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-3xl);
+  }
+
+  .header-content {
+    flex: 1;
+  }
+
+  .page-title {
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.03em;
+  }
+
+  .page-subtitle {
+    font-size: 17px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
+  }
+
+  // ===================================
+  // 活动学期卡片 - 简洁版
+  // ===================================
+
+  .active-semester-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    margin-bottom: var(--spacing-2xl);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-light);
+  }
+
+  .semester-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(0, 122, 255, 0.1);
+    color: var(--primary-color);
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .semester-name {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .semester-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+
+    .meta-item {
+      line-height: 1.5;
+    }
+
+    .meta-divider {
+      color: var(--text-tertiary);
+    }
+  }
+
+  .progress-wrapper {
+    margin-top: var(--spacing-lg);
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .progress-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .progress-value {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-smooth);
+  }
+
+  // ===================================
+  // 学期列表
+  // ===================================
+
+  .semester-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .semester-item {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-base);
+
+    &:hover {
+      box-shadow: var(--shadow-card);
+      border-color: var(--border-color);
+    }
+  }
+
+  .semester-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    gap: var(--spacing-xl);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  .semester-info {
+    flex: 1;
+  }
+
+  .semester-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .semester-title {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .semester-type {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .semester-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detail-item {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .detail-label {
+    color: var(--text-tertiary);
+    min-width: 80px;
+  }
+
+  .detail-value {
+    color: var(--text-secondary);
+  }
+
+  .semester-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      justify-content: flex-end;
+    }
+  }
+
+  // ===================================
+  // 对话框样式
+  // ===================================
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
 }
 </style>
-

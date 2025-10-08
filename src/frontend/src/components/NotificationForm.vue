@@ -2,26 +2,33 @@
   <el-dialog
     v-model="visible"
     :title="isAdmin ? '发布系统通知' : '发布课程通知'"
-    width="600px"
+    width="650px"
     @close="handleClose"
   >
     <el-form
       ref="formRef"
       :model="formData"
       :rules="rules"
-      label-width="100px"
+      label-width="90px"
+      label-position="left"
     >
-      <el-form-item label="通知标题" prop="title">
+      <el-form-item label="标题" prop="title">
         <el-input
           v-model="formData.title"
-          placeholder="请输入通知标题"
+          placeholder="输入通知标题"
           maxlength="200"
           show-word-limit
+          size="large"
         />
       </el-form-item>
 
-      <el-form-item label="通知类型" prop="type" v-if="isAdmin">
-        <el-select v-model="formData.type" placeholder="请选择通知类型" style="width: 100%">
+      <el-form-item label="类型" prop="type" v-if="isAdmin">
+        <el-select 
+          v-model="formData.type" 
+          placeholder="选择通知类型" 
+          style="width: 100%"
+          size="large"
+        >
           <el-option label="系统通知" value="SYSTEM" />
           <el-option label="课程通知" value="COURSE" />
           <el-option label="成绩通知" value="GRADE" />
@@ -29,20 +36,25 @@
       </el-form-item>
 
       <el-form-item label="目标角色" prop="targetRole" v-if="isAdmin">
-        <el-select v-model="formData.targetRole" placeholder="请选择目标角色" style="width: 100%">
-          <el-option label="全部" value="ALL" />
+        <el-select 
+          v-model="formData.targetRole" 
+          placeholder="选择目标角色" 
+          style="width: 100%"
+          size="large"
+        >
+          <el-option label="全部用户" value="ALL" />
           <el-option label="学生" value="STUDENT" />
           <el-option label="教师" value="TEACHER" />
           <el-option label="管理员" value="ADMIN" />
         </el-select>
       </el-form-item>
 
-      <el-form-item label="通知内容" prop="content">
+      <el-form-item label="内容" prop="content">
         <el-input
           v-model="formData.content"
           type="textarea"
-          :rows="10"
-          placeholder="请输入通知内容"
+          :rows="12"
+          placeholder="输入通知内容"
           maxlength="2000"
           show-word-limit
         />
@@ -50,10 +62,17 @@
     </el-form>
 
     <template #footer>
-      <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" @click="handleSubmit" :loading="submitting">
-        发布
-      </el-button>
+      <div class="dialog-footer">
+        <el-button size="large" @click="visible = false">取消</el-button>
+        <el-button 
+          type="primary" 
+          size="large"
+          @click="handleSubmit" 
+          :loading="submitting"
+        >
+          {{ submitting ? '发布中...' : '发布' }}
+        </el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
@@ -150,7 +169,7 @@ const handleSubmit = async () => {
       resetForm()
     } catch (error) {
       console.error('发布通知失败:', error)
-      ElMessage.error('发布通知失败: ' + (error.message || '未知错误'))
+      ElMessage.error('发布通知失败')
     } finally {
       submitting.value = false
     }
@@ -176,9 +195,31 @@ const resetForm = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 :deep(.el-textarea__inner) {
-  font-family: inherit;
+  font-family: var(--font-system);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+:deep(.el-input__inner),
+:deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+}
+
+:deep(.el-input__count) {
+  color: var(--text-tertiary);
+  font-size: 12px;
 }
 </style>
-

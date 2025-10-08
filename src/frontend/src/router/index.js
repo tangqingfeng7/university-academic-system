@@ -207,7 +207,7 @@ const router = createRouter({
         {
           path: 'notifications',
           name: 'StudentNotifications',
-          component: () => import('@/views/common/NotificationList.vue'),
+          component: () => import('@/views/student/NotificationList.vue'),
           meta: { title: '通知公告' }
         },
         {

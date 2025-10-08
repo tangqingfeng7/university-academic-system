@@ -1,0 +1,862 @@
+// ===================================
+// Element Plus 组件样式全局覆盖 - Apple Store 风格
+// 极简、优雅、克制
+// ===================================
+
+// ===================================
+// 表格组件 - Apple 风格
+// ===================================
+
+.el-table {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+  box-shadow: none !important;
+  border: 1px solid var(--border-light) !important;
+
+  // 表头样式
+  .el-table__header-wrapper {
+    .el-table__header {
+      th {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 1px solid var(--border-light) !important;
+        padding: 16px 12px !important;
+        letter-spacing: -0.01em;
+      }
+    }
+  }
+
+  // 表体样式
+  .el-table__body-wrapper {
+    .el-table__body {
+      tr {
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background: var(--bg-secondary) !important;
+
+          td {
+            background: transparent !important;
+          }
+        }
+
+        td {
+          border-bottom: 1px solid var(--border-light) !important;
+          padding: 16px 12px !important;
+          font-size: 14px;
+          color: var(--text-primary);
+        }
+      }
+    }
+  }
+
+  // 空状态
+  .el-table__empty-block {
+    padding: 60px 0;
+  }
+}
+
+// 条纹表格
+.el-table--striped {
+  .el-table__body {
+    tr.el-table__row--striped {
+      td {
+        background: var(--bg-secondary) !important;
+      }
+
+      &:hover {
+        td {
+          background: var(--bg-tertiary) !important;
+        }
+      }
+    }
+  }
+}
+
+// ===================================
+// 卡片组件 - Apple 风格
+// ===================================
+
+.el-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: all var(--transition-base) !important;
+  overflow: hidden;
+  background: var(--bg-primary);
+
+  &:hover {
+    box-shadow: var(--shadow-hover) !important;
+  }
+
+  .el-card__header {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+
+  .el-card__body {
+    padding: 24px;
+  }
+
+  &.is-always-shadow,
+  &.is-hover-shadow {
+    box-shadow: var(--shadow-card) !important;
+
+    &:hover {
+      box-shadow: var(--shadow-hover) !important;
+    }
+  }
+}
+
+// ===================================
+// 按钮组件 - Apple 风格
+// ===================================
+
+.el-button {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500;
+  padding: 10px 20px;
+  transition: all var(--transition-base) !important;
+  letter-spacing: -0.01em;
+  font-size: 15px;
+
+  // 主要按钮
+  &.el-button--primary {
+    background: var(--primary-color) !important;
+    border: none !important;
+    color: white;
+
+    &:hover {
+      background: var(--primary-dark) !important;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &.is-plain {
+      background: rgba(0, 122, 255, 0.1) !important;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color) !important;
+
+      &:hover {
+        background: rgba(0, 122, 255, 0.15) !important;
+      }
+    }
+  }
+
+  // 成功按钮
+  &.el-button--success {
+    background: var(--success-color) !important;
+    border: none !important;
+    color: white;
+
+    &:hover {
+      background: #28a745 !important;
+    }
+
+    &.is-plain {
+      background: rgba(52, 199, 89, 0.1) !important;
+      color: var(--success-color);
+      border: 1px solid var(--success-color) !important;
+
+      &:hover {
+        background: rgba(52, 199, 89, 0.15) !important;
+      }
+    }
+  }
+
+  // 警告按钮
+  &.el-button--warning {
+    background: var(--warning-color) !important;
+    border: none !important;
+    color: white;
+
+    &:hover {
+      background: #e68900 !important;
+    }
+
+    &.is-plain {
+      background: rgba(255, 149, 0, 0.1) !important;
+      color: var(--warning-color);
+      border: 1px solid var(--warning-color) !important;
+
+      &:hover {
+        background: rgba(255, 149, 0, 0.15) !important;
+      }
+    }
+  }
+
+  // 危险按钮
+  &.el-button--danger {
+    background: var(--error-color) !important;
+    border: none !important;
+    color: white;
+
+    &:hover {
+      background: #e60023 !important;
+    }
+
+    &.is-plain {
+      background: rgba(255, 59, 48, 0.1) !important;
+      color: var(--error-color);
+      border: 1px solid var(--error-color) !important;
+
+      &:hover {
+        background: rgba(255, 59, 48, 0.15) !important;
+      }
+    }
+  }
+
+  // 信息按钮
+  &.el-button--info {
+    background: var(--text-secondary) !important;
+    border: none !important;
+    color: white;
+
+    &:hover {
+      background: var(--text-primary) !important;
+    }
+
+    &.is-plain {
+      background: var(--bg-tertiary) !important;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color) !important;
+
+      &:hover {
+        background: var(--bg-tertiary) !important;
+        border-color: var(--border-dark) !important;
+      }
+    }
+  }
+
+  // 默认按钮
+  &.el-button--default {
+    background: var(--bg-tertiary) !important;
+    border: 1px solid var(--border-light) !important;
+    color: var(--text-primary);
+
+    &:hover {
+      background: var(--bg-tertiary) !important;
+      border-color: var(--border-color) !important;
+    }
+  }
+
+  // 文字按钮
+  &.is-link {
+    color: var(--text-link);
+    font-weight: 500;
+
+    &:hover {
+      color: var(--primary-dark);
+    }
+  }
+
+  // 圆形按钮
+  &.is-circle {
+    padding: 10px !important;
+  }
+}
+
+// ===================================
+// 输入框组件 - Apple 风格
+// ===================================
+
+.el-input {
+  .el-input__wrapper {
+    border-radius: var(--radius-md) !important;
+    box-shadow: none !important;
+    transition: all var(--transition-base) !important;
+    border: 1px solid var(--border-light) !important;
+    padding: 4px 12px;
+    background: var(--bg-primary);
+
+    &:hover {
+      border-color: var(--border-color) !important;
+    }
+
+    &.is-focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+    }
+
+    .el-input__inner {
+      color: var(--text-primary);
+      font-size: 15px;
+      letter-spacing: -0.01em;
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+
+  &.is-disabled {
+    .el-input__wrapper {
+      background: var(--bg-tertiary) !important;
+    }
+  }
+}
+
+// ===================================
+// 文本域组件
+// ===================================
+
+.el-textarea {
+  .el-textarea__inner {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-light) !important;
+    box-shadow: none !important;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all var(--transition-base);
+
+    &:hover {
+      border-color: var(--border-color);
+    }
+
+    &:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+    }
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+  }
+}
+
+// ===================================
+// 选择器组件 - Apple 风格
+// ===================================
+
+.el-select {
+  .el-select__wrapper {
+    border-radius: var(--radius-md) !important;
+    box-shadow: none !important;
+    transition: all var(--transition-base) !important;
+    border: 1px solid var(--border-light) !important;
+    background: var(--bg-primary);
+
+    &:hover {
+      border-color: var(--border-color) !important;
+    }
+
+    &.is-focused {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+    }
+  }
+}
+
+// 下拉选项
+.el-select-dropdown {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-xl) !important;
+  border: 1px solid var(--border-light) !important;
+  padding: 8px !important;
+  margin-top: 4px !important;
+
+  .el-select-dropdown__item {
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    margin-bottom: 2px;
+    transition: all var(--transition-fast);
+    font-size: 15px;
+    color: var(--text-primary);
+
+    &:hover {
+      background: var(--bg-secondary);
+    }
+
+    &.is-selected {
+      background: rgba(0, 122, 255, 0.1);
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ===================================
+// 对话框组件 - Apple 风格
+// ===================================
+
+.el-dialog {
+  border-radius: var(--radius-2xl) !important;
+  box-shadow: var(--shadow-2xl) !important;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+
+  .el-dialog__header {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding: 24px 24px 20px;
+    margin: 0;
+
+    .el-dialog__title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .el-dialog__headerbtn {
+      top: 24px;
+      right: 24px;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background: var(--bg-tertiary);
+
+        .el-dialog__close {
+          color: var(--text-primary);
+        }
+      }
+
+      .el-dialog__close {
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  .el-dialog__body {
+    padding: 24px;
+  }
+
+  .el-dialog__footer {
+    border-top: 1px solid var(--border-light);
+    padding: 20px 24px;
+    background: var(--bg-primary);
+  }
+}
+
+// ===================================
+// 抽屉组件
+// ===================================
+
+.el-drawer {
+  box-shadow: var(--shadow-2xl) !important;
+
+  .el-drawer__header {
+    border-bottom: 1px solid var(--border-light);
+    padding: 24px;
+    margin-bottom: 0;
+
+    .el-drawer__title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+  }
+
+  .el-drawer__body {
+    padding: 24px;
+  }
+}
+
+// ===================================
+// 标签组件 - Apple 风格
+// ===================================
+
+.el-tag {
+  border-radius: var(--radius-full) !important;
+  padding: 4px 12px;
+  font-weight: 500;
+  border-width: 1px;
+  transition: all var(--transition-fast);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+
+  // 深色效果
+  &.el-tag--dark {
+    &.el-tag--primary {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    &.el-tag--success {
+      background: var(--success-color);
+      border-color: var(--success-color);
+      color: white;
+    }
+
+    &.el-tag--warning {
+      background: var(--warning-color);
+      border-color: var(--warning-color);
+      color: white;
+    }
+
+    &.el-tag--danger {
+      background: var(--error-color);
+      border-color: var(--error-color);
+      color: white;
+    }
+  }
+
+  // 浅色效果
+  &.el-tag--light,
+  &.el-tag--plain {
+    &.el-tag--primary {
+      background: rgba(0, 122, 255, 0.1);
+      border-color: transparent;
+      color: var(--primary-color);
+    }
+
+    &.el-tag--success {
+      background: rgba(52, 199, 89, 0.1);
+      border-color: transparent;
+      color: var(--success-color);
+    }
+
+    &.el-tag--warning {
+      background: rgba(255, 149, 0, 0.1);
+      border-color: transparent;
+      color: var(--warning-color);
+    }
+
+    &.el-tag--danger {
+      background: rgba(255, 59, 48, 0.1);
+      border-color: transparent;
+      color: var(--error-color);
+    }
+
+    &.el-tag--info {
+      background: var(--bg-tertiary);
+      border-color: transparent;
+      color: var(--text-secondary);
+    }
+  }
+}
+
+// ===================================
+// 徽章组件
+// ===================================
+
+.el-badge {
+  .el-badge__content {
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    box-shadow: none;
+    font-size: 12px;
+  }
+}
+
+// ===================================
+// 分页组件 - Apple 风格
+// ===================================
+
+.el-pagination {
+  .el-pager {
+    li {
+      border-radius: var(--radius-md);
+      margin: 0 4px;
+      min-width: 36px;
+      height: 36px;
+      line-height: 36px;
+      transition: all var(--transition-fast);
+      font-weight: 500;
+      background: transparent;
+      color: var(--text-primary);
+
+      &:hover {
+        background: var(--bg-tertiary);
+      }
+
+      &.is-active {
+        background: var(--primary-color);
+        color: white;
+
+        &:hover {
+          background: var(--primary-dark);
+        }
+      }
+    }
+  }
+
+  .btn-prev,
+  .btn-next {
+    border-radius: var(--radius-md);
+    margin: 0 4px;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    transition: all var(--transition-fast);
+    background: transparent;
+
+    &:hover {
+      background: var(--bg-tertiary);
+    }
+
+    &:disabled {
+      background: transparent;
+      color: var(--text-tertiary);
+    }
+  }
+}
+
+// ===================================
+// 消息提示 - Apple 风格
+// ===================================
+
+.el-message {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-xl) !important;
+  padding: 16px 20px;
+  min-width: 360px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-primary);
+
+  .el-message__icon {
+    font-size: 18px;
+  }
+
+  .el-message__content {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  &.el-message--success {
+    .el-message__icon {
+      color: var(--success-color);
+    }
+  }
+
+  &.el-message--warning {
+    .el-message__icon {
+      color: var(--warning-color);
+    }
+  }
+
+  &.el-message--error {
+    .el-message__icon {
+      color: var(--error-color);
+    }
+  }
+
+  &.el-message--info {
+    .el-message__icon {
+      color: var(--info-color);
+    }
+  }
+}
+
+// ===================================
+// 通知提示 - Apple 风格
+// ===================================
+
+.el-notification {
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-2xl) !important;
+  border: 1px solid var(--border-light);
+  padding: 20px;
+  width: 360px;
+  background: var(--bg-primary);
+
+  .el-notification__icon {
+    font-size: 24px;
+  }
+
+  .el-notification__title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .el-notification__content {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  .el-notification__closeBtn {
+    top: 20px;
+    right: 20px;
+    font-size: 16px;
+    transition: all var(--transition-fast);
+    color: var(--text-secondary);
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+}
+
+// ===================================
+// 加载动画 - Apple 风格
+// ===================================
+
+.el-loading-mask {
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+
+  .el-loading-spinner {
+    .circular {
+      animation: loading-rotate 2s linear infinite;
+    }
+
+    .path {
+      stroke: var(--primary-color);
+      stroke-width: 3;
+    }
+
+    .el-loading-text {
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 15px;
+      margin-top: 12px;
+    }
+  }
+}
+
+// ===================================
+// 空状态
+// ===================================
+
+.el-empty {
+  .el-empty__description {
+    color: var(--text-secondary);
+    font-size: 15px;
+  }
+}
+
+// ===================================
+// 进度条
+// ===================================
+
+.el-progress {
+  .el-progress-bar__outer {
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+  }
+
+  .el-progress-bar__inner {
+    background-color: var(--primary-color);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-smooth);
+  }
+
+  .el-progress__text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+}
+
+// ===================================
+// 表单相关
+// ===================================
+
+.el-form {
+  .el-form-item__label {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+
+  .el-form-item__error {
+    color: var(--error-color);
+    font-size: 13px;
+  }
+}
+
+// ===================================
+// 单选框和复选框
+// ===================================
+
+.el-radio,
+.el-checkbox {
+  .el-radio__label,
+  .el-checkbox__label {
+    color: var(--text-primary);
+    font-size: 15px;
+  }
+
+  &.is-checked {
+    .el-radio__inner,
+    .el-checkbox__inner {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .el-radio__label,
+    .el-checkbox__label {
+      color: var(--primary-color);
+    }
+  }
+}
+
+.el-radio-button {
+  .el-radio-button__inner {
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    font-weight: 500;
+  }
+
+  &.is-active {
+    .el-radio-button__inner {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+// ===================================
+// 日期选择器
+// ===================================
+
+.el-date-picker {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+}
+
+.el-picker-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+}
+
+// ===================================
+// 响应式优化
+// ===================================
+
+@media (max-width: 768px) {
+  .el-dialog {
+    width: 90% !important;
+    margin: 5vh auto !important;
+  }
+
+  .el-message,
+  .el-notification {
+    width: 90%;
+    max-width: 360px;
+  }
+
+  .el-table {
+    font-size: 14px;
+
+    .el-table__header-wrapper th,
+    .el-table__body-wrapper td {
+      padding: 12px 8px !important;
+    }
+  }
+}

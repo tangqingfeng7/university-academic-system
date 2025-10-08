@@ -1,51 +1,24 @@
 <template>
-  <div class="notification-management">
+  <div class="notification-page">
     <!-- 页面头部 -->
     <div class="page-header animate-fade-in-down">
       <div class="header-content">
         <h1 class="page-title">通知</h1>
-        <p class="page-subtitle">查看和发布课程通知</p>
+        <p class="page-subtitle">查看系统和课程通知</p>
       </div>
-      <el-button 
-        type="primary" 
-        :icon="Plus" 
-        size="large"
-        @click="publishDialogVisible = true"
-      >
-        发布通知
-      </el-button>
     </div>
 
     <!-- 通知列表 -->
-    <CommonNotificationList ref="notificationListRef" />
-
-    <!-- 发布通知对话框 -->
-    <NotificationForm 
-      v-model="publishDialogVisible" 
-      @success="handlePublishSuccess"
-    />
+    <CommonNotificationList />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import CommonNotificationList from '@/views/common/NotificationList.vue'
-import NotificationForm from '@/components/NotificationForm.vue'
-
-const publishDialogVisible = ref(false)
-const notificationListRef = ref(null)
-
-// 发布成功后刷新列表
-const handlePublishSuccess = () => {
-  if (notificationListRef.value && notificationListRef.value.fetchNotifications) {
-    notificationListRef.value.fetchNotifications()
-  }
-}
 </script>
 
 <style scoped lang="scss">
-.notification-management {
+.notification-page {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-3xl) var(--spacing-xl);
@@ -81,3 +54,4 @@ const handlePublishSuccess = () => {
   }
 }
 </style>
+

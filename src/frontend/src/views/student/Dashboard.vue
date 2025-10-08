@@ -1,168 +1,158 @@
 <template>
   <div class="student-dashboard">
-    <!-- 欢迎信息 -->
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :span="24">
-        <el-card class="welcome-card">
-          <div class="welcome-content">
-            <div class="welcome-text">
-              <h2>{{ stats.greeting }}，{{ stats.studentName }}！</h2>
-              <p class="date">{{ formatDate(stats.currentDate) }}</p>
-              <p class="info">
-                学号：{{ stats.studentNo }} | 专业：{{ stats.major }} | 班级：{{ stats.className }} | 入学年份：{{ stats.enrollmentYear }}
-              </p>
-            </div>
-            <div class="welcome-icon">
-              <el-icon :size="80" color="#409eff"><UserFilled /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <!-- 欢迎区域 -->
+    <div class="welcome-section animate-fade-in-down">
+      <div class="welcome-content">
+        <h1 class="welcome-title">{{ stats.greeting }}，{{ stats.studentName }}</h1>
+        <p class="welcome-date">{{ formatDate(stats.currentDate) }}</p>
+        <div class="user-meta">
+          <span class="meta-item">{{ stats.studentNo }}</span>
+          <span class="meta-divider">·</span>
+          <span class="meta-item">{{ stats.major }}</span>
+          <span class="meta-divider">·</span>
+          <span class="meta-item">{{ stats.className }}</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- 统计卡片 -->
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="stat-card stat-primary" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <el-icon :size="40"><Reading /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.currentCourses }}</div>
-              <div class="stat-label">本学期课程</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="stat-card stat-success" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <el-icon :size="40"><Medal /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.gpa.toFixed(2) }}</div>
-              <div class="stat-label">平均绩点</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="stat-card stat-warning" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <el-icon :size="40"><TrophyBase /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.totalCredits.toFixed(1) }}</div>
-              <div class="stat-label">已获学分</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :md="6">
-        <el-card class="stat-card stat-info" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <el-icon :size="40"><Calendar /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.activeSemester?.name || '-' }}</div>
-              <div class="stat-label">当前学期</div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <!-- 统计卡片网格 -->
+    <div class="stats-grid animate-fade-in-up" style="animation-delay: 0.1s;" v-loading="loading">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <el-icon :size="24"><Reading /></el-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.currentCourses }}</div>
+          <div class="stat-label">本学期课程</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-success">
+          <el-icon :size="24"><Medal /></el-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.gpa.toFixed(2) }}</div>
+          <div class="stat-label">平均绩点</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-warning">
+          <el-icon :size="24"><TrophyBase /></el-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalCredits.toFixed(1) }}</div>
+          <div class="stat-label">已获学分</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-primary">
+          <el-icon :size="24"><Document /></el-icon>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.completedCourses }}</div>
+          <div class="stat-label">已完成课程</div>
+        </div>
+      </div>
+    </div>
 
     <!-- 学业进展 -->
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :span="24">
-        <el-card class="progress-card">
-          <template #header>
-            <div class="card-header">
-              <span class="card-title">
-                <el-icon><TrendCharts /></el-icon>
-                学业进展
-              </span>
-            </div>
-          </template>
-          <div class="progress-content">
-            <div class="progress-item">
-              <div class="progress-label">
-                <span>已完成课程</span>
-                <span class="progress-value">{{ stats.completedCourses }} 门</span>
-              </div>
-              <el-progress 
-                :percentage="Math.min(100, (stats.completedCourses / 40) * 100)" 
-                :stroke-width="20"
-                :color="progressColors"
-              />
-            </div>
-            <div class="progress-item">
-              <div class="progress-label">
-                <span>已获学分</span>
-                <span class="progress-value">{{ stats.totalCredits.toFixed(1) }} / 150</span>
-              </div>
-              <el-progress 
-                :percentage="Math.min(100, (stats.totalCredits / 150) * 100)" 
-                :stroke-width="20"
-                :color="progressColors"
-              />
-            </div>
+    <div class="progress-section animate-fade-in-up" style="animation-delay: 0.2s;">
+      <h2 class="section-title">学业进展</h2>
+      <div class="progress-cards">
+        <div class="progress-card">
+          <div class="progress-header">
+            <span class="progress-label">课程完成度</span>
+            <span class="progress-value">{{ stats.completedCourses }} / 40 门</span>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+          <div class="progress-bar">
+            <div 
+              class="progress-fill"
+              :style="{ width: Math.min(100, (stats.completedCourses / 40) * 100) + '%' }"
+            ></div>
+          </div>
+          <div class="progress-percentage">
+            {{ Math.min(100, Math.round((stats.completedCourses / 40) * 100)) }}%
+          </div>
+        </div>
+
+        <div class="progress-card">
+          <div class="progress-header">
+            <span class="progress-label">学分获取</span>
+            <span class="progress-value">{{ stats.totalCredits.toFixed(1) }} / 150</span>
+          </div>
+          <div class="progress-bar">
+            <div 
+              class="progress-fill"
+              :style="{ width: Math.min(100, (stats.totalCredits / 150) * 100) + '%' }"
+            ></div>
+          </div>
+          <div class="progress-percentage">
+            {{ Math.min(100, Math.round((stats.totalCredits / 150) * 100)) }}%
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 快捷操作 -->
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-card class="quick-actions-card">
-          <template #header>
-            <div class="card-header">
-              <span class="card-title">
-                <el-icon><Grid /></el-icon>
-                快捷操作
-              </span>
-            </div>
-          </template>
-          <div class="quick-actions">
-            <div class="action-item">
-              <el-button
-                type="primary"
-                :icon="Reading"
-                @click="goTo('/student/course-selection')"
-                class="action-btn"
-              >
-                选课中心
-              </el-button>
-            </div>
-            <div class="action-item">
-              <el-button
-                type="success"
-                :icon="Document"
-                @click="goTo('/student/grades')"
-                class="action-btn"
-              >
-                成绩查询
-              </el-button>
-            </div>
-            <div class="action-item">
-              <el-button
-                type="warning"
-                :icon="Calendar"
-                @click="goTo('/student/schedule')"
-                class="action-btn"
-              >
-                我的课表
-              </el-button>
-            </div>
+    <div class="quick-actions-section animate-fade-in-up" style="animation-delay: 0.3s;">
+      <h2 class="section-title">快捷操作</h2>
+      <div class="action-grid">
+        <div class="action-card" @click="goTo('/student/course-selection')">
+          <div class="action-icon">
+            <el-icon :size="28"><Reading /></el-icon>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+          <div class="action-content">
+            <div class="action-title">选课中心</div>
+            <div class="action-desc">查看和选择课程</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div class="action-card" @click="goTo('/student/grades')">
+          <div class="action-icon">
+            <el-icon :size="28"><Document /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">成绩查询</div>
+            <div class="action-desc">查看课程成绩</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div class="action-card" @click="goTo('/student/schedule')">
+          <div class="action-icon">
+            <el-icon :size="28"><Calendar /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">我的课表</div>
+            <div class="action-desc">查看课程安排</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div class="action-card" @click="goTo('/student/transcript')">
+          <div class="action-icon">
+            <el-icon :size="28"><Tickets /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">成绩单</div>
+            <div class="action-desc">查看完整成绩单</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -171,8 +161,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { 
-  UserFilled, Reading, Medal, TrophyBase, Calendar, 
-  Grid, TrendCharts, Document
+  Reading, Medal, TrophyBase, Document, Calendar, 
+  ArrowRight, Tickets
 } from '@element-plus/icons-vue'
 import { getStudentDashboardStatistics } from '@/api/studentDashboard'
 
@@ -195,20 +185,11 @@ const stats = ref({
 
 const loading = ref(false)
 
-const progressColors = [
-  { color: '#f56c6c', percentage: 20 },
-  { color: '#e6a23c', percentage: 40 },
-  { color: '#5cb87a', percentage: 60 },
-  { color: '#1989fa', percentage: 80 },
-  { color: '#6f7ad3', percentage: 100 },
-]
-
 // 获取统计数据
 const fetchStatistics = async () => {
   try {
     loading.value = true
     const res = await getStudentDashboardStatistics()
-    // 从响应中提取data字段
     stats.value = { ...stats.value, ...res.data }
   } catch (error) {
     console.error('获取统计数据失败:', error)
@@ -242,246 +223,268 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .student-dashboard {
-  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-xl);
 
-  .welcome-card {
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+  // ===================================
+  // 欢迎区域
+  // ===================================
 
-    :deep(.el-card__body) {
-      padding: 30px;
+  .welcome-section {
+    margin-bottom: var(--spacing-3xl);
+  }
+
+  .welcome-title {
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 12px;
+    letter-spacing: -0.03em;
+  }
+
+  .welcome-date {
+    font-size: 17px;
+    color: var(--text-secondary);
+    margin: 0 0 12px;
+  }
+
+  .user-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: var(--text-secondary);
+  }
+
+  .meta-divider {
+    color: var(--text-tertiary);
+  }
+
+  // ===================================
+  // 统计卡片
+  // ===================================
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: var(--spacing-3xl);
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
     }
 
-    .welcome-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .welcome-text {
-        flex: 1;
-
-        h2 {
-          margin: 0 0 10px 0;
-          font-size: 28px;
-          font-weight: 600;
-        }
-
-        .date {
-          margin: 0 0 10px 0;
-          font-size: 14px;
-          opacity: 0.9;
-        }
-
-        .info {
-          margin: 0;
-          font-size: 14px;
-          opacity: 0.85;
-        }
-      }
-
-      .welcome-icon {
-        opacity: 0.3;
-      }
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
     }
   }
 
   .stat-card {
-    border-radius: 12px;
-    border: none;
-    margin-bottom: 20px;
-    transition: all 0.3s;
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all var(--transition-base);
 
     &:hover {
-      transform: translateY(-5px);
+      box-shadow: var(--shadow-sm);
     }
+  }
 
-    :deep(.el-card__body) {
-      padding: 20px;
-    }
-
-    .stat-content {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-
-      .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-      }
-
-      .stat-info {
-        flex: 1;
-
-        .stat-value {
-          font-size: 28px;
-          font-weight: bold;
-          margin-bottom: 5px;
-          line-height: 1;
-        }
-
-        .stat-label {
-          font-size: 14px;
-          color: #909399;
-        }
-      }
-    }
-
-    &.stat-primary {
-      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-
-      .stat-icon {
-        background: rgba(25, 118, 210, 0.1);
-        color: #1976d2;
-      }
-
-      .stat-value {
-        color: #1976d2;
-      }
-    }
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
 
     &.stat-success {
-      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-
-      .stat-icon {
-        background: rgba(56, 142, 60, 0.1);
-        color: #388e3c;
-      }
-
-      .stat-value {
-        color: #388e3c;
-      }
+      background: rgba(52, 199, 89, 0.1);
+      color: var(--success-color);
     }
 
     &.stat-warning {
-      background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-
-      .stat-icon {
-        background: rgba(245, 124, 0, 0.1);
-        color: #f57c00;
-      }
-
-      .stat-value {
-        color: #f57c00;
-      }
+      background: rgba(255, 149, 0, 0.1);
+      color: var(--warning-color);
     }
 
-    &.stat-info {
-      background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+    &.stat-primary {
+      background: rgba(0, 122, 255, 0.1);
+      color: var(--primary-color);
+    }
+  }
 
-      .stat-icon {
-        background: rgba(0, 121, 107, 0.1);
-        color: #00796b;
-      }
+  .stat-content {
+    flex: 1;
+  }
 
-      .stat-value {
-        color: #00796b;
-        font-size: 16px;
-      }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  // ===================================
+  // 学业进展
+  // ===================================
+
+  .progress-section {
+    margin-bottom: var(--spacing-3xl);
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-lg);
+    letter-spacing: -0.02em;
+  }
+
+  .progress-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
     }
   }
 
   .progress-card {
-    border-radius: 12px;
-    border: none;
-
-    .card-header {
-      .card-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 16px;
-        font-weight: 600;
-      }
-    }
-
-    .progress-content {
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-
-      .progress-item {
-        .progress-label {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
-          font-size: 15px;
-          font-weight: 500;
-
-          .progress-value {
-            color: #409eff;
-          }
-        }
-      }
-    }
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    border: 1px solid var(--border-light);
   }
 
-  .quick-actions-card {
-    border-radius: 12px;
-    border: none;
-
-    .card-header {
-      .card-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 16px;
-        font-weight: 600;
-      }
-    }
-
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-
-      .action-item {
-        display: flex;
-
-        .action-btn {
-          width: 100%;
-          height: 52px;
-          font-size: 15px;
-          font-weight: 500;
-          border-radius: 8px;
-        }
-      }
-    }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
   }
-}
 
-@media (max-width: 768px) {
-  .student-dashboard {
-    padding: 10px;
+  .progress-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
 
-    .welcome-card {
-      :deep(.el-card__body) {
-        padding: 20px;
-      }
+  .progress-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
 
-      .welcome-content {
-        flex-direction: column;
-        text-align: center;
+  .progress-bar {
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
 
-        .welcome-text h2 {
-          font-size: 22px;
-        }
+  .progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-smooth);
+  }
 
-        .welcome-icon {
-          margin-top: 15px;
-        }
-      }
-    }
+  .progress-percentage {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    text-align: right;
+  }
 
-    .quick-actions-card .quick-actions {
+  // ===================================
+  // 快捷操作
+  // ===================================
+
+  .quick-actions-section {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+
+    @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
+  }
+
+  .action-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+
+    &:hover {
+      box-shadow: var(--shadow-card);
+      border-color: var(--border-color);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .action-content {
+    flex: 1;
+  }
+
+  .action-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .action-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .action-arrow {
+    color: var(--text-tertiary);
+    font-size: 20px;
+    flex-shrink: 0;
   }
 }
 </style>

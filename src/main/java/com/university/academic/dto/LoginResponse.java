@@ -53,6 +53,11 @@ public class LoginResponse {
     private String role;
 
     /**
+     * 真实姓名
+     */
+    private String name;
+
+    /**
      * 是否首次登录
      */
     private Boolean firstLogin;
