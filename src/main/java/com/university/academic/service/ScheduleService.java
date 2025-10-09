@@ -105,13 +105,15 @@ public class ScheduleService {
 
         // 查询教师的授课计划
         List<CourseOffering> offerings = offeringRepository
-                .findByTeacherIdAndSemesterId(teacherId, semesterId).stream()
+                .findByTeacherIdAndSemesterId(teacherId, semesterId);
+        
+        List<CourseOffering> publishedOfferings = offerings.stream()
                 .filter(o -> o.getStatus() == CourseOffering.OfferingStatus.PUBLISHED)
                 .collect(Collectors.toList());
 
         // 构建课表
         List<ScheduleItemDTO> items = new ArrayList<>();
-        for (CourseOffering offering : offerings) {
+        for (CourseOffering offering : publishedOfferings) {
             // 获取选课学生数
             int studentCount = offering.getEnrolled();
             
@@ -120,9 +122,10 @@ public class ScheduleService {
                     false,  // 教师视角
                     studentCount
             );
+            
             items.addAll(courseItems);
         }
-
+        
         return buildScheduleDTO(semester.getAcademicYear() + " " + 
                 (semester.getSemesterType() == 1 ? "春季学期" : "秋季学期"),
                 semesterId, items);
@@ -164,6 +167,9 @@ public class ScheduleService {
 
         try {
             // 解析JSON格式的时间安排
+            log.debug("解析课程时间安排: offeringId={}, schedule={}", 
+                    offering.getId(), offering.getSchedule());
+            
             List<Map<String, Object>> scheduleList = objectMapper.readValue(
                     offering.getSchedule(), new TypeReference<List<Map<String, Object>>>() {});
 
@@ -173,6 +179,11 @@ public class ScheduleService {
                         .courseNo(offering.getCourse().getCourseNo())
                         .courseName(offering.getCourse().getName())
                         .offeringId(offering.getId())
+                        .credits(offering.getCourse().getCredits())
+                        .hours(offering.getCourse().getHours())
+                        .courseType(offering.getCourse().getType().name())
+                        .capacity(offering.getCapacity())
+                        .description(offering.getCourse().getDescription())
                         .build();
 
                 // 设置视角相关的信息

@@ -93,6 +93,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         
                         // 其他所有API请求都需要认证
+                        // 具体角色权限通过Controller的@PreAuthorize注解控制：
+                        // - /api/admin/exams/** 需要 ADMIN 角色
+                        // - /api/student/exams/** 需要 STUDENT 角色
+                        // - /api/teacher/exams/** 需要 TEACHER 角色
                         .requestMatchers("/api/**").authenticated()
                         
                         // 其他所有请求允许访问

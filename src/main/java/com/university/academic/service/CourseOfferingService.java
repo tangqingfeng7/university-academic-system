@@ -176,7 +176,8 @@ public class CourseOfferingService {
         // 更新容量（不能小于已选人数）
         if (offering.getCapacity() != null) {
             if (offering.getCapacity() < existingOffering.getEnrolled()) {
-                throw new BusinessException(ErrorCode.OFFERING_CAPACITY_ERROR);
+                throw new BusinessException(ErrorCode.OFFERING_CAPACITY_ERROR, 
+                    String.format("容量不能小于已选人数（当前已选：%d人）", existingOffering.getEnrolled()));
             }
             existingOffering.setCapacity(offering.getCapacity());
         }

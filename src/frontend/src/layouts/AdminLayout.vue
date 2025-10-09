@@ -47,6 +47,11 @@
               <template #title>开课计划</template>
             </el-menu-item>
 
+            <el-menu-item index="/admin/exams">
+              <el-icon><Memo /></el-icon>
+              <template #title>考试管理</template>
+            </el-menu-item>
+
             <el-menu-item index="/admin/semesters">
               <el-icon><Clock /></el-icon>
               <template #title>学期管理</template>
@@ -85,6 +90,11 @@
             <el-menu-item index="/admin/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假审批</template>
+            </el-menu-item>
+
+            <el-menu-item index="/admin/course-change-approval">
+              <el-icon><DocumentChecked /></el-icon>
+              <template #title>调课审批</template>
             </el-menu-item>
           </el-menu>
         </el-scrollbar>
@@ -211,9 +221,9 @@ import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  Platform, TrendCharts, UserFilled, User, Reading, Calendar, Clock, 
+  Platform, TrendCharts, UserFilled, User, Reading, Calendar, Memo, Clock, 
   OfficeBuilding, School, Setting, Document, DataAnalysis, Bell,
-  Expand, Fold, Lock, SwitchButton
+  Expand, Fold, Lock, SwitchButton, DocumentChecked
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

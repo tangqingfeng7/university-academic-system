@@ -28,6 +28,7 @@
           v-model="formData[item.prop]"
           :placeholder="item.placeholder || `请选择${item.label}`"
           :clearable="item.clearable !== false"
+          @change="handleSearch"
           v-bind="item.attrs"
         >
           <el-option

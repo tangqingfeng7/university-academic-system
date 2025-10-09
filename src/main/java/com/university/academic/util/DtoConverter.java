@@ -1,27 +1,7 @@
 package com.university.academic.util;
 
-import com.university.academic.dto.CourseDTO;
-import com.university.academic.dto.CourseOfferingDTO;
-import com.university.academic.dto.CourseSelectionDTO;
-import com.university.academic.dto.DepartmentDTO;
-import com.university.academic.dto.GradeDTO;
-import com.university.academic.dto.MajorDTO;
-import com.university.academic.dto.NotificationDTO;
-import com.university.academic.dto.SemesterDTO;
-import com.university.academic.dto.StudentDTO;
-import com.university.academic.dto.TeacherDTO;
-import com.university.academic.dto.UserDTO;
-import com.university.academic.entity.Course;
-import com.university.academic.entity.CourseOffering;
-import com.university.academic.entity.CourseSelection;
-import com.university.academic.entity.Department;
-import com.university.academic.entity.Grade;
-import com.university.academic.entity.Major;
-import com.university.academic.entity.Notification;
-import com.university.academic.entity.Semester;
-import com.university.academic.entity.Student;
-import com.university.academic.entity.Teacher;
-import com.university.academic.entity.User;
+import com.university.academic.dto.*;
+import com.university.academic.entity.*;
 import org.springframework.stereotype.Component;
 
 /**
@@ -395,6 +375,236 @@ public class DtoConverter {
                 .publishTime(notification.getPublishTime())
                 .active(notification.getActive())
                 .createdAt(notification.getCreatedAt())
+                .build();
+    }
+
+    // ==================== 考试模块转换方法 ====================
+
+    /**
+     * 将Exam实体转换为ExamDTO
+     *
+     * @param exam Exam实体
+     * @return ExamDTO
+     */
+    public ExamDTO toExamDTO(Exam exam) {
+        if (exam == null) {
+            return null;
+        }
+
+        CourseOffering offering = exam.getCourseOffering();
+        Course course = offering != null ? offering.getCourse() : null;
+        Teacher teacher = offering != null ? offering.getTeacher() : null;
+        Semester semester = offering != null ? offering.getSemester() : null;
+
+        return ExamDTO.builder()
+                .id(exam.getId())
+                .name(exam.getName())
+                .type(exam.getType() != null ? exam.getType().name() : null)
+                .typeDescription(exam.getType() != null ? exam.getType().getDescription() : null)
+                .courseOfferingId(offering != null ? offering.getId() : null)
+                .semesterId(semester != null ? semester.getId() : null)
+                .semesterName(semester != null ? semester.getSemesterName() : null)
+                .courseId(course != null ? course.getId() : null)
+                .courseNo(course != null ? course.getCourseNo() : null)
+                .courseName(course != null ? course.getName() : null)
+                .teacherId(teacher != null ? teacher.getId() : null)
+                .teacherNo(teacher != null ? teacher.getTeacherNo() : null)
+                .teacherName(teacher != null ? teacher.getName() : null)
+                .examTime(exam.getExamTime())
+                .duration(exam.getDuration())
+                .totalScore(exam.getTotalScore())
+                .status(exam.getStatus() != null ? exam.getStatus().name() : null)
+                .statusDescription(exam.getStatus() != null ? exam.getStatus().getDescription() : null)
+                .description(exam.getDescription())
+                .totalRooms(exam.getTotalRooms())
+                .totalStudents(exam.getTotalStudents())
+                .createdAt(exam.getCreatedAt())
+                .updatedAt(exam.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 将ExamRoom实体转换为ExamRoomDTO
+     *
+     * @param examRoom ExamRoom实体
+     * @return ExamRoomDTO
+     */
+    public ExamRoomDTO toExamRoomDTO(ExamRoom examRoom) {
+        if (examRoom == null) {
+            return null;
+        }
+
+        return ExamRoomDTO.builder()
+                .id(examRoom.getId())
+                .examId(examRoom.getExam() != null ? examRoom.getExam().getId() : null)
+                .roomName(examRoom.getRoomName())
+                .location(examRoom.getLocation())
+                .capacity(examRoom.getCapacity())
+                .assignedCount(examRoom.getAssignedCount())
+                .remainingCapacity(examRoom.getRemainingCapacity())
+                .createdAt(examRoom.getCreatedAt())
+                .updatedAt(examRoom.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 将ExamRoomStudent实体转换为ExamRoomStudentDTO
+     *
+     * @param ers ExamRoomStudent实体
+     * @return ExamRoomStudentDTO
+     */
+    public ExamRoomStudentDTO toExamRoomStudentDTO(ExamRoomStudent ers) {
+        if (ers == null) {
+            return null;
+        }
+
+        Student student = ers.getStudent();
+        return ExamRoomStudentDTO.builder()
+                .id(ers.getId())
+                .examRoomId(ers.getExamRoom() != null ? ers.getExamRoom().getId() : null)
+                .studentId(student != null ? student.getId() : null)
+                .studentNo(student != null ? student.getStudentNo() : null)
+                .studentName(student != null ? student.getName() : null)
+                .majorName(student != null && student.getMajor() != null ? 
+                        student.getMajor().getName() : null)
+                .className(student != null ? student.getClassName() : null)
+                .seatNumber(ers.getSeatNumber())
+                .build();
+    }
+
+    /**
+     * 将ExamInvigilator实体转换为ExamInvigilatorDTO
+     *
+     * @param invigilator ExamInvigilator实体
+     * @return ExamInvigilatorDTO
+     */
+    public ExamInvigilatorDTO toExamInvigilatorDTO(ExamInvigilator invigilator) {
+        if (invigilator == null) {
+            return null;
+        }
+
+        Teacher teacher = invigilator.getTeacher();
+        return ExamInvigilatorDTO.builder()
+                .id(invigilator.getId())
+                .examRoomId(invigilator.getExamRoom() != null ? 
+                        invigilator.getExamRoom().getId() : null)
+                .teacherId(teacher != null ? teacher.getId() : null)
+                .teacherNo(teacher != null ? teacher.getTeacherNo() : null)
+                .teacherName(teacher != null ? teacher.getName() : null)
+                .departmentName(teacher != null && teacher.getDepartment() != null ? 
+                        teacher.getDepartment().getName() : null)
+                .type(invigilator.getType() != null ? invigilator.getType().name() : null)
+                .typeDescription(invigilator.getType() != null ? 
+                        invigilator.getType().getDescription() : null)
+                .build();
+    }
+
+    /**
+     * 将ExamRoomStudent实体转换为StudentExamDTO（学生端展示）
+     *
+     * @param ers ExamRoomStudent实体
+     * @return StudentExamDTO
+     */
+    public StudentExamDTO toStudentExamDTO(ExamRoomStudent ers) {
+        if (ers == null) {
+            return null;
+        }
+
+        ExamRoom room = ers.getExamRoom();
+        Exam exam = room != null ? room.getExam() : null;
+        Course course = exam != null && exam.getCourseOffering() != null ? 
+                exam.getCourseOffering().getCourse() : null;
+
+        return StudentExamDTO.builder()
+                .id(exam != null ? exam.getId() : null)
+                .examName(exam != null ? exam.getName() : null)
+                .courseNo(course != null ? course.getCourseNo() : null)
+                .courseName(course != null ? course.getName() : null)
+                .type(exam != null && exam.getType() != null ? exam.getType().name() : null)
+                .typeDescription(exam != null && exam.getType() != null ? 
+                        exam.getType().getDescription() : null)
+                .examTime(exam != null ? exam.getExamTime() : null)
+                .duration(exam != null ? exam.getDuration() : null)
+                .endTime(exam != null ? exam.getExamTime().plusMinutes(exam.getDuration()) : null)
+                .roomName(room != null ? room.getRoomName() : null)
+                .location(room != null ? room.getLocation() : null)
+                .seatNumber(ers.getSeatNumber())
+                .status(exam != null && exam.getStatus() != null ? exam.getStatus().name() : null)
+                .statusDescription(exam != null && exam.getStatus() != null ? 
+                        exam.getStatus().getDescription() : null)
+                .description(exam != null ? exam.getDescription() : null)
+                .build();
+    }
+
+    /**
+     * 将Exam实体转换为TeacherExamDTO（教师端展示）
+     *
+     * @param exam Exam实体
+     * @return TeacherExamDTO
+     */
+    public TeacherExamDTO toTeacherExamDTO(Exam exam) {
+        if (exam == null) {
+            return null;
+        }
+
+        Course course = exam.getCourseOffering() != null ? 
+                exam.getCourseOffering().getCourse() : null;
+
+        return TeacherExamDTO.builder()
+                .id(exam.getId())
+                .examName(exam.getName())
+                .courseNo(course != null ? course.getCourseNo() : null)
+                .courseName(course != null ? course.getName() : null)
+                .type(exam.getType() != null ? exam.getType().name() : null)
+                .typeDescription(exam.getType() != null ? exam.getType().getDescription() : null)
+                .examTime(exam.getExamTime())
+                .duration(exam.getDuration())
+                .status(exam.getStatus() != null ? exam.getStatus().name() : null)
+                .statusDescription(exam.getStatus() != null ? exam.getStatus().getDescription() : null)
+                .totalRooms(exam.getTotalRooms())
+                .totalStudents(exam.getTotalStudents())
+                .description(exam.getDescription())
+                .build();
+    }
+
+    /**
+     * 将ExamInvigilator实体转换为InvigilationDTO（教师端展示）
+     *
+     * @param invigilator ExamInvigilator实体
+     * @return InvigilationDTO
+     */
+    public InvigilationDTO toInvigilationDTO(ExamInvigilator invigilator) {
+        if (invigilator == null) {
+            return null;
+        }
+
+        ExamRoom room = invigilator.getExamRoom();
+        Exam exam = room != null ? room.getExam() : null;
+        Course course = exam != null && exam.getCourseOffering() != null ? 
+                exam.getCourseOffering().getCourse() : null;
+
+        return InvigilationDTO.builder()
+                .id(invigilator.getId())
+                .examId(exam != null ? exam.getId() : null)
+                .examName(exam != null ? exam.getName() : null)
+                .courseNo(course != null ? course.getCourseNo() : null)
+                .courseName(course != null ? course.getName() : null)
+                .examType(exam != null && exam.getType() != null ? exam.getType().name() : null)
+                .examTypeDescription(exam != null && exam.getType() != null ? 
+                        exam.getType().getDescription() : null)
+                .examTime(exam != null ? exam.getExamTime() : null)
+                .duration(exam != null ? exam.getDuration() : null)
+                .examRoomId(room != null ? room.getId() : null)
+                .roomName(room != null ? room.getRoomName() : null)
+                .location(room != null ? room.getLocation() : null)
+                .invigilatorType(invigilator.getType() != null ? invigilator.getType().name() : null)
+                .invigilatorTypeDescription(invigilator.getType() != null ? 
+                        invigilator.getType().getDescription() : null)
+                .examStatus(exam != null && exam.getStatus() != null ? exam.getStatus().name() : null)
+                .statusDescription(exam != null && exam.getStatus() != null ? 
+                        exam.getStatus().getDescription() : null)
+                .studentCount(room != null ? room.getAssignedCount() : null)
+                .roomCapacity(room != null ? room.getCapacity() : null)
                 .build();
     }
 }

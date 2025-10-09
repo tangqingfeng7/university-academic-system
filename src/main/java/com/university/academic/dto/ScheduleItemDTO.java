@@ -73,5 +73,30 @@ public class ScheduleItemDTO {
      * 开课计划ID
      */
     private Long offeringId;
+
+    /**
+     * 学分
+     */
+    private Integer credits;
+
+    /**
+     * 学时
+     */
+    private Integer hours;
+
+    /**
+     * 课程类型
+     */
+    private String courseType;
+
+    /**
+     * 课程容量
+     */
+    private Integer capacity;
+
+    /**
+     * 课程描述
+     */
+    private String description;
 }
 

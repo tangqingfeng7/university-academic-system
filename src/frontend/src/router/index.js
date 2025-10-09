@@ -107,6 +107,36 @@ const router = createRouter({
           meta: { title: '请假审批' }
         },
         {
+          path: 'course-change-approval',
+          name: 'AdminCourseChangeApproval',
+          component: () => import('@/views/admin/CourseChangeApproval.vue'),
+          meta: { title: '调课审批' }
+        },
+        {
+          path: 'exams',
+          name: 'AdminExams',
+          component: () => import('@/views/admin/exam/ExamList.vue'),
+          meta: { title: '考试管理', keepAlive: true }
+        },
+        {
+          path: 'exams/create',
+          name: 'AdminExamCreate',
+          component: () => import('@/views/admin/exam/ExamForm.vue'),
+          meta: { title: '创建考试' }
+        },
+        {
+          path: 'exams/edit/:id',
+          name: 'AdminExamEdit',
+          component: () => import('@/views/admin/exam/ExamForm.vue'),
+          meta: { title: '编辑考试' }
+        },
+        {
+          path: 'exams/detail/:id',
+          name: 'AdminExamDetail',
+          component: () => import('@/views/admin/exam/ExamDetail.vue'),
+          meta: { title: '考试详情' }
+        },
+        {
           path: 'profile',
           name: 'AdminProfile',
           component: () => import('@/views/common/Profile.vue'),
@@ -163,6 +193,30 @@ const router = createRouter({
           name: 'TeacherLeaveRequests',
           component: () => import('@/views/teacher/LeaveRequests.vue'),
           meta: { title: '请假申请' }
+        },
+        {
+          path: 'course-change-requests',
+          name: 'TeacherCourseChangeRequests',
+          component: () => import('@/views/teacher/CourseChangeRequests.vue'),
+          meta: { title: '调课申请' }
+        },
+        {
+          path: 'exams/courses',
+          name: 'TeacherCourseExams',
+          component: () => import('@/views/teacher/exam/CourseExamList.vue'),
+          meta: { title: '课程考试', keepAlive: true }
+        },
+        {
+          path: 'exams/courses/:id',
+          name: 'TeacherCourseExamDetail',
+          component: () => import('@/views/teacher/exam/CourseExamDetail.vue'),
+          meta: { title: '考试详情' }
+        },
+        {
+          path: 'exams/invigilation',
+          name: 'TeacherInvigilation',
+          component: () => import('@/views/teacher/exam/InvigilationList.vue'),
+          meta: { title: '监考任务', keepAlive: true }
         },
         {
           path: 'profile',
@@ -227,6 +281,18 @@ const router = createRouter({
           name: 'StudentLeaveRequests',
           component: () => import('@/views/student/LeaveRequests.vue'),
           meta: { title: '请假申请' }
+        },
+        {
+          path: 'exams',
+          name: 'StudentExams',
+          component: () => import('@/views/student/exam/ExamList.vue'),
+          meta: { title: '考试安排', keepAlive: true }
+        },
+        {
+          path: 'exams/:id',
+          name: 'StudentExamDetail',
+          component: () => import('@/views/student/exam/ExamDetail.vue'),
+          meta: { title: '考试详情' }
         },
         {
           path: 'profile',

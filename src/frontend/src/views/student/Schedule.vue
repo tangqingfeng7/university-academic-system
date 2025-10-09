@@ -55,22 +55,79 @@
                 <div class="period-num">{{ period.label }}</div>
                 <div class="period-time">{{ period.time }}</div>
               </td>
-              <td v-for="day in weekDays" :key="day.value" class="course-cell">
-                <div 
-                  v-if="getCourseByDayAndPeriod(day.value, period.value)" 
-                  class="course-item"
-                  :class="getCourseColor(getCourseByDayAndPeriod(day.value, period.value))">
-                  <div class="course-name">{{ getCourseByDayAndPeriod(day.value, period.value).courseName }}</div>
-                  <div class="course-info">{{ getCourseByDayAndPeriod(day.value, period.value).teacherName }}</div>
-                  <div class="course-info">{{ getCourseByDayAndPeriod(day.value, period.value).location }}</div>
-                  <div class="course-weeks">{{ formatWeeks(getCourseByDayAndPeriod(day.value, period.value).weeks) }}</div>
-                </div>
-              </td>
+              <template v-for="day in weekDays" :key="day.value">
+                <td 
+                  v-if="shouldShowCourse(day.value, period.value).show" 
+                  class="course-cell"
+                  :rowspan="shouldShowCourse(day.value, period.value).rowspan">
+                  <div 
+                    class="course-item"
+                    :class="getCourseColor(shouldShowCourse(day.value, period.value).course)"
+                    @click="showCourseDetail(shouldShowCourse(day.value, period.value).course)">
+                    <div class="course-name">{{ shouldShowCourse(day.value, period.value).course.courseName }}</div>
+                    <div class="course-info">{{ shouldShowCourse(day.value, period.value).course.teacherName }}</div>
+                    <div class="course-info">{{ shouldShowCourse(day.value, period.value).course.location }}</div>
+                    <div class="course-weeks">{{ formatWeeks(shouldShowCourse(day.value, period.value).course.weeks) }}</div>
+                  </div>
+                </td>
+                <td v-else-if="!getCourseByDayAndPeriod(day.value, period.value)" class="course-cell">
+                  <!-- 空单元格 -->
+                </td>
+              </template>
             </tr>
           </tbody>
         </table>
       </div>
     </el-card>
+
+    <!-- 课程详情对话框 -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="课程详细信息"
+      width="600px"
+      :close-on-click-modal="false">
+      <div v-if="selectedCourse" class="course-detail">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="课程名称" :span="2">
+            <span class="detail-value">{{ selectedCourse.courseName }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="课程编号">
+            <span class="detail-value">{{ selectedCourse.courseNo }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="学分">
+            <span class="detail-value">{{ selectedCourse.credits }} 学分</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="学时">
+            <span class="detail-value">{{ selectedCourse.hours }} 学时</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="课程类型">
+            <el-tag :type="getCourseTypeTag(selectedCourse.courseType)">
+              {{ getCourseTypeName(selectedCourse.courseType) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="授课教师" :span="2">
+            <span class="detail-value">{{ selectedCourse.teacherName || '待定' }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="上课时间" :span="2">
+            <span class="detail-value">
+              {{ formatScheduleTime(selectedCourse) }}
+            </span>
+          </el-descriptions-item>
+          <el-descriptions-item label="上课地点" :span="2">
+            <span class="detail-value">{{ selectedCourse.location || '待定' }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="上课周次" :span="2">
+            <span class="detail-value">{{ formatWeeks(selectedCourse.weeks) }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="课程描述" :span="2">
+            <span class="detail-value">{{ selectedCourse.description || '暂无描述' }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -88,6 +145,8 @@ const selectedSemesterId = ref(null)
 const currentWeek = ref(1)
 const scheduleData = ref(null)
 const courseMap = ref(new Map())
+const detailDialogVisible = ref(false)
+const selectedCourse = ref(null)
 
 // 星期定义
 const weekDays = [
@@ -160,10 +219,50 @@ const buildCourseMap = () => {
   scheduleData.value.items.forEach(item => {
     // 检查是否在当前周次
     if (item.weeks && item.weeks.includes(currentWeek.value)) {
-      const key = `${item.day}-${item.period}`
-      courseMap.value.set(key, item)
+      // 解析period范围，例如 "1-2" 或 "7-8" 或 "1"
+      const periodParts = item.period.split('-')
+      const startPeriod = parseInt(periodParts[0])
+      const endPeriod = periodParts.length > 1 ? parseInt(periodParts[1]) : startPeriod
+      
+      // 为每个节次创建映射
+      for (let p = startPeriod; p <= endPeriod; p++) {
+        const key = `${item.day}-${p}`
+        courseMap.value.set(key, item)
+      }
     }
   })
+}
+
+// 检查是否应该显示课程（是该课程的第一个节次）
+const shouldShowCourse = (day, period) => {
+  const key = `${day}-${period}`
+  const course = courseMap.value.get(key)
+  
+  if (!course) return { show: false, course: null, rowspan: 1 }
+  
+  // 检查上一个节次是否是同一课程
+  const prevKey = `${day}-${period - 1}`
+  const prevCourse = courseMap.value.get(prevKey)
+  
+  // 如果上一个节次是同一课程，则不显示（会被合并）
+  if (prevCourse && prevCourse.courseId === course.courseId) {
+    return { show: false, course: course, rowspan: 1 }
+  }
+  
+  // 计算rowspan（连续多少节）
+  let rowspan = 1
+  let nextPeriod = period + 1
+  let nextKey = `${day}-${nextPeriod}`
+  let nextCourse = courseMap.value.get(nextKey)
+  
+  while (nextCourse && nextCourse.courseId === course.courseId) {
+    rowspan++
+    nextPeriod++
+    nextKey = `${day}-${nextPeriod}`
+    nextCourse = courseMap.value.get(nextKey)
+  }
+  
+  return { show: true, course: course, rowspan: rowspan }
 }
 
 // 根据星期和节次获取课程
@@ -214,6 +313,51 @@ const getCourseColor = (course) => {
   }
   
   return courseColorMap.get(key)
+}
+
+// 显示课程详情
+const showCourseDetail = (course) => {
+  selectedCourse.value = course
+  detailDialogVisible.value = true
+}
+
+// 格式化上课时间
+const formatScheduleTime = (course) => {
+  if (!course.day || !course.period) return '待定'
+  
+  const dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const dayName = dayNames[course.day] || '未知'
+  
+  // 解析period，例如 "1-2" 或 "7-8"
+  const periodParts = course.period.split('-')
+  const startPeriod = parseInt(periodParts[0])
+  const endPeriod = periodParts.length > 1 ? parseInt(periodParts[1]) : startPeriod
+  
+  if (startPeriod === endPeriod) {
+    return `${dayName} 第${startPeriod}节`
+  } else {
+    return `${dayName} 第${startPeriod}-${endPeriod}节`
+  }
+}
+
+// 获取课程类型名称
+const getCourseTypeName = (type) => {
+  const typeMap = {
+    'REQUIRED': '必修',
+    'ELECTIVE': '选修',
+    'PUBLIC': '公共'
+  }
+  return typeMap[type] || type
+}
+
+// 获取课程类型标签
+const getCourseTypeTag = (type) => {
+  const tagMap = {
+    'REQUIRED': 'danger',
+    'ELECTIVE': 'success',
+    'PUBLIC': 'info'
+  }
+  return tagMap[type] || 'info'
 }
 
 // 学期切换
@@ -343,6 +487,7 @@ onMounted(() => {
   padding: 4px;
   height: 70px;
   position: relative;
+  vertical-align: middle;
 }
 
 .course-item {
@@ -353,6 +498,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   transition: all 0.3s;
   cursor: pointer;
 }
@@ -369,6 +515,7 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .course-info {
@@ -377,12 +524,14 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .course-weeks {
   font-size: 11px;
   margin-top: 4px;
   opacity: 0.8;
+  text-align: center;
 }
 
 /* 课程颜色方案 */
@@ -445,6 +594,16 @@ onMounted(() => {
   .course-info {
     font-size: 10px;
   }
+}
+
+/* 课程详情对话框 */
+.course-detail {
+  padding: 10px 0;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: #303133;
 }
 </style>
 

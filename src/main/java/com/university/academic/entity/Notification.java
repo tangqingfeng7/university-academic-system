@@ -51,7 +51,8 @@ public class Notification extends BaseEntity {
         SYSTEM("系统通知"),
         COURSE("课程通知"),
         GRADE("成绩通知"),
-        SELECTION("选课通知");
+        SELECTION("选课通知"),
+        EXAM("考试通知");
 
         private final String description;
 

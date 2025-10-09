@@ -47,6 +47,11 @@
               <template #title>成绩单</template>
             </el-menu-item>
 
+            <el-menu-item index="/student/exams">
+              <el-icon><Reading /></el-icon>
+              <template #title>考试安排</template>
+            </el-menu-item>
+
             <el-menu-item index="/student/notifications">
               <el-icon><Bell /></el-icon>
               <template #title>通知公告</template>
@@ -179,7 +184,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  School, TrendCharts, Tickets, Calendar, Document, Notebook, Bell, User,
+  School, TrendCharts, Tickets, Calendar, Document, Notebook, Reading, Bell, User,
   Expand, Fold, Lock, SwitchButton
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'

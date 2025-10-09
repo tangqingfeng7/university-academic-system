@@ -11,7 +11,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -25,7 +24,7 @@ import java.time.LocalDateTime;
  * @author Academic System Team
  */
 @Aspect
-@Component
+//@Component  // 暂时禁用，避免AspectJ编译错误
 @RequiredArgsConstructor
 public class OperationLogAspect {
 

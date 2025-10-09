@@ -118,10 +118,13 @@
       <el-form-item label="容量" prop="capacity">
         <el-input-number
           v-model="formData.capacity"
-          :min="1"
+          :min="currentEnrolled || 1"
           :max="500"
           placeholder="请输入容量"
         />
+        <div v-if="currentEnrolled > 0" style="color: #909399; font-size: 12px; margin-top: 4px;">
+          当前已选：{{ currentEnrolled }}人（容量不能小于已选人数）
+        </div>
       </el-form-item>
     </el-form>
 
@@ -291,6 +294,9 @@ const fetchTeachers = async () => {
   }
 }
 
+// 当前已选人数
+const currentEnrolled = ref(0)
+
 // 获取开课计划详情
 const fetchOfferingDetail = async () => {
   if (!props.offeringId) return
@@ -304,6 +310,7 @@ const fetchOfferingDetail = async () => {
     formData.teacherId = offering.teacherId
     formData.location = offering.location
     formData.capacity = offering.capacity
+    currentEnrolled.value = offering.enrolled || 0
     
     // 解析schedule
     if (offering.schedule) {

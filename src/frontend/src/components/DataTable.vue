@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   // 表格数据
@@ -180,6 +180,16 @@ const emit = defineEmits([
 
 const currentPage = ref(props.page)
 const pageSize = ref(props.size)
+
+// 监听props.page的变化，同步到currentPage
+watch(() => props.page, (newVal) => {
+  currentPage.value = newVal
+})
+
+// 监听props.size的变化，同步到pageSize
+watch(() => props.size, (newVal) => {
+  pageSize.value = newVal
+})
 
 // 序号计算
 const indexMethod = (index) => {

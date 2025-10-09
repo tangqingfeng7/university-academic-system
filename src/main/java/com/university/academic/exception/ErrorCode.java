@@ -17,6 +17,8 @@ public enum ErrorCode {
     PARAM_ERROR(400, "参数错误"),
     INVALID_PARAM(400, "参数无效"),
     INVALID_OPERATION(400, "无效的操作"),
+    OPERATION_FAILED(400, "操作失败"),
+    VALIDATION_ERROR(400, "数据验证失败"),
     NOT_FOUND(404, "资源不存在"),
     METHOD_NOT_ALLOWED(405, "请求方法不支持"),
     UNAUTHORIZED(401, "未授权，请先登录"),
@@ -132,7 +134,36 @@ public enum ErrorCode {
     DATA_ALREADY_EXISTS(4102, "数据已存在"),
     DATA_IN_USE(4103, "数据正在使用中，无法删除"),
     DATA_CONSTRAINT_VIOLATION(4104, "数据约束冲突"),
-    OPTIMISTIC_LOCK_FAILURE(4105, "数据已被其他用户修改，请刷新后重试");
+    OPTIMISTIC_LOCK_FAILURE(4105, "数据已被其他用户修改，请刷新后重试"),
+
+    // ========== 考试管理错误码 4200-4299 ==========
+    EXAM_NOT_FOUND(4201, "考试不存在"),
+    EXAM_ALREADY_PUBLISHED(4202, "考试已发布，无法修改"),
+    EXAM_ALREADY_STARTED(4203, "考试已开始，无法取消"),
+    EXAM_NO_ROOMS(4204, "考试没有考场，无法发布"),
+    EXAM_TIME_CONFLICT(4205, "考试时间冲突"),
+    EXAM_NOT_EDITABLE(4206, "考试不可编辑"),
+    EXAM_NOT_CANCELLABLE(4207, "考试不可取消"),
+
+    // ========== 考场管理错误码 4300-4399 ==========
+    EXAM_ROOM_NOT_FOUND(4301, "考场不存在"),
+    EXAM_ROOM_FULL(4302, "考场已满"),
+    EXAM_ROOM_TIME_CONFLICT(4303, "考场时间冲突"),
+    EXAM_ROOM_HAS_STUDENTS(4304, "考场已有学生，无法删除"),
+    EXAM_ROOM_CAPACITY_INSUFFICIENT(4305, "考场容量不足"),
+    EXAM_ROOM_CAPACITY_ERROR(4306, "考场容量不能小于已分配人数"),
+
+    // ========== 学生分配错误码 4400-4499 ==========
+    STUDENT_NOT_ENROLLED(4401, "学生未选修该课程"),
+    STUDENT_ALREADY_ASSIGNED(4402, "学生已分配到考场"),
+    STUDENT_EXAM_CONFLICT(4403, "学生考试时间冲突"),
+    STUDENT_ASSIGNMENT_NOT_FOUND(4404, "学生分配记录不存在"),
+
+    // ========== 监考管理错误码 4500-4599 ==========
+    INVIGILATOR_NOT_FOUND(4501, "监考安排不存在"),
+    TEACHER_INVIGILATION_CONFLICT(4502, "教师监考时间冲突"),
+    TEACHER_EXAM_CONFLICT(4503, "教师在该时间有自己的考试"),
+    INVIGILATOR_ALREADY_EXISTS(4504, "该教师已安排监考");
 
     /**
      * 错误码
