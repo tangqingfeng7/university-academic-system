@@ -6,15 +6,6 @@
         <h1 class="page-title">考试安排</h1>
         <p class="page-subtitle">查看你的考试时间和地点安排</p>
       </div>
-      <el-button 
-        type="primary" 
-        :icon="Download" 
-        size="large"
-        :loading="exportLoading"
-        @click="handleExport"
-      >
-        导出考试安排
-      </el-button>
     </div>
 
     <!-- 筛选器 -->
@@ -152,8 +143,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Download, Clock, Location } from '@element-plus/icons-vue'
-import { getMyExams, downloadMyExamSchedule } from '@/api/exam'
+import { Clock, Location } from '@element-plus/icons-vue'
+import { getMyExams } from '@/api/exam'
 import { getAllSemesters } from '@/api/semester'
 import ExamStatusTag from '@/components/ExamStatusTag.vue'
 import ExamTypeTag from '@/components/ExamTypeTag.vue'
@@ -162,7 +153,6 @@ const router = useRouter()
 
 // 数据
 const loading = ref(false)
-const exportLoading = ref(false)
 const examList = ref([])
 const semesters = ref([])
 const selectedSemester = ref(null)
@@ -211,20 +201,6 @@ const fetchExamList = async () => {
 // 学期切换
 const handleSemesterChange = () => {
   fetchExamList()
-}
-
-// 导出考试安排
-const handleExport = async () => {
-  exportLoading.value = true
-  try {
-    await downloadMyExamSchedule()
-    ElMessage.success('考试安排导出成功')
-  } catch (error) {
-    console.error('导出考试安排失败:', error)
-    ElMessage.error('导出考试安排失败')
-  } finally {
-    exportLoading.value = false
-  }
 }
 
 // 查看详情

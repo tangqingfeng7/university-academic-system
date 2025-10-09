@@ -58,14 +58,25 @@ request.interceptors.response.use(
     
     return res
   },
-  error => {
+  async error => {
     console.error('响应错误：', error)
     
     let message = '网络错误，请稍后重试'
     
     if (error.response) {
       const status = error.response.status
-      const data = error.response.data
+      let data = error.response.data
+      
+      // 如果是blob类型的错误响应，需要转换为JSON
+      if (error.response.config.responseType === 'blob' && data instanceof Blob) {
+        try {
+          const text = await data.text()
+          data = JSON.parse(text)
+        } catch (e) {
+          console.error('解析blob错误响应失败:', e)
+          data = { message: '文件导出失败' }
+        }
+      }
       
       switch (status) {
         case 400:

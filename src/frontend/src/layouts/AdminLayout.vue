@@ -27,6 +27,11 @@
               <template #title>仪表盘</template>
             </el-menu-item>
 
+            <el-menu-item index="/admin/statistics">
+              <el-icon><DataAnalysis /></el-icon>
+              <template #title>统计报表</template>
+            </el-menu-item>
+
             <el-menu-item index="/admin/students">
               <el-icon><UserFilled /></el-icon>
               <template #title>学生管理</template>
@@ -35,26 +40,6 @@
             <el-menu-item index="/admin/teachers">
               <el-icon><User /></el-icon>
               <template #title>教师管理</template>
-            </el-menu-item>
-
-            <el-menu-item index="/admin/courses">
-              <el-icon><Reading /></el-icon>
-              <template #title>课程管理</template>
-            </el-menu-item>
-
-            <el-menu-item index="/admin/offerings">
-              <el-icon><Calendar /></el-icon>
-              <template #title>开课计划</template>
-            </el-menu-item>
-
-            <el-menu-item index="/admin/exams">
-              <el-icon><Memo /></el-icon>
-              <template #title>考试管理</template>
-            </el-menu-item>
-
-            <el-menu-item index="/admin/semesters">
-              <el-icon><Clock /></el-icon>
-              <template #title>学期管理</template>
             </el-menu-item>
 
             <el-menu-item index="/admin/departments">
@@ -67,24 +52,24 @@
               <template #title>专业管理</template>
             </el-menu-item>
 
-            <el-menu-item index="/admin/system-config">
-              <el-icon><Setting /></el-icon>
-              <template #title>系统配置</template>
+            <el-menu-item index="/admin/courses">
+              <el-icon><Reading /></el-icon>
+              <template #title>课程管理</template>
             </el-menu-item>
 
-            <el-menu-item index="/admin/operation-log">
-              <el-icon><Document /></el-icon>
-              <template #title>操作日志</template>
+            <el-menu-item index="/admin/offerings">
+              <el-icon><Calendar /></el-icon>
+              <template #title>开课计划</template>
             </el-menu-item>
 
-            <el-menu-item index="/admin/statistics">
-              <el-icon><DataAnalysis /></el-icon>
-              <template #title>统计报表</template>
+            <el-menu-item index="/admin/semesters">
+              <el-icon><Clock /></el-icon>
+              <template #title>学期管理</template>
             </el-menu-item>
 
-            <el-menu-item index="/admin/notifications">
-              <el-icon><Bell /></el-icon>
-              <template #title>通知管理</template>
+            <el-menu-item index="/admin/exams">
+              <el-icon><Memo /></el-icon>
+              <template #title>考试管理</template>
             </el-menu-item>
 
             <el-menu-item index="/admin/leave-requests">
@@ -95,6 +80,21 @@
             <el-menu-item index="/admin/course-change-approval">
               <el-icon><DocumentChecked /></el-icon>
               <template #title>调课审批</template>
+            </el-menu-item>
+
+            <el-menu-item index="/admin/notifications">
+              <el-icon><Bell /></el-icon>
+              <template #title>通知管理</template>
+            </el-menu-item>
+
+            <el-menu-item index="/admin/system-config">
+              <el-icon><Setting /></el-icon>
+              <template #title>系统配置</template>
+            </el-menu-item>
+
+            <el-menu-item index="/admin/operation-log">
+              <el-icon><Document /></el-icon>
+              <template #title>操作日志</template>
             </el-menu-item>
           </el-menu>
         </el-scrollbar>

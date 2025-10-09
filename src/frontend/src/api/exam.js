@@ -268,14 +268,6 @@ export function getMyExamById(id) {
   })
 }
 
-// 导出个人考试安排（PDF）
-export function exportMyExamSchedule() {
-  return request({
-    url: '/student/exams/export',
-    method: 'get',
-    responseType: 'blob'
-  })
-}
 
 // ==================== 教师端 - 课程考试查询 ====================
 
@@ -340,14 +332,34 @@ export function exportMyInvigilationSchedule() {
  * @param {string} filename - 文件名
  */
 export function downloadFile(blob, filename) {
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.setAttribute('download', filename)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
+  // 验证blob是否有效
+  if (!blob || !(blob instanceof Blob)) {
+    console.error('下载失败：无效的Blob数据', blob)
+    throw new Error('下载文件失败：数据无效')
+  }
+  
+  // 验证blob大小
+  if (blob.size === 0) {
+    console.error('下载失败：文件为空')
+    throw new Error('下载文件失败：文件为空')
+  }
+  
+  console.log(`准备下载文件: ${filename}, 大小: ${blob.size} bytes, 类型: ${blob.type}`)
+  
+  try {
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    console.log(`文件下载成功: ${filename}`)
+  } catch (error) {
+    console.error('下载文件时出错:', error)
+    throw new Error('下载文件失败：' + error.message)
+  }
 }
 
 /**
@@ -380,14 +392,6 @@ export async function downloadInvigilatorArrangement(examId) {
   downloadFile(blob, `监考安排_${timestamp}.xlsx`)
 }
 
-/**
- * 导出个人考试安排并下载
- */
-export async function downloadMyExamSchedule() {
-  const blob = await exportMyExamSchedule()
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19)
-  downloadFile(blob, `个人考试安排_${timestamp}.pdf`)
-}
 
 /**
  * 导出监考任务安排并下载

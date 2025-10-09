@@ -27,14 +27,14 @@
               <template #title>工作台</template>
             </el-menu-item>
 
-            <el-menu-item index="/teacher/courses">
-              <el-icon><Reading /></el-icon>
-              <template #title>我的课程</template>
-            </el-menu-item>
-
             <el-menu-item index="/teacher/schedule">
               <el-icon><Calendar /></el-icon>
               <template #title>我的课表</template>
+            </el-menu-item>
+
+            <el-menu-item index="/teacher/courses">
+              <el-icon><Reading /></el-icon>
+              <template #title>我的课程</template>
             </el-menu-item>
 
             <el-menu-item index="/teacher/exams/courses">
@@ -47,11 +47,6 @@
               <template #title>监考任务</template>
             </el-menu-item>
 
-            <el-menu-item index="/teacher/notifications">
-              <el-icon><Bell /></el-icon>
-              <template #title>通知管理</template>
-            </el-menu-item>
-
             <el-menu-item index="/teacher/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>
@@ -60,6 +55,11 @@
             <el-menu-item index="/teacher/course-change-requests">
               <el-icon><EditPen /></el-icon>
               <template #title>调课申请</template>
+            </el-menu-item>
+
+            <el-menu-item index="/teacher/notifications">
+              <el-icon><Bell /></el-icon>
+              <template #title>通知管理</template>
             </el-menu-item>
           </el-menu>
         </el-scrollbar>

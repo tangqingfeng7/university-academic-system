@@ -10,16 +10,11 @@ import com.university.academic.vo.Result;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author Academic System Team
  */
-@Tag(name = "考试管理-学生", description = "学生端考试查询和导出接口")
+@Tag(name = "考试管理-学生", description = "学生端考试查询接口")
 @Slf4j
 @RestController
 @RequestMapping("/api/student/exams")
@@ -41,7 +36,6 @@ public class StudentExamController {
     private final ExamRoomStudentRepository examRoomStudentRepository;
     private final DtoConverter dtoConverter;
     private final CustomUserDetailsService userDetailsService;
-    private final com.university.academic.service.ExamService examService;
 
     /**
      * 查询我的考试列表
@@ -114,24 +108,5 @@ public class StudentExamController {
         return Result.success(examDTO);
     }
 
-    /**
-     * 导出个人考试安排（PDF）
-     */
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> exportMyExamSchedule(Authentication authentication) {
-        Long studentId = userDetailsService.getStudentIdFromAuth(authentication);
-        log.info("导出学生考试安排: studentId={}", studentId);
-        
-        byte[] pdfData = examService.exportStudentExamSchedule(studentId);
-        
-        String filename = "个人考试安排_" + java.time.LocalDateTime.now().format(
-            java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + ".pdf";
-        
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, 
-                    "attachment; filename*=UTF-8''" + URLEncoder.encode(filename, StandardCharsets.UTF_8))
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfData);
-    }
 }
 

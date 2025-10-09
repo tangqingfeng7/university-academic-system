@@ -344,6 +344,7 @@ public class AdminExamController {
      * 导出考试列表（Excel）
      */
     @GetMapping("/export")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportExamList(
             @RequestParam(required = false) Long semesterId,
             @RequestParam(required = false) String status) {
@@ -366,6 +367,7 @@ public class AdminExamController {
      * 导出考场安排（Excel）
      */
     @GetMapping("/{id}/export/rooms")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportExamRoomArrangement(@PathVariable Long id) {
         log.info("导出考场安排: examId={}", id);
         
@@ -385,6 +387,7 @@ public class AdminExamController {
      * 导出监考安排（Excel）
      */
     @GetMapping("/{id}/export/invigilators")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportInvigilatorArrangement(@PathVariable Long id) {
         log.info("导出监考安排: examId={}", id);
         

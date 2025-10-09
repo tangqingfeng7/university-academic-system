@@ -27,14 +27,14 @@
               <template #title>工作台</template>
             </el-menu-item>
 
-            <el-menu-item index="/student/course-selection">
-              <el-icon><Tickets /></el-icon>
-              <template #title>选课中心</template>
-            </el-menu-item>
-
             <el-menu-item index="/student/schedule">
               <el-icon><Calendar /></el-icon>
               <template #title>我的课表</template>
+            </el-menu-item>
+
+            <el-menu-item index="/student/course-selection">
+              <el-icon><Tickets /></el-icon>
+              <template #title>选课中心</template>
             </el-menu-item>
 
             <el-menu-item index="/student/grades">
@@ -52,14 +52,14 @@
               <template #title>考试安排</template>
             </el-menu-item>
 
-            <el-menu-item index="/student/notifications">
-              <el-icon><Bell /></el-icon>
-              <template #title>通知公告</template>
-            </el-menu-item>
-
             <el-menu-item index="/student/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>
+            </el-menu-item>
+
+            <el-menu-item index="/student/notifications">
+              <el-icon><Bell /></el-icon>
+              <template #title>通知公告</template>
             </el-menu-item>
           </el-menu>
         </el-scrollbar>
