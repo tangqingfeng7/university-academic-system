@@ -101,9 +101,9 @@ public class StatisticsController {
             dataList.add(new Object[]{"按专业分布", major, count});
         });
 
-        // 按年级分布
-        statistics.getByGrade().forEach((grade, count) -> {
-            dataList.add(new Object[]{"按年级分布", grade + "年级", count});
+        // 按入学年份分布
+        statistics.getByEnrollmentYear().forEach((year, count) -> {
+            dataList.add(new Object[]{"按入学年份分布", year + "级", count});
         });
 
         // 按性别分布

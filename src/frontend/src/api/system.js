@@ -41,11 +41,37 @@ export function updateSemester(id, data) {
   })
 }
 
+// 删除学期
+export function deleteSemester(id) {
+  return request({
+    url: `/admin/semesters/${id}`,
+    method: 'delete'
+  })
+}
+
 // 设置当前学期
 export function setActiveSemester(id) {
   return request({
     url: `/admin/semesters/${id}/activate`,
     method: 'put'
+  })
+}
+
+// 切换选课功能
+export function toggleCourseSelection(id, enabled) {
+  return request({
+    url: `/admin/semesters/${id}/course-selection/toggle`,
+    method: 'put',
+    params: { enabled }
+  })
+}
+
+// 更新选课时间
+export function updateCourseSelectionTime(id, startTime, endTime) {
+  return request({
+    url: `/admin/semesters/${id}/course-selection/time`,
+    method: 'put',
+    params: { startTime, endTime }
   })
 }
 

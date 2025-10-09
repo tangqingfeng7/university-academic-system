@@ -37,6 +37,13 @@ spring:
     restart:
       enabled: true
 
+  # Jackson配置 - 统一日期时间格式
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
 logging:
   level:
     com.university.academic: DEBUG

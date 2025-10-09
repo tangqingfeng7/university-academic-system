@@ -105,6 +105,21 @@ public class CourseSelectionService {
     @Transactional(readOnly = true)
     public List<CourseOffering> findAvailableOfferings() {
         Semester activeSemester = semesterService.findActiveSemester();
+        
+        // 检查选课功能是否开启，如果未开启则返回空列表
+        if (!activeSemester.getCourseSelectionEnabled()) {
+            log.info("选课功能未开启，返回空列表");
+            return java.util.Collections.emptyList();
+        }
+        
+        // 检查是否在选课时间范围内
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(activeSemester.getCourseSelectionStart()) || 
+            now.isAfter(activeSemester.getCourseSelectionEnd())) {
+            log.info("不在选课时间范围内，返回空列表");
+            return java.util.Collections.emptyList();
+        }
+        
         List<CourseOffering> offerings = offeringRepository.findBySemesterId(activeSemester.getId());
         
         // 只返回已发布的开课计划
@@ -248,6 +263,11 @@ public class CourseSelectionService {
      * @param semester 学期
      */
     private void validateSelectionPeriod(Semester semester) {
+        // 检查选课功能是否启用
+        if (!semester.getCourseSelectionEnabled()) {
+            throw new BusinessException(ErrorCode.SELECTION_DISABLED);
+        }
+        
         LocalDateTime now = LocalDateTime.now();
         
         if (now.isBefore(semester.getCourseSelectionStart())) {

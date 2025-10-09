@@ -193,20 +193,20 @@ const loadStudentStatistics = async () => {
       })
     }
 
-    // 按年级分布（柱状图）
+    // 按入学年份分布（柱状图）
     if (gradeChartInstance) {
-      const gradeData = Object.entries(data.byGrade || {}).sort((a, b) => a[0] - b[0])
+      const enrollmentData = Object.entries(data.byEnrollmentYear || {}).sort((a, b) => a[0] - b[0])
       gradeChartInstance.setOption({
-        title: { text: '按年级分布', left: 'center' },
+        title: { text: '按入学年份分布', left: 'center' },
         tooltip: { trigger: 'axis' },
         xAxis: {
           type: 'category',
-          data: gradeData.map(([grade]) => `${grade}年级`)
+          data: enrollmentData.map(([year]) => `${year}级`)
         },
         yAxis: { type: 'value' },
         series: [{
           type: 'bar',
-          data: gradeData.map(([, value]) => value),
+          data: enrollmentData.map(([, value]) => value),
           itemStyle: { color: '#409EFF' }
         }]
       })

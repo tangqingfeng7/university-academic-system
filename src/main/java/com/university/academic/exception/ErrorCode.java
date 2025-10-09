@@ -77,6 +77,7 @@ public enum ErrorCode {
     SEMESTER_HAS_OFFERINGS(3403, "学期有开课计划，无法删除"),
     SEMESTER_NOT_ACTIVE(3404, "当前没有活动学期"),
     SEMESTER_DATE_ERROR(3405, "学期日期设置错误"),
+    SEMESTER_IS_ACTIVE(3406, "当前活动学期不允许编辑，请先设置其他学期为活动学期"),
 
     // ========== 开课计划错误码 3500-3599 ==========
     OFFERING_NOT_FOUND(3501, "开课计划不存在"),
@@ -93,14 +94,15 @@ public enum ErrorCode {
     SELECTION_ALREADY_EXISTS(3602, "已选过该课程"),
     SELECTION_PERIOD_NOT_START(3603, "选课未开始"),
     SELECTION_PERIOD_ENDED(3604, "选课已结束"),
-    SELECTION_COURSE_FULL(3605, "课程已满"),
-    SELECTION_TIME_CONFLICT(3606, "选课时间冲突"),
-    SELECTION_CREDITS_EXCEED(3607, "超过学分上限"),
-    SELECTION_COURSES_EXCEED(3608, "超过课程数量上限"),
-    SELECTION_PREREQUISITE_NOT_MET(3609, "未满足先修课程要求"),
-    SELECTION_ALREADY_DROPPED(3610, "已退选该课程"),
-    SELECTION_DROP_DEADLINE_PASSED(3611, "已超过退课截止日期"),
-    SELECTION_CANNOT_DROP(3612, "无法退选该课程"),
+    SELECTION_DISABLED(3605, "选课功能已关闭"),
+    SELECTION_COURSE_FULL(3606, "课程已满"),
+    SELECTION_TIME_CONFLICT(3607, "选课时间冲突"),
+    SELECTION_CREDITS_EXCEED(3608, "超过学分上限"),
+    SELECTION_COURSES_EXCEED(3609, "超过课程数量上限"),
+    SELECTION_PREREQUISITE_NOT_MET(3610, "未满足先修课程要求"),
+    SELECTION_ALREADY_DROPPED(3611, "已退选该课程"),
+    SELECTION_DROP_DEADLINE_PASSED(3612, "已超过退课截止日期"),
+    SELECTION_CANNOT_DROP(3613, "无法退选该课程"),
 
     // ========== 成绩管理错误码 3700-3799 ==========
     GRADE_NOT_FOUND(3701, "成绩记录不存在"),

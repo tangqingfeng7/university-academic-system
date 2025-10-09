@@ -29,9 +29,9 @@ public class StudentStatisticsDTO {
     private Map<String, Long> byMajor;
 
     /**
-     * 按年级分布（年级 -> 学生数量）
+     * 按入学年份分布（入学年份 -> 学生数量）
      */
-    private Map<Integer, Long> byGrade;
+    private Map<Integer, Long> byEnrollmentYear;
 
     /**
      * 按性别分布（性别 -> 学生数量）

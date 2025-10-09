@@ -27,7 +27,7 @@
           <el-icon><Select /></el-icon>
           <span>当前学期</span>
         </div>
-        <h2 class="semester-name">{{ activeSemester.academicYear }} {{ activeSemester.semesterType === 1 ? '春季学期' : '秋季学期' }}</h2>
+        <h2 class="semester-name">{{ activeSemester.semesterNameWithWeek || activeSemester.semesterName }}</h2>
         <div class="semester-meta">
           <span class="meta-item">{{ activeSemester.startDate }} - {{ activeSemester.endDate }}</span>
           <span class="meta-divider">·</span>
@@ -61,6 +61,7 @@
               <h3 class="semester-title">
                 {{ semester.academicYear }}
                 <span class="semester-type">{{ semester.semesterType === 1 ? '春季学期' : '秋季学期' }}</span>
+                <span v-if="semester.active && semester.currentWeek" class="semester-week">第{{ semester.currentWeek }}周</span>
               </h3>
               <el-tag 
                 v-if="semester.active" 
@@ -94,6 +95,23 @@
                 <span class="detail-label">选课时间</span>
                 <span class="detail-value">{{ formatDateTime(semester.courseSelectionStart) }} 至 {{ formatDateTime(semester.courseSelectionEnd) }}</span>
               </div>
+              <div class="detail-item">
+                <span class="detail-label">选课状态</span>
+                <span class="detail-value">
+                  <el-tag 
+                    :type="getCourseSelectionStatusType(semester)" 
+                    size="small"
+                  >
+                    {{ semester.courseSelectionStatus || '未知' }}
+                  </el-tag>
+                  <el-switch
+                    v-model="semester.courseSelectionEnabled"
+                    style="margin-left: 10px"
+                    :active-text="semester.courseSelectionEnabled ? '已启用' : '已关闭'"
+                    @change="handleToggleCourseSelection(semester)"
+                  />
+                </span>
+              </div>
             </div>
           </div>
 
@@ -110,7 +128,16 @@
             <el-button
               type="default"
               size="default"
+              @click="handleEditCourseSelectionTime(semester)"
+              :icon="Clock"
+            >
+              选课时间
+            </el-button>
+            <el-button
+              type="default"
+              size="default"
               @click="handleEdit(semester)"
+              :disabled="semester.active"
             >
               编辑
             </el-button>
@@ -119,6 +146,7 @@
               size="default"
               plain
               @click="handleDelete(semester)"
+              :disabled="semester.active"
             >
               删除
             </el-button>
@@ -250,20 +278,56 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 编辑选课时间对话框 -->
+    <el-dialog
+      v-model="courseSelectionTimeDialogVisible"
+      title="编辑选课时间"
+      width="500px"
+    >
+      <el-form label-width="120px">
+        <el-form-item label="选课开始时间">
+          <el-date-picker
+            v-model="courseSelectionTimeForm.startTime"
+            type="datetime"
+            placeholder="选择开始时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="选课结束时间">
+          <el-date-picker
+            v-model="courseSelectionTimeForm.endTime"
+            type="datetime"
+            placeholder="选择结束时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="courseSelectionTimeDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitCourseSelectionTime">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Select } from '@element-plus/icons-vue'
+import { Plus, Select, Clock } from '@element-plus/icons-vue'
 import {
-  getAllSemesters,
+  getSemesters,
   createSemester,
   updateSemester,
   deleteSemester,
-  activateSemester
-} from '@/api/semester'
+  setActiveSemester,
+  toggleCourseSelection,
+  updateCourseSelectionTime
+} from '@/api/system'
 
 const loading = ref(false)
 const semesterList = ref([])
@@ -311,7 +375,6 @@ const activeSemester = computed(() => {
 
 const sortedSemesterList = computed(() => {
   return [...semesterList.value]
-    .filter(s => !s.active)
     .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
 })
 
@@ -339,7 +402,7 @@ const getSemesterProgress = (semester) => {
 const fetchSemesterList = async () => {
   try {
     loading.value = true
-    const { data } = await getAllSemesters()
+    const { data } = await getSemesters()
     semesterList.value = data || []
   } catch (error) {
     console.error('获取学期列表失败:', error)
@@ -401,7 +464,7 @@ const handleActivate = (row) => {
     }
   ).then(async () => {
     try {
-      await activateSemester(row.id)
+      await setActiveSemester(row.id)
       ElMessage.success('设置成功')
       fetchSemesterList()
     } catch (error) {
@@ -409,6 +472,58 @@ const handleActivate = (row) => {
       ElMessage.error(error.response?.data?.message || '设置失败')
     }
   }).catch(() => {})
+}
+
+// 获取选课状态标签类型
+const getCourseSelectionStatusType = (semester) => {
+  if (!semester.courseSelectionEnabled) return 'info'
+  if (semester.courseSelectionAvailable) return 'success'
+  if (semester.courseSelectionStatus === '选课未开始') return 'warning'
+  return 'info'
+}
+
+// 切换选课功能
+const handleToggleCourseSelection = async (semester) => {
+  try {
+    await toggleCourseSelection(semester.id, semester.courseSelectionEnabled)
+    ElMessage.success(semester.courseSelectionEnabled ? '选课功能已开启' : '选课功能已关闭')
+    fetchSemesterList()
+  } catch (error) {
+    // 恢复开关状态
+    semester.courseSelectionEnabled = !semester.courseSelectionEnabled
+    console.error('切换选课功能失败:', error)
+    ElMessage.error(error.response?.data?.message || '操作失败')
+  }
+}
+
+// 编辑选课时间对话框
+const courseSelectionTimeDialogVisible = ref(false)
+const courseSelectionTimeForm = ref({
+  semesterId: null,
+  startTime: '',
+  endTime: ''
+})
+
+const handleEditCourseSelectionTime = (semester) => {
+  courseSelectionTimeForm.value = {
+    semesterId: semester.id,
+    startTime: semester.courseSelectionStart,
+    endTime: semester.courseSelectionEnd
+  }
+  courseSelectionTimeDialogVisible.value = true
+}
+
+const submitCourseSelectionTime = async () => {
+  try {
+    const { semesterId, startTime, endTime } = courseSelectionTimeForm.value
+    await updateCourseSelectionTime(semesterId, startTime, endTime)
+    ElMessage.success('选课时间更新成功')
+    courseSelectionTimeDialogVisible.value = false
+    fetchSemesterList()
+  } catch (error) {
+    console.error('更新选课时间失败:', error)
+    ElMessage.error(error.response?.data?.message || '更新失败')
+  }
 }
 
 const handleSubmit = async () => {
@@ -633,6 +748,16 @@ onMounted(() => {
   .semester-type {
     color: var(--text-secondary);
     font-weight: 500;
+  }
+
+  .semester-week {
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .semester-details {

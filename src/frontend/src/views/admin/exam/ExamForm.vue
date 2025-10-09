@@ -132,7 +132,7 @@
             type="datetime"
             placeholder="请选择考试时间"
             format="YYYY-MM-DD HH:mm"
-            value-format="YYYY-MM-DDTHH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
             :disabled-date="disabledDate"
             style="width: 100%"
           />

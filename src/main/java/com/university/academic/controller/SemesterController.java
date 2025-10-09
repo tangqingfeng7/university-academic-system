@@ -165,5 +165,37 @@ public class SemesterController {
 
         return Result.success(statistics);
     }
+
+    /**
+     * 启用/关闭选课功能（仅管理员）
+     */
+    @PutMapping("/{id}/course-selection/toggle")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<SemesterDTO> toggleCourseSelection(@PathVariable Long id,
+                                                    @RequestParam Boolean enabled) {
+        log.info("切换选课状态: semesterId={}, enabled={}", id, enabled);
+
+        Semester semester = semesterService.toggleCourseSelection(id, enabled);
+        SemesterDTO semesterDTO = dtoConverter.toSemesterDTO(semester);
+
+        String message = enabled ? "选课功能已开启" : "选课功能已关闭";
+        return Result.success(message, semesterDTO);
+    }
+
+    /**
+     * 更新选课时间（仅管理员）
+     */
+    @PutMapping("/{id}/course-selection/time")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<SemesterDTO> updateCourseSelectionTime(@PathVariable Long id,
+                                                         @RequestParam String startTime,
+                                                         @RequestParam String endTime) {
+        log.info("更新选课时间: semesterId={}, startTime={}, endTime={}", id, startTime, endTime);
+
+        Semester semester = semesterService.updateCourseSelectionTime(id, startTime, endTime);
+        SemesterDTO semesterDTO = dtoConverter.toSemesterDTO(semester);
+
+        return Result.success("选课时间更新成功", semesterDTO);
+    }
 }
 

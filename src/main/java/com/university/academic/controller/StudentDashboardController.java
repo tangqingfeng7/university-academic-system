@@ -67,9 +67,11 @@ public class StudentDashboardController {
             Semester activeSemester = semesterService.findActiveSemester();
             statistics.put("activeSemester", Map.of(
                 "id", activeSemester.getId(),
-                "name", activeSemester.getSemesterName(),
+                "name", activeSemester.getSemesterNameWithWeek(),
                 "academicYear", activeSemester.getAcademicYear(),
-                "semesterType", activeSemester.getSemesterType()
+                "semesterType", activeSemester.getSemesterType(),
+                "currentWeek", activeSemester.getCurrentWeek(),
+                "totalWeeks", activeSemester.getTotalWeeks()
             ));
 
             // 本学期已选课程数

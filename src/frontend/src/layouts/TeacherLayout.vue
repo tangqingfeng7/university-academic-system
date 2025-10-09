@@ -225,8 +225,7 @@ const passwordRules = {
   ],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 8, message: '密码长度至少8位', trigger: 'blur' },
-    { pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/, message: '密码必须包含字母和数字', trigger: 'blur' }
+    { min: 6, message: '密码长度至少6位', trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请确认新密码', trigger: 'blur' },
@@ -267,7 +266,8 @@ const handlePasswordSubmit = () => {
     try {
       await userStore.changePassword({
         oldPassword: passwordForm.oldPassword,
-        newPassword: passwordForm.newPassword
+        newPassword: passwordForm.newPassword,
+        confirmPassword: passwordForm.confirmPassword
       })
       ElMessage.success('密码修改成功，请重新登录')
       passwordDialogVisible.value = false

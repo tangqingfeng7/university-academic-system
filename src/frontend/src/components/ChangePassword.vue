@@ -26,7 +26,7 @@
         <el-input
           v-model="form.newPassword"
           type="password"
-          placeholder="请输入新密码（至少8位，包含字母和数字）"
+          placeholder="请输入新密码（至少6位）"
           show-password
           autocomplete="off"
         />
@@ -73,10 +73,8 @@ const form = reactive({
 const validatePassword = (rule, value, callback) => {
   if (!value) {
     callback(new Error('请输入新密码'))
-  } else if (value.length < 8) {
-    callback(new Error('密码长度至少8位'))
-  } else if (!/[a-zA-Z]/.test(value) || !/[0-9]/.test(value)) {
-    callback(new Error('密码必须包含字母和数字'))
+  } else if (value.length < 6) {
+    callback(new Error('密码长度至少6位'))
   } else {
     callback()
   }
@@ -133,7 +131,8 @@ const handleSubmit = () => {
     try {
       await changePassword({
         oldPassword: form.oldPassword,
-        newPassword: form.newPassword
+        newPassword: form.newPassword,
+        confirmPassword: form.confirmPassword
       })
 
       ElMessage.success('密码修改成功')

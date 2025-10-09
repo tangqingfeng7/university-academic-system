@@ -117,6 +117,11 @@ public class SemesterService {
     public Semester updateSemester(Long id, Semester semester) {
         Semester existingSemester = findById(id);
 
+        // 检查是否为活动学期，活动学期不允许编辑
+        if (existingSemester.getActive()) {
+            throw new BusinessException(ErrorCode.SEMESTER_IS_ACTIVE);
+        }
+
         // 如果要修改学年或学期类型，检查新组合是否已存在
         if (semester.getAcademicYear() != null && semester.getSemesterType() != null) {
             if (!existingSemester.getAcademicYear().equals(semester.getAcademicYear()) ||
@@ -253,6 +258,62 @@ public class SemesterService {
     @Transactional(readOnly = true)
     public boolean hasActiveSemester() {
         return semesterRepository.findByActiveTrue().isPresent();
+    }
+
+    /**
+     * 切换选课功能开关
+     *
+     * @param id 学期ID
+     * @param enabled 是否启用
+     * @return 更新后的学期对象
+     */
+    @CacheEvict(value = {CacheConfig.CACHE_SEMESTERS, CacheConfig.CACHE_ACTIVE_SEMESTER}, allEntries = true)
+    @Transactional
+    public Semester toggleCourseSelection(Long id, Boolean enabled) {
+        log.info("切换选课功能: semesterId={}, enabled={}", id, enabled);
+
+        Semester semester = findById(id);
+        semester.setCourseSelectionEnabled(enabled);
+        
+        Semester updated = semesterRepository.save(semester);
+        log.info("选课功能已{}: {}", enabled ? "开启" : "关闭", semester.getSemesterName());
+
+        return updated;
+    }
+
+    /**
+     * 更新选课时间
+     *
+     * @param id 学期ID
+     * @param startTime 选课开始时间字符串
+     * @param endTime 选课结束时间字符串
+     * @return 更新后的学期对象
+     */
+    @CacheEvict(value = {CacheConfig.CACHE_SEMESTERS, CacheConfig.CACHE_ACTIVE_SEMESTER}, allEntries = true)
+    @Transactional
+    public Semester updateCourseSelectionTime(Long id, String startTime, String endTime) {
+        log.info("更新选课时间: semesterId={}, startTime={}, endTime={}", id, startTime, endTime);
+
+        Semester semester = findById(id);
+        
+        // 使用指定格式解析日期时间字符串
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime selectionStart = LocalDateTime.parse(startTime, formatter);
+        LocalDateTime selectionEnd = LocalDateTime.parse(endTime, formatter);
+
+        // 验证时间范围
+        if (selectionEnd.isBefore(selectionStart)) {
+            throw new BusinessException(ErrorCode.SEMESTER_DATE_ERROR);
+        }
+
+        semester.setCourseSelectionStart(selectionStart);
+        semester.setCourseSelectionEnd(selectionEnd);
+        
+        Semester updated = semesterRepository.save(semester);
+        log.info("选课时间已更新: {}, 开始: {}, 结束: {}", 
+                semester.getSemesterName(), selectionStart, selectionEnd);
+
+        return updated;
     }
 }
 

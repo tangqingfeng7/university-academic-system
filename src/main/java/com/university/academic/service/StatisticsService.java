@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,18 +52,17 @@ public class StatisticsService {
                         Collectors.counting()
                 ));
 
-        // 按年级分布（根据入学年份计算）
-        int currentYear = LocalDate.now().getYear();
-        Map<Integer, Long> byGrade = students.stream()
+        // 按入学年份分布
+        Map<Integer, Long> byEnrollmentYear = students.stream()
                 .collect(Collectors.groupingBy(
-                        s -> currentYear - s.getEnrollmentYear() + 1,
+                        Student::getEnrollmentYear,
                         Collectors.counting()
                 ));
 
         // 按性别分布
         Map<String, Long> byGender = students.stream()
                 .collect(Collectors.groupingBy(
-                        s -> s.getGender().getDescription(),
+                        s -> s.getGender().name(),
                         Collectors.counting()
                 ));
 
@@ -79,7 +77,7 @@ public class StatisticsService {
         return StudentStatisticsDTO.builder()
                 .totalStudents(totalStudents)
                 .byMajor(byMajor)
-                .byGrade(byGrade)
+                .byEnrollmentYear(byEnrollmentYear)
                 .byGender(byGender)
                 .byDepartment(byDepartment)
                 .build();

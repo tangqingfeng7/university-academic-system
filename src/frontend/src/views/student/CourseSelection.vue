@@ -27,8 +27,33 @@
             </el-input>
           </div>
 
+          <!-- 空状态提示 -->
+          <el-empty
+            v-if="!loading && availableOfferings.length === 0"
+            description="当前暂无可选课程"
+          >
+            <template #default>
+              <el-alert
+                title="提示"
+                type="info"
+                :closable="false"
+              >
+                <template #default>
+                  <div>可能的原因：</div>
+                  <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>选课功能暂未开放</li>
+                    <li>当前不在选课时间范围内</li>
+                    <li>本学期暂无已发布的开课计划</li>
+                  </ul>
+                  <div style="color: #909399;">请联系管理员了解详情</div>
+                </template>
+              </el-alert>
+            </template>
+          </el-empty>
+
           <!-- 课程列表 -->
           <el-table
+            v-if="availableOfferings.length > 0"
             v-loading="loading"
             :data="filteredOfferings"
             stripe

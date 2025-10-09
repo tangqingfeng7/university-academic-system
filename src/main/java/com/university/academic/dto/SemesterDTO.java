@@ -45,6 +45,21 @@ public class SemesterDTO {
     private String semesterName;
 
     /**
+     * 带周次的学期名称
+     */
+    private String semesterNameWithWeek;
+
+    /**
+     * 当前周次
+     */
+    private Integer currentWeek;
+
+    /**
+     * 总周数
+     */
+    private Integer totalWeeks;
+
+    /**
      * 学期开始日期
      */
     private LocalDate startDate;
@@ -63,6 +78,21 @@ public class SemesterDTO {
      * 选课结束时间
      */
     private LocalDateTime courseSelectionEnd;
+
+    /**
+     * 选课功能是否启用
+     */
+    private Boolean courseSelectionEnabled;
+
+    /**
+     * 选课状态（选课未开始/选课进行中/选课已结束/选课已关闭）
+     */
+    private String courseSelectionStatus;
+
+    /**
+     * 当前是否可以选课
+     */
+    private Boolean courseSelectionAvailable;
 
     /**
      * 是否为当前活动学期

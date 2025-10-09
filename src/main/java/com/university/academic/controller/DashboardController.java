@@ -55,9 +55,11 @@ public class DashboardController {
                 var activeSemester = semesterService.findActiveSemester();
                 statistics.put("activeSemester", Map.of(
                     "id", activeSemester.getId(),
-                    "name", activeSemester.getSemesterName(),
+                    "name", activeSemester.getSemesterNameWithWeek(),
                     "academicYear", activeSemester.getAcademicYear(),
-                    "semesterType", activeSemester.getSemesterType()
+                    "semesterType", activeSemester.getSemesterType(),
+                    "currentWeek", activeSemester.getCurrentWeek(),
+                    "totalWeeks", activeSemester.getTotalWeeks()
                 ));
 
                 // 当前学期开课数
