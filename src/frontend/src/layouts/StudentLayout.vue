@@ -52,6 +52,16 @@
               <template #title>考试安排</template>
             </el-menu-item>
 
+            <el-menu-item index="/student/evaluations/available">
+              <el-icon><Edit /></el-icon>
+              <template #title>课程评价</template>
+            </el-menu-item>
+
+            <el-menu-item index="/student/status-changes">
+              <el-icon><Files /></el-icon>
+              <template #title>学籍异动</template>
+            </el-menu-item>
+
             <el-menu-item index="/student/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>

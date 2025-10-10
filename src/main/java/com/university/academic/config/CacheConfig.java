@@ -27,6 +27,9 @@ public class CacheConfig {
     public static final String CACHE_ACTIVE_SEMESTER = "activeSemester";
     public static final String CACHE_EXAMS = "exams";
     public static final String CACHE_EXAM_ROOMS = "examRooms";
+    public static final String CACHE_EVALUATION_PERIODS = "evaluationPeriods";
+    public static final String CACHE_ACTIVE_EVALUATION_PERIOD = "activeEvaluationPeriod";
+    public static final String CACHE_EVALUATION_STATS = "evaluationStats";
 
     /**
      * 配置缓存管理器

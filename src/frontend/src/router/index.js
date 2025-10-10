@@ -137,6 +137,67 @@ const router = createRouter({
           meta: { title: '考试详情' }
         },
         {
+          path: 'evaluations/periods',
+          name: 'AdminEvaluationPeriods',
+          component: () => import('@/views/admin/evaluations/PeriodManagement.vue'),
+          meta: { title: '评价周期管理' }
+        },
+        {
+          path: 'evaluations/data',
+          name: 'AdminEvaluations',
+          component: () => import('@/views/admin/evaluations/DataQuery.vue'),
+          meta: { title: '评价数据查询', keepAlive: true }
+        },
+        {
+          path: 'evaluations/report',
+          name: 'AdminEvaluationReport',
+          component: () => import('@/views/admin/evaluations/QualityReport.vue'),
+          meta: { title: '教学质量报告' }
+        },
+        {
+          path: 'classrooms',
+          name: 'AdminClassrooms',
+          component: () => import('@/views/admin/classrooms/ClassroomManagement.vue'),
+          meta: { title: '教室管理', keepAlive: true }
+        },
+        {
+          path: 'classrooms/:id/usage',
+          name: 'AdminClassroomUsage',
+          component: () => import('@/views/admin/classrooms/ClassroomUsage.vue'),
+          meta: { title: '教室使用情况' }
+        },
+        {
+          path: 'classroom-bookings',
+          name: 'AdminClassroomBookings',
+          component: () => import('@/views/admin/classrooms/BookingApproval.vue'),
+          meta: { title: '借用审批', keepAlive: true }
+        },
+        {
+          path: 'classrooms/statistics',
+          name: 'AdminClassroomStatistics',
+          component: () => import('@/views/admin/classrooms/UtilizationStatistics.vue'),
+          meta: { title: '使用率统计' }
+        },
+        // ==================== 学籍异动管理 ====================
+        {
+          path: 'status-changes',
+          name: 'AdminStatusChanges',
+          component: () => import('@/views/admin/status-changes/Index.vue'),
+          meta: { title: '学籍异动管理', keepAlive: true }
+        },
+        {
+          path: 'status-changes/approvals',
+          name: 'AdminStatusChangeApprovals',
+          component: () => import('@/views/admin/status-changes/ApprovalList.vue'),
+          meta: { title: '学籍异动审批', keepAlive: true }
+        },
+        {
+          path: 'status-changes/:id',
+          name: 'AdminStatusChangeDetail',
+          component: () => import('@/views/admin/status-changes/Detail.vue'),
+          meta: { title: '异动详情' }
+        },
+        {
           path: 'profile',
           name: 'AdminProfile',
           component: () => import('@/views/common/Profile.vue'),
@@ -219,6 +280,49 @@ const router = createRouter({
           meta: { title: '监考任务', keepAlive: true }
         },
         {
+          path: 'evaluations/statistics',
+          name: 'TeacherEvaluationStatistics',
+          component: () => import('@/views/teacher/evaluations/Statistics.vue'),
+          meta: { title: '教学评价统计' }
+        },
+        {
+          path: 'evaluations/list',
+          name: 'TeacherEvaluationList',
+          component: () => import('@/views/teacher/evaluations/EvaluationList.vue'),
+          meta: { title: '评价列表', keepAlive: true }
+        },
+        {
+          path: 'classrooms',
+          name: 'TeacherClassrooms',
+          component: () => import('@/views/teacher/classrooms/ClassroomList.vue'),
+          meta: { title: '教室查询', keepAlive: true }
+        },
+        {
+          path: 'classroom-bookings',
+          name: 'TeacherClassroomBookings',
+          component: () => import('@/views/teacher/classrooms/BookingList.vue'),
+          meta: { title: '我的申请', keepAlive: true }
+        },
+        {
+          path: 'classroom-bookings/create',
+          name: 'TeacherBookingCreate',
+          component: () => import('@/views/teacher/classrooms/BookingCreate.vue'),
+          meta: { title: '申请借用教室' }
+        },
+        // ==================== 学籍异动审批 ====================
+        {
+          path: 'status-changes/approvals',
+          name: 'TeacherStatusChangeApprovals',
+          component: () => import('@/views/teacher/status-changes/ApprovalList.vue'),
+          meta: { title: '学籍异动审批', keepAlive: true }
+        },
+        {
+          path: 'status-changes/:id',
+          name: 'TeacherStatusChangeDetail',
+          component: () => import('@/views/teacher/status-changes/ApprovalDetail.vue'),
+          meta: { title: '审批处理' }
+        },
+        {
           path: 'profile',
           name: 'TeacherProfile',
           component: () => import('@/views/common/Profile.vue'),
@@ -293,6 +397,37 @@ const router = createRouter({
           name: 'StudentExamDetail',
           component: () => import('@/views/student/exam/ExamDetail.vue'),
           meta: { title: '考试详情' }
+        },
+        {
+          path: 'evaluations',
+          name: 'StudentEvaluations',
+          component: () => import('@/views/student/evaluations/MyEvaluations.vue'),
+          meta: { title: '我的评价', keepAlive: true }
+        },
+        {
+          path: 'evaluations/available',
+          name: 'StudentAvailableEvaluations',
+          component: () => import('@/views/student/evaluations/AvailableCourses.vue'),
+          meta: { title: '可评价课程' }
+        },
+        // ==================== 学籍异动申请 ====================
+        {
+          path: 'status-changes',
+          name: 'StudentStatusChanges',
+          component: () => import('@/views/student/status-changes/MyApplications.vue'),
+          meta: { title: '我的异动申请', keepAlive: true }
+        },
+        {
+          path: 'status-changes/create',
+          name: 'StudentStatusChangeCreate',
+          component: () => import('@/views/student/status-changes/CreateApplication.vue'),
+          meta: { title: '提交异动申请' }
+        },
+        {
+          path: 'status-changes/:id',
+          name: 'StudentStatusChangeDetail',
+          component: () => import('@/views/student/status-changes/ApplicationDetail.vue'),
+          meta: { title: '申请详情' }
         },
         {
           path: 'profile',

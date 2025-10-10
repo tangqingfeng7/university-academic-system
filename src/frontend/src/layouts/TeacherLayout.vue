@@ -47,6 +47,31 @@
               <template #title>监考任务</template>
             </el-menu-item>
 
+            <el-menu-item index="/teacher/evaluations/statistics">
+              <el-icon><DataLine /></el-icon>
+              <template #title>教学评价</template>
+            </el-menu-item>
+
+            <el-menu-item index="/teacher/status-changes/approvals">
+              <el-icon><Select /></el-icon>
+              <template #title>学籍审批</template>
+            </el-menu-item>
+
+            <el-sub-menu index="classrooms">
+              <template #title>
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>教室管理</span>
+              </template>
+              <el-menu-item index="/teacher/classrooms">
+                <el-icon><Search /></el-icon>
+                <template #title>教室查询</template>
+              </el-menu-item>
+              <el-menu-item index="/teacher/classroom-bookings">
+                <el-icon><Document /></el-icon>
+                <template #title>我的申请</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/teacher/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>
@@ -185,7 +210,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   Notebook, TrendCharts, Reading, Calendar, Memo, View, Bell, User,
-  Expand, Fold, Lock, SwitchButton, Document, EditPen
+  Expand, Fold, Lock, SwitchButton, Document, EditPen, OfficeBuilding,
+  Search, DataLine
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

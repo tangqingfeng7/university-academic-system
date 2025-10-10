@@ -117,6 +117,23 @@ public interface CourseSelectionRepository extends JpaRepository<CourseSelection
                                   @Param("offeringId") Long offeringId);
 
     /**
+     * 检查学生是否已选某个开课计划（指定状态）
+     *
+     * @param studentId  学生ID
+     * @param offeringId 开课计划ID
+     * @param status     选课状态
+     * @return true-已选，false-未选
+     */
+    @Query("SELECT CASE WHEN COUNT(cs) > 0 THEN true ELSE false END " +
+            "FROM CourseSelection cs " +
+            "WHERE cs.student.id = :studentId " +
+            "AND cs.offering.id = :offeringId " +
+            "AND cs.status = :status")
+    boolean existsByStudentIdAndOfferingIdAndStatus(@Param("studentId") Long studentId,
+                                                     @Param("offeringId") Long offeringId,
+                                                     @Param("status") CourseSelection.SelectionStatus status);
+
+    /**
      * 查询开课计划的所有选课记录（预加载学生信息）
      *
      * @param offeringId 开课计划ID

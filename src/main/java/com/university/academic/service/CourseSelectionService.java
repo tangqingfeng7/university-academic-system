@@ -34,6 +34,7 @@ public class CourseSelectionService {
     private final SystemConfigRepository configRepository;
     private final StudentService studentService;
     private final SemesterService semesterService;
+    private final StudentStatusUpdateService studentStatusUpdateService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -142,15 +143,18 @@ public class CourseSelectionService {
         CourseOffering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.OFFERING_NOT_FOUND));
 
-        // 2. 验证开课计划状态
+        // 2. 验证学生状态（休学期间不允许选课）
+        studentStatusUpdateService.validateStudentStatusForSelection(studentId);
+
+        // 3. 验证开课计划状态
         if (offering.getStatus() != CourseOffering.OfferingStatus.PUBLISHED) {
             throw new BusinessException(ErrorCode.OFFERING_NOT_FOUND);
         }
 
-        // 3. 验证选课时间
+        // 4. 验证选课时间
         validateSelectionPeriod(offering.getSemester());
 
-        // 4. 检查是否已选或已存在退课记录
+        // 5. 检查是否已选或已存在退课记录
         Optional<CourseSelection> existingSelection = selectionRepository
                 .findByStudentIdAndOfferingId(studentId, offeringId);
         
@@ -185,20 +189,20 @@ public class CourseSelectionService {
             return savedSelection;
         }
 
-        // 5. 验证先修课程
+        // 6. 验证先修课程
         validatePrerequisites(studentId, offering.getCourse().getId());
 
-        // 6. 验证时间冲突（新选课不排除任何课程）
+        // 7. 验证时间冲突（新选课不排除任何课程）
         validateTimeConflict(studentId, offering, null);
 
-        // 7. 验证学分上限
+        // 8. 验证学分上限
         validateCreditLimit(studentId, offering.getSemester().getId(), 
                 offering.getCourse().getCredits());
 
-        // 8. 验证人数限制（使用乐观锁）
+        // 9. 验证人数限制（使用乐观锁）
         validateAndUpdateCapacity(offering);
 
-        // 9. 创建选课记录
+        // 10. 创建选课记录
         CourseSelection selection = CourseSelection.builder()
                 .student(student)
                 .offering(offering)

@@ -186,7 +186,20 @@ const fetchCourseList = async () => {
   loading.value = true
   try {
     const res = await getMyCourses(selectedSemester.value)
-    courseList.value = res.data || []
+    // 将后端返回的嵌套数据结构展平
+    courseList.value = (res.data || []).map(item => ({
+      id: item.id,
+      courseNo: item.course?.courseNo || '',
+      courseName: item.course?.name || '',
+      courseType: item.course?.type || '',
+      semesterName: item.semester ? 
+        `${item.semester.academicYear} ${getSemesterTypeName(item.semester.semesterType)}` : '',
+      schedule: item.schedule || '',
+      location: item.location || '',
+      capacity: item.capacity || 0,
+      enrolled: item.enrolled || 0,
+      status: item.status || 'DRAFT'
+    }))
   } catch (error) {
     console.error('获取授课列表失败:', error)
     ElMessage.error('获取授课列表失败: ' + (error.message || '未知错误'))

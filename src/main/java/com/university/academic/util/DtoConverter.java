@@ -613,5 +613,132 @@ public class DtoConverter {
                 .roomCapacity(room != null ? room.getCapacity() : null)
                 .build();
     }
+
+    /**
+     * 将CourseEvaluation实体转换为CourseEvaluationDTO
+     *
+     * @param evaluation CourseEvaluation实体
+     * @return CourseEvaluationDTO
+     */
+    public CourseEvaluationDTO toCourseEvaluationDTO(com.university.academic.entity.CourseEvaluation evaluation) {
+        if (evaluation == null) {
+            return null;
+        }
+
+        com.university.academic.entity.Student student = evaluation.getStudent();
+        com.university.academic.entity.CourseOffering offering = evaluation.getCourseOffering();
+        com.university.academic.entity.Course course = offering != null ? offering.getCourse() : null;
+        com.university.academic.entity.Teacher teacher = offering != null ? offering.getTeacher() : null;
+        com.university.academic.entity.Semester semester = offering != null ? offering.getSemester() : null;
+
+        return com.university.academic.dto.CourseEvaluationDTO.builder()
+                .id(evaluation.getId())
+                .studentId(student != null ? student.getId() : null)
+                .studentNo(student != null ? student.getStudentNo() : null)
+                .studentName(student != null ? student.getName() : null)
+                .offeringId(offering != null ? offering.getId() : null)
+                .courseId(course != null ? course.getId() : null)
+                .courseNo(course != null ? course.getCourseNo() : null)
+                .courseName(course != null ? course.getName() : null)
+                .teacherId(teacher != null ? teacher.getId() : null)
+                .teacherName(teacher != null ? teacher.getName() : null)
+                .semesterId(evaluation.getSemesterId())
+                .semesterName(semester != null ? semester.getSemesterName() : null)
+                .rating(evaluation.getRating())
+                .comment(evaluation.getComment())
+                .anonymous(evaluation.getAnonymous())
+                .status(evaluation.getStatus() != null ? evaluation.getStatus().name() : null)
+                .statusDescription(evaluation.getStatus() != null ? 
+                        evaluation.getStatus().getDescription() : null)
+                .flagged(evaluation.getFlagged())
+                .moderationNote(evaluation.getModerationNote())
+                .createdAt(evaluation.getCreatedAt())
+                .updatedAt(evaluation.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 将TeacherEvaluation实体转换为TeacherEvaluationDTO
+     *
+     * @param evaluation TeacherEvaluation实体
+     * @return TeacherEvaluationDTO
+     */
+    public com.university.academic.dto.TeacherEvaluationDTO toTeacherEvaluationDTO(
+            com.university.academic.entity.TeacherEvaluation evaluation) {
+        if (evaluation == null) {
+            return null;
+        }
+
+        com.university.academic.entity.Student student = evaluation.getStudent();
+        com.university.academic.entity.Teacher teacher = evaluation.getTeacher();
+        com.university.academic.entity.CourseOffering offering = evaluation.getCourseOffering();
+        com.university.academic.entity.Course course = offering != null ? offering.getCourse() : null;
+
+        // 计算综合评分
+        Double overallRating = null;
+        if (evaluation.getTeachingRating() != null && 
+            evaluation.getAttitudeRating() != null && 
+            evaluation.getContentRating() != null) {
+            overallRating = (evaluation.getTeachingRating() + 
+                           evaluation.getAttitudeRating() + 
+                           evaluation.getContentRating()) / 3.0;
+        }
+
+        return com.university.academic.dto.TeacherEvaluationDTO.builder()
+                .id(evaluation.getId())
+                .studentId(student != null ? student.getId() : null)
+                .studentNo(student != null ? student.getStudentNo() : null)
+                .studentName(student != null ? student.getName() : null)
+                .teacherId(teacher != null ? teacher.getId() : null)
+                .teacherNo(teacher != null ? teacher.getTeacherNo() : null)
+                .teacherName(teacher != null ? teacher.getName() : null)
+                .offeringId(offering != null ? offering.getId() : null)
+                .courseId(course != null ? course.getId() : null)
+                .courseNo(course != null ? course.getCourseNo() : null)
+                .courseName(course != null ? course.getName() : null)
+                .teachingRating(evaluation.getTeachingRating())
+                .attitudeRating(evaluation.getAttitudeRating())
+                .contentRating(evaluation.getContentRating())
+                .overallRating(overallRating)
+                .comment(evaluation.getComment())
+                .anonymous(evaluation.getAnonymous())
+                .status(evaluation.getStatus() != null ? evaluation.getStatus().name() : null)
+                .statusDescription(evaluation.getStatus() != null ? 
+                        evaluation.getStatus().getDescription() : null)
+                .flagged(evaluation.getFlagged())
+                .moderationNote(evaluation.getModerationNote())
+                .createdAt(evaluation.getCreatedAt())
+                .updatedAt(evaluation.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 将EvaluationPeriod实体转换为EvaluationPeriodDTO
+     *
+     * @param period EvaluationPeriod实体
+     * @return EvaluationPeriodDTO
+     */
+    public com.university.academic.dto.EvaluationPeriodDTO toEvaluationPeriodDTO(
+            com.university.academic.entity.EvaluationPeriod period) {
+        if (period == null) {
+            return null;
+        }
+
+        com.university.academic.entity.Semester semester = period.getSemester();
+
+        return com.university.academic.dto.EvaluationPeriodDTO.builder()
+                .id(period.getId())
+                .semesterId(semester != null ? semester.getId() : null)
+                .semesterName(semester != null ? semester.getSemesterName() : null)
+                .startTime(period.getStartTime())
+                .endTime(period.getEndTime())
+                .active(period.getActive())
+                .description(period.getDescription())
+                .inPeriod(period.isInPeriod())
+                .expired(period.isExpired())
+                .createdAt(period.getCreatedAt())
+                .updatedAt(period.getUpdatedAt())
+                .build();
+    }
 }
 

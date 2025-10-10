@@ -54,6 +54,14 @@ public class Student extends BaseEntity {
     @Column(length = 100)
     private String email;
 
+    /**
+     * 学生状态
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private StudentStatus status = StudentStatus.ACTIVE;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean deleted = false;

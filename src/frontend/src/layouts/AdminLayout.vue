@@ -72,6 +72,40 @@
               <template #title>考试管理</template>
             </el-menu-item>
 
+            <el-menu-item index="/admin/evaluations/periods">
+              <el-icon><TrendCharts /></el-icon>
+              <template #title>教学评价</template>
+            </el-menu-item>
+
+            <el-sub-menu index="classrooms">
+              <template #title>
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>教室管理</span>
+              </template>
+              <el-menu-item index="/admin/classrooms">
+                <el-icon><List /></el-icon>
+                <template #title>教室管理</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/classroom-bookings">
+                <el-icon><DocumentChecked /></el-icon>
+                <template #title>借用审批</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/classrooms/statistics">
+                <el-icon><DataLine /></el-icon>
+                <template #title>使用率统计</template>
+              </el-menu-item>
+            </el-sub-menu>
+
+            <el-menu-item index="/admin/status-changes">
+              <el-icon><Files /></el-icon>
+              <template #title>学籍异动</template>
+            </el-menu-item>
+
+            <el-menu-item index="/admin/status-changes/approvals">
+              <el-icon><Select /></el-icon>
+              <template #title>学籍审批</template>
+            </el-menu-item>
+
             <el-menu-item index="/admin/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假审批</template>
@@ -223,7 +257,7 @@ import { ElMessage } from 'element-plus'
 import {
   Platform, TrendCharts, UserFilled, User, Reading, Calendar, Memo, Clock, 
   OfficeBuilding, School, Setting, Document, DataAnalysis, Bell,
-  Expand, Fold, Lock, SwitchButton, DocumentChecked
+  Expand, Fold, Lock, SwitchButton, DocumentChecked, List, DataLine
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

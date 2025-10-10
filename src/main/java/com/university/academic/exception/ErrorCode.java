@@ -165,7 +165,49 @@ public enum ErrorCode {
     INVIGILATOR_NOT_FOUND(4501, "监考安排不存在"),
     TEACHER_INVIGILATION_CONFLICT(4502, "教师监考时间冲突"),
     TEACHER_EXAM_CONFLICT(4503, "教师在该时间有自己的考试"),
-    INVIGILATOR_ALREADY_EXISTS(4504, "该教师已安排监考");
+    INVIGILATOR_ALREADY_EXISTS(4504, "该教师已安排监考"),
+
+    // ========== 教学评价模块错误码 4600-4699 ==========
+    EVALUATION_PERIOD_NOT_ACTIVE(4601, "评价周期未开放"),
+    EVALUATION_ALREADY_SUBMITTED(4602, "已提交过评价"),
+    EVALUATION_NOT_ELIGIBLE(4603, "不符合评价资格"),
+    EVALUATION_PERIOD_NOT_FOUND(4604, "评价周期不存在"),
+    EVALUATION_PERIOD_ALREADY_EXISTS(4605, "该学期已存在评价周期"),
+    EVALUATION_PERIOD_CONFLICT(4606, "评价周期时间冲突"),
+    EVALUATION_NOT_FOUND(4607, "评价记录不存在"),
+    EVALUATION_PERIOD_EXPIRED(4608, "评价周期已结束"),
+    ACTIVE_PERIOD_ALREADY_EXISTS(4609, "已存在活跃的评价周期"),
+    
+    // ========== 教室资源管理模块错误码 4700-4799 ==========
+    CLASSROOM_NOT_FOUND(4701, "教室不存在"),
+    CLASSROOM_ALREADY_EXISTS(4702, "教室编号已存在"),
+    CLASSROOM_NOT_AVAILABLE(4703, "教室不可用"),
+    CLASSROOM_TIME_CONFLICT(4704, "教室时间冲突"),
+    CLASSROOM_CAPACITY_EXCEEDED(4705, "教室容量超限"),
+    CLASSROOM_HAS_BOOKING(4706, "教室有借用记录，无法删除"),
+    CLASSROOM_HAS_USAGE(4707, "教室有使用记录，无法删除"),
+    INVALID_TIME_RANGE(4708, "无效的时间范围"),
+    
+    // ========== 教室借用管理错误码 4800-4899 ==========
+    BOOKING_NOT_FOUND(4801, "借用记录不存在"),
+    BOOKING_ALREADY_APPROVED(4802, "借用申请已审批"),
+    BOOKING_ALREADY_REJECTED(4803, "借用申请已拒绝"),
+    BOOKING_ALREADY_CANCELLED(4804, "借用申请已取消"),
+    BOOKING_CANNOT_CANCEL(4805, "无法取消借用申请"),
+    BOOKING_TIME_CONFLICT(4806, "借用时间冲突"),
+    
+    // ========== 学籍异动管理模块错误码 4900-4999 ==========
+    STATUS_CHANGE_NOT_FOUND(4901, "学籍异动申请不存在"),
+    STATUS_CHANGE_NOT_ALLOWED(4902, "不允许此类异动操作"),
+    STATUS_CHANGE_ALREADY_EXISTS(4903, "已存在进行中的异动申请"),
+    STATUS_CHANGE_ALREADY_PROCESSED(4904, "异动申请已处理，无法修改"),
+    STATUS_CHANGE_CANNOT_CANCEL(4905, "无法取消该异动申请"),
+    TRANSFER_REQUIREMENTS_NOT_MET(4906, "不符合转专业条件"),
+    STUDENT_NOT_SUSPENDED(4907, "学生未处于休学状态"),
+    STUDENT_ALREADY_SUSPENDED(4908, "学生已处于休学状态"),
+    TARGET_MAJOR_NOT_FOUND(4909, "目标专业不存在"),
+    INVALID_DATE_RANGE(4910, "日期范围无效"),
+    SUSPENSION_PERIOD_INVALID(4911, "休学期限无效");
 
     /**
      * 错误码
