@@ -27,16 +27,16 @@
       </el-descriptions>
 
       <!-- 审批进度 -->
-      <div v-if="detail && detail.approvalHistory" style="margin-top: 30px;">
+      <div v-if="detail" style="margin-top: 30px;">
         <h3>审批进度</h3>
-        <el-steps :active="detail.approvalLevel - 1" finish-status="success" style="margin-top: 20px;">
+        <el-steps :active="getActiveStep()" finish-status="success" style="margin-top: 20px;">
           <el-step title="辅导员审批" />
           <el-step title="院系审批" />
           <el-step title="教务处审批" />
         </el-steps>
 
         <!-- 审批历史 -->
-        <div v-if="detail.approvalHistory.length > 0" style="margin-top: 30px;">
+        <div v-if="detail.approvalHistory && detail.approvalHistory.length > 0" style="margin-top: 30px;">
           <h4>审批记录</h4>
           <el-timeline style="margin-top: 15px;">
             <el-timeline-item
@@ -56,6 +56,9 @@
               </div>
             </el-timeline-item>
           </el-timeline>
+        </div>
+        <div v-else style="margin-top: 30px; color: #909399; text-align: center;">
+          <el-empty description="暂无审批记录" :image-size="60" />
         </div>
       </div>
     </el-card>
@@ -120,6 +123,24 @@ const getActionText = (action) => {
     'RETURN': '退回'
   }
   return map[action] || action
+}
+
+const getActiveStep = () => {
+  if (!detail.value) return 0
+  
+  // 如果已经批准或拒绝，显示所有步骤完成
+  if (detail.value.status === 'APPROVED' || detail.value.status === 'REJECTED') {
+    return 3
+  }
+  
+  // 如果有审批历史，根据最高审批级别显示
+  if (detail.value.approvalHistory && detail.value.approvalHistory.length > 0) {
+    const maxLevel = Math.max(...detail.value.approvalHistory.map(item => item.approvalLevel))
+    return maxLevel
+  }
+  
+  // 否则根据当前审批级别显示（当前级别还未完成，所以减1）
+  return detail.value.approvalLevel - 1
 }
 
 const fetchDetail = async () => {

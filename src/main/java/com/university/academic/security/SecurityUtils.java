@@ -1,8 +1,15 @@
 package com.university.academic.security;
 
+import com.university.academic.entity.User;
+import com.university.academic.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * Security工具类
@@ -10,7 +17,16 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @author university
  * @since 2024-01-01
  */
+@Slf4j
+@Component
 public class SecurityUtils {
+
+    private static UserRepository userRepository;
+
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        SecurityUtils.userRepository = userRepository;
+    }
 
     private SecurityUtils() {
         // 工具类，禁止实例化
@@ -22,22 +38,19 @@ public class SecurityUtils {
      * @return 用户ID
      */
     public static Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        String username = getCurrentUsername();
+        if (username == null) {
             return null;
         }
 
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UserDetails) {
-            // 假设UserDetails实现类中包含用户ID
-            // 这里需要根据实际的UserDetails实现来获取用户ID
-            // TODO: 根据username查询用户ID，这里暂时返回null
-            // 实际实现中应该注入UserRepository来查询
-            return null;
-        } else if (principal instanceof String) {
-            // 如果principal是用户名字符串
-            // TODO: 根据username查询用户ID
-            return null;
+        // 根据用户名查询用户ID
+        if (userRepository != null) {
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                return userOpt.get().getId();
+            } else {
+                log.warn("未找到用户: username={}", username);
+            }
         }
 
         return null;

@@ -4,7 +4,23 @@
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 600;">学籍异动详情</span>
-          <el-button @click="goBack">返回</el-button>
+          <div style="display: flex; gap: 12px;">
+            <el-button 
+              v-if="detail && detail.status === 'PENDING'" 
+              type="success" 
+              @click="showApprovalDialog('APPROVE')"
+            >
+              批准
+            </el-button>
+            <el-button 
+              v-if="detail && detail.status === 'PENDING'" 
+              type="danger" 
+              @click="showApprovalDialog('REJECT')"
+            >
+              拒绝
+            </el-button>
+            <el-button @click="goBack">返回</el-button>
+          </div>
         </div>
       </template>
 
@@ -23,37 +39,89 @@
         <el-descriptions-item label="异动原因" :span="2">{{ detail.reason }}</el-descriptions-item>
       </el-descriptions>
 
-      <!-- 审批历史 -->
-      <div v-if="detail && detail.approvalHistory" style="margin-top: 20px;">
-        <h3>审批历史</h3>
-        <el-timeline style="margin-top: 15px;">
-          <el-timeline-item
-            v-for="item in detail.approvalHistory"
-            :key="item.id"
-            :timestamp="item.approvedAt"
-            placement="top"
-          >
-            <p>{{ getLevelText(item.approvalLevel) }} - {{ item.approverName }}</p>
-            <p>审批结果：<el-tag size="small">{{ item.action }}</el-tag></p>
-            <p v-if="item.comment">审批意见：{{ item.comment }}</p>
-          </el-timeline-item>
-        </el-timeline>
+      <!-- 审批进度和历史 -->
+      <div v-if="detail" style="margin-top: 30px;">
+        <h3>审批进度</h3>
+        <el-steps :active="getActiveStep()" finish-status="success" style="margin-top: 20px;">
+          <el-step title="辅导员审批" />
+          <el-step title="院系审批" />
+          <el-step title="教务处审批" />
+        </el-steps>
+
+        <!-- 审批历史 -->
+        <div v-if="detail.approvalHistory && detail.approvalHistory.length > 0" style="margin-top: 30px;">
+          <h4>审批记录</h4>
+          <el-timeline style="margin-top: 15px;">
+            <el-timeline-item
+              v-for="item in detail.approvalHistory"
+              :key="item.id"
+              :timestamp="item.approvedAt"
+              placement="top"
+            >
+              <div>
+                <div>{{ getLevelText(item.approvalLevel) }} - {{ item.approverName }}</div>
+                <div style="margin-top: 5px;">
+                  审批结果：<el-tag size="small">{{ item.action }}</el-tag>
+                </div>
+                <div v-if="item.comment" style="margin-top: 5px; color: #606266;">
+                  审批意见：{{ item.comment }}
+                </div>
+              </div>
+            </el-timeline-item>
+          </el-timeline>
+        </div>
+        <div v-else style="margin-top: 30px; color: #909399; text-align: center;">
+          <el-empty description="暂无审批记录" :image-size="60" />
+        </div>
       </div>
     </el-card>
+
+    <!-- 审批对话框 -->
+    <el-dialog
+      v-model="approvalDialogVisible"
+      :title="approvalAction === 'APPROVE' ? '批准申请' : '拒绝申请'"
+      width="500px"
+    >
+      <el-form :model="approvalForm" label-width="80px">
+        <el-form-item label="审批意见">
+          <el-input
+            v-model="approvalForm.comment"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入审批意见"
+            maxlength="200"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="approvalDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitApproval" :loading="submitting">
+          确认{{ approvalAction === 'APPROVE' ? '批准' : '拒绝' }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getAdminApplicationDetail } from '@/api/statusChange'
+import { getAdminApplicationDetail, adminApproveApplication } from '@/api/statusChange'
 
 const router = useRouter()
 const route = useRoute()
 
 const detail = ref(null)
 const loading = ref(false)
+const approvalDialogVisible = ref(false)
+const approvalAction = ref('')
+const submitting = ref(false)
+
+const approvalForm = reactive({
+  comment: ''
+})
 
 const getTypeText = (type) => {
   const map = {
@@ -94,6 +162,24 @@ const getLevelText = (level) => {
   return map[level] || `级别${level}`
 }
 
+const getActiveStep = () => {
+  if (!detail.value) return 0
+  
+  // 如果已经批准或拒绝，显示所有步骤完成
+  if (detail.value.status === 'APPROVED' || detail.value.status === 'REJECTED') {
+    return 3
+  }
+  
+  // 如果有审批历史，根据最高审批级别显示
+  if (detail.value.approvalHistory && detail.value.approvalHistory.length > 0) {
+    const maxLevel = Math.max(...detail.value.approvalHistory.map(item => item.approvalLevel))
+    return maxLevel
+  }
+  
+  // 否则根据当前审批级别显示（当前级别还未完成，所以减1）
+  return detail.value.approvalLevel - 1
+}
+
 const fetchDetail = async () => {
   loading.value = true
   try {
@@ -103,6 +189,34 @@ const fetchDetail = async () => {
     ElMessage.error('获取详情失败')
   } finally {
     loading.value = false
+  }
+}
+
+const showApprovalDialog = (action) => {
+  approvalAction.value = action
+  approvalForm.comment = ''
+  approvalDialogVisible.value = true
+}
+
+const submitApproval = async () => {
+  try {
+    submitting.value = true
+    
+    await adminApproveApplication(route.params.id, {
+      action: approvalAction.value,
+      comment: approvalForm.comment
+    })
+    
+    ElMessage.success('审批成功')
+    approvalDialogVisible.value = false
+    
+    // 重新加载详情
+    await fetchDetail()
+  } catch (error) {
+    console.error('审批失败:', error)
+    ElMessage.error(error.message || '审批失败')
+  } finally {
+    submitting.value = false
   }
 }
 

@@ -3,7 +3,9 @@ package com.university.academic.service.impl;
 import com.university.academic.dto.CreateNotificationRequest;
 import com.university.academic.entity.ApprovalStatus;
 import com.university.academic.entity.StudentStatusChange;
+import com.university.academic.entity.User;
 import com.university.academic.repository.StudentStatusChangeRepository;
+import com.university.academic.repository.UserRepository;
 import com.university.academic.service.ApprovalTimeoutService;
 import com.university.academic.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class ApprovalTimeoutServiceImpl implements ApprovalTimeoutService {
 
     private final StudentStatusChangeRepository statusChangeRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -145,7 +148,9 @@ public class ApprovalTimeoutServiceImpl implements ApprovalTimeoutService {
                     .targetRole("ADMIN")
                     .build();
 
-            notificationService.publishNotification(request, 1L); // TODO: 使用实际的发布者ID
+            // 使用第一个管理员用户作为系统通知发布者
+            Long publisherId = getSystemPublisherId();
+            notificationService.publishNotification(request, publisherId);
 
             log.info("超时通知已发送: 申请ID={}", statusChange.getId());
 
@@ -184,7 +189,9 @@ public class ApprovalTimeoutServiceImpl implements ApprovalTimeoutService {
                     .targetRole("ADMIN")
                     .build();
 
-            notificationService.publishNotification(request, 1L); // TODO: 使用实际的发布者ID
+            // 使用第一个管理员用户作为系统通知发布者
+            Long publisherId = getSystemPublisherId();
+            notificationService.publishNotification(request, publisherId);
 
             log.info("即将超时通知已发送: 申请ID={}", statusChange.getId());
 
@@ -206,6 +213,21 @@ public class ApprovalTimeoutServiceImpl implements ApprovalTimeoutService {
             case 3 -> "教务处";
             default -> "未知";
         };
+    }
+
+    /**
+     * 获取系统通知发布者ID
+     * 使用第一个管理员用户作为系统通知发布者
+     *
+     * @return 发布者ID
+     */
+    private Long getSystemPublisherId() {
+        return userRepository.findFirstAdmin()
+                .map(User::getId)
+                .orElseGet(() -> {
+                    log.warn("未找到管理员用户，使用默认ID: 1");
+                    return 1L;
+                });
     }
 }
 

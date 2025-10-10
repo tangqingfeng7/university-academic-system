@@ -4,9 +4,13 @@ import com.university.academic.vo.Result;
 import com.university.academic.dto.StatusChangeQueryDTO;
 import com.university.academic.dto.StatusChangeStatisticsDTO;
 import com.university.academic.dto.StudentStatusChangeDTO;
+import com.university.academic.dto.ApprovalRequest;
 import com.university.academic.dto.converter.StatusChangeConverter;
 import com.university.academic.entity.StudentStatusChange;
+import com.university.academic.repository.StudentStatusChangeRepository;
 import com.university.academic.service.StatusChangeStatisticsService;
+import com.university.academic.service.StatusChangeApprovalService;
+import com.university.academic.security.CustomUserDetailsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,9 +24,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -42,6 +48,9 @@ public class AdminStatusChangeController {
 
     private final StatusChangeStatisticsService statisticsService;
     private final StatusChangeConverter statusChangeConverter;
+    private final StudentStatusChangeRepository statusChangeRepository;
+    private final StatusChangeApprovalService approvalService;
+    private final CustomUserDetailsService userDetailsService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -68,18 +77,34 @@ public class AdminStatusChangeController {
     ) {
         log.info("管理员查询申请详情: {}", id);
 
-        // 使用统计服务查询详情（管理员可查看所有申请）
-        StatusChangeQueryDTO queryDTO = StatusChangeQueryDTO.builder().build();
-        Page<StudentStatusChange> page = statisticsService.queryStatusChanges(queryDTO, PageRequest.of(0, 1));
-
-        // 这里简化处理，实际应该在Service中添加一个getById方法
-        StudentStatusChange statusChange = page.getContent().stream()
-                .filter(sc -> sc.getId().equals(id))
-                .findFirst()
+        // 使用 Repository 的 findByIdWithDetails 方法查询（已预加载关联对象）
+        StudentStatusChange statusChange = statusChangeRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("申请不存在"));
 
         StudentStatusChangeDTO dto = statusChangeConverter.toDTO(statusChange, true);
         return Result.success(dto);
+    }
+
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "审批异动申请", description = "管理员审批异动申请（批准、拒绝或退回）")
+    public Result<StudentStatusChangeDTO> approveApplication(
+            @Parameter(description = "异动申请ID") @PathVariable Long id,
+            @Parameter(description = "审批信息") @Valid @RequestBody ApprovalRequest request,
+            Authentication authentication
+    ) {
+        Long approverId = userDetailsService.getUserIdFromAuth(authentication);
+        log.info("管理员{}审批申请{}: {}", approverId, id, request.getAction());
+
+        StudentStatusChange statusChange = approvalService.approveApplication(
+                id,
+                approverId,
+                request.getAction(),
+                request.getComment()
+        );
+
+        StudentStatusChangeDTO dto = statusChangeConverter.toDTO(statusChange, true);
+        return Result.success("审批成功", dto);
     }
 
     @GetMapping("/overdue")

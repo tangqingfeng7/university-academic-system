@@ -4,7 +4,6 @@ import com.university.academic.dto.StatusChangeApprovalDTO;
 import com.university.academic.dto.StudentStatusChangeDTO;
 import com.university.academic.entity.*;
 import com.university.academic.repository.MajorRepository;
-import com.university.academic.repository.StatusChangeApprovalRepository;
 import com.university.academic.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,6 @@ public class StatusChangeConverter {
 
     private final MajorRepository majorRepository;
     private final UserRepository userRepository;
-    private final StatusChangeApprovalRepository approvalRepository;
-
     /**
      * 将实体转换为DTO
      *
@@ -89,10 +86,16 @@ public class StatusChangeConverter {
 
         // 包含审批历史
         if (includeApprovalHistory) {
-            List<StatusChangeApproval> approvals = approvalRepository.findByStatusChangeId(entity.getId());
-            dto.setApprovalHistory(approvals.stream()
-                    .map(this::toApprovalDTO)
-                    .collect(Collectors.toList()));
+            // 优先使用实体中已加载的审批历史（避免额外查询）
+            List<StatusChangeApproval> approvals = entity.getApprovals();
+            if (approvals != null && !approvals.isEmpty()) {
+                dto.setApprovalHistory(approvals.stream()
+                        .map(this::toApprovalDTO)
+                        .collect(Collectors.toList()));
+            } else {
+                // 即使没有审批历史，也设置为空列表（避免前端判断为 null）
+                dto.setApprovalHistory(new java.util.ArrayList<>());
+            }
         }
 
         return dto;

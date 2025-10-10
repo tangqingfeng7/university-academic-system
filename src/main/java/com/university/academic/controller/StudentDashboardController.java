@@ -1,6 +1,5 @@
 package com.university.academic.controller;
 
-import com.university.academic.entity.Grade;
 import com.university.academic.entity.Semester;
 import com.university.academic.entity.Student;
 import com.university.academic.entity.User;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,72 +50,67 @@ public class StudentDashboardController {
         
         log.info("获取学生仪表盘统计数据: userId={}", user.getId());
         
-        Student student = studentService.findByUserIdWithDetails(user.getId());
         Map<String, Object> statistics = new HashMap<>();
 
-        // 学生基本信息
-        statistics.put("studentName", student.getName());
-        statistics.put("studentNo", student.getStudentNo());
-        statistics.put("major", student.getMajor() != null ? student.getMajor().getName() : "");
-        statistics.put("className", student.getClassName());
-        statistics.put("enrollmentYear", student.getEnrollmentYear());
-
-        // 当前学期统计
         try {
-            Semester activeSemester = semesterService.findActiveSemester();
-            statistics.put("activeSemester", Map.of(
-                "id", activeSemester.getId(),
-                "name", activeSemester.getSemesterNameWithWeek(),
-                "academicYear", activeSemester.getAcademicYear(),
-                "semesterType", activeSemester.getSemesterType(),
-                "currentWeek", activeSemester.getCurrentWeek(),
-                "totalWeeks", activeSemester.getTotalWeeks()
-            ));
+            Student student = studentService.findByUserIdWithDetails(user.getId());
+            
+            // 学生基本信息
+            statistics.put("studentName", student.getName());
+            statistics.put("studentNo", student.getStudentNo());
+            statistics.put("major", student.getMajor() != null ? student.getMajor().getName() : "");
+            statistics.put("className", student.getClassName() != null ? student.getClassName() : "");
+            statistics.put("enrollmentYear", student.getEnrollmentYear());
 
-            // 本学期已选课程数
-            long currentCourses = selectionService.countByStudentAndSemester(
-                student.getId(), activeSemester.getId()
-            );
-            statistics.put("currentCourses", currentCourses);
+            // 当前学期统计
+            try {
+                Semester activeSemester = semesterService.findActiveSemester();
+                statistics.put("activeSemester", Map.of(
+                    "id", activeSemester.getId(),
+                    "name", activeSemester.getSemesterNameWithWeek(),
+                    "academicYear", activeSemester.getAcademicYear(),
+                    "semesterType", activeSemester.getSemesterType(),
+                    "currentWeek", activeSemester.getCurrentWeek(),
+                    "totalWeeks", activeSemester.getTotalWeeks()
+                ));
 
+                // 本学期已选课程数
+                long currentCourses = selectionService.countByStudentAndSemester(
+                    student.getId(), activeSemester.getId()
+                );
+                statistics.put("currentCourses", currentCourses);
+
+            } catch (Exception e) {
+                log.warn("未找到活动学期", e);
+                statistics.put("activeSemester", null);
+                statistics.put("currentCourses", 0);
+            }
+
+            // 总体统计 - 使用Service层方法，确保在事务内完成所有操作
+            Map<String, Object> gradeStatistics = gradeService.getStudentDashboardStatistics(student.getId());
+            statistics.putAll(gradeStatistics);
+
+            // 欢迎信息
+            String greeting = getGreeting();
+            statistics.put("greeting", greeting);
+            statistics.put("currentDate", LocalDate.now().toString());
+            
         } catch (Exception e) {
-            log.warn("未找到活动学期", e);
+            log.error("获取学生仪表盘统计数据失败", e);
+            // 返回默认值
+            statistics.put("studentName", "");
+            statistics.put("studentNo", "");
+            statistics.put("major", "");
+            statistics.put("className", "");
+            statistics.put("enrollmentYear", 0);
             statistics.put("activeSemester", null);
             statistics.put("currentCourses", 0);
+            statistics.put("totalCredits", 0.0);
+            statistics.put("gpa", 0.0);
+            statistics.put("completedCourses", 0);
+            statistics.put("greeting", getGreeting());
+            statistics.put("currentDate", LocalDate.now().toString());
         }
-
-        // 总体统计
-        // 已获得总学分
-        List<Grade> publishedGrades = gradeService.findPublishedByStudent(student.getId());
-        double totalCredits = publishedGrades.stream()
-            .filter(g -> g.getTotalScore() != null && g.getTotalScore().doubleValue() >= 60)
-            .mapToDouble(g -> {
-                if (g.getCourseSelection() != null && 
-                    g.getCourseSelection().getOffering() != null &&
-                    g.getCourseSelection().getOffering().getCourse() != null) {
-                    return g.getCourseSelection().getOffering().getCourse().getCredits();
-                }
-                return 0;
-            })
-            .sum();
-        statistics.put("totalCredits", totalCredits);
-
-        // 平均绩点（简化计算：平均分/10-5）
-        double avgScore = publishedGrades.stream()
-            .filter(g -> g.getTotalScore() != null)
-            .mapToDouble(g -> g.getTotalScore().doubleValue())
-            .average()
-            .orElse(0.0);
-        double gpa = avgScore > 0 ? Math.max(0, avgScore / 10.0 - 5.0) : 0.0;
-        statistics.put("gpa", Math.round(gpa * 100.0) / 100.0);
-
-        // 已完成课程数
-        statistics.put("completedCourses", publishedGrades.size());
-
-        // 欢迎信息
-        String greeting = getGreeting();
-        statistics.put("greeting", greeting);
-        statistics.put("currentDate", LocalDate.now().toString());
 
         return Result.success(statistics);
     }

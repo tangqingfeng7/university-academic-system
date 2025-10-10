@@ -19,7 +19,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 学生学籍异动Controller
@@ -70,10 +69,8 @@ public class StudentStatusChangeController {
         Long studentId = userDetailsService.getStudentIdFromAuth(authentication);
         log.info("学生{}查询异动申请", studentId);
 
-        List<StudentStatusChange> statusChanges = statusChangeService.getStudentHistory(studentId);
-        List<StudentStatusChangeDTO> dtoList = statusChanges.stream()
-                .map(sc -> statusChangeConverter.toDTO(sc, false))
-                .collect(Collectors.toList());
+        // 使用Service层方法，在事务内完成DTO转换
+        List<StudentStatusChangeDTO> dtoList = statusChangeService.getStudentHistoryDTO(studentId);
 
         return Result.success(dtoList);
     }
@@ -115,10 +112,8 @@ public class StudentStatusChangeController {
         Long studentId = userDetailsService.getStudentIdFromAuth(authentication);
         log.info("学生{}查询异动历史", studentId);
 
-        List<StudentStatusChange> history = statusChangeService.getStudentHistory(studentId);
-        List<StudentStatusChangeDTO> dtoList = history.stream()
-                .map(sc -> statusChangeConverter.toDTO(sc, false))
-                .collect(Collectors.toList());
+        // 使用Service层方法，在事务内完成DTO转换
+        List<StudentStatusChangeDTO> dtoList = statusChangeService.getStudentHistoryDTO(studentId);
 
         return Result.success(dtoList);
     }

@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 成绩服务类
@@ -78,7 +80,20 @@ public class GradeService {
      */
     @Transactional(readOnly = true)
     public List<Grade> findPublishedByStudent(Long studentId) {
-        return gradeRepository.findPublishedByStudentId(studentId);
+        List<Grade> grades = gradeRepository.findPublishedByStudentId(studentId);
+        // 强制初始化所有需要的关联以避免懒加载异常
+        grades.forEach(grade -> {
+            if (grade.getCourseSelection() != null) {
+                grade.getCourseSelection().getId();
+                if (grade.getCourseSelection().getOffering() != null) {
+                    grade.getCourseSelection().getOffering().getId();
+                    if (grade.getCourseSelection().getOffering().getCourse() != null) {
+                        grade.getCourseSelection().getOffering().getCourse().getCredits();
+                    }
+                }
+            }
+        });
+        return grades;
     }
 
     /**
@@ -335,6 +350,50 @@ public class GradeService {
     @Transactional(readOnly = true)
     public long countPendingGradesByTeacher(Long teacherId) {
         return gradeRepository.countPendingByTeacherId(teacherId);
+    }
+
+    /**
+     * 获取学生仪表盘统计信息
+     * 在事务中完整加载所有需要的数据，避免懒加载异常
+     *
+     * @param studentId 学生ID
+     * @return 统计信息Map
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getStudentDashboardStatistics(Long studentId) {
+        Map<String, Object> result = new HashMap<>();
+        
+        List<Grade> grades = gradeRepository.findPublishedByStudentId(studentId);
+        
+        double totalCredits = 0.0;
+        double totalScore = 0.0;
+        int scoreCount = 0;
+        
+        for (Grade grade : grades) {
+            if (grade.getTotalScore() != null) {
+                totalScore += grade.getTotalScore().doubleValue();
+                scoreCount++;
+                
+                // 及格的课程计算学分
+                if (grade.getTotalScore().doubleValue() >= 60) {
+                    if (grade.getCourseSelection() != null && 
+                        grade.getCourseSelection().getOffering() != null &&
+                        grade.getCourseSelection().getOffering().getCourse() != null) {
+                        totalCredits += grade.getCourseSelection().getOffering().getCourse().getCredits();
+                    }
+                }
+            }
+        }
+        
+        result.put("totalCredits", totalCredits);
+        result.put("completedCourses", grades.size());
+        
+        // 计算GPA
+        double avgScore = scoreCount > 0 ? totalScore / scoreCount : 0.0;
+        double gpa = avgScore > 0 ? Math.max(0, avgScore / 10.0 - 5.0) : 0.0;
+        result.put("gpa", Math.round(gpa * 100.0) / 100.0);
+        
+        return result;
     }
 
     /**

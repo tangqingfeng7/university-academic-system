@@ -73,7 +73,7 @@ export function getMyHistory() {
  */
 export function getPendingApprovals(params) {
   return request({
-    url: '/approver/status-changes',
+    url: '/approver/status-changes/pending',
     method: 'get',
     params
   })
@@ -135,6 +135,19 @@ export function getAdminApplicationDetail(id) {
   return request({
     url: `/admin/status-changes/${id}`,
     method: 'get'
+  })
+}
+
+/**
+ * 管理员审批申请
+ * @param {number} id - 申请ID
+ * @param {Object} data - 审批数据 { action, comment }
+ */
+export function adminApproveApplication(id, data) {
+  return request({
+    url: `/admin/status-changes/${id}/approve`,
+    method: 'post',
+    data
   })
 }
 

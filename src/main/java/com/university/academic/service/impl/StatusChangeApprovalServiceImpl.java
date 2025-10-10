@@ -120,9 +120,25 @@ public class StatusChangeApprovalServiceImpl implements StatusChangeApprovalServ
     @Override
     @Transactional(readOnly = true)
     public Page<StudentStatusChange> getPendingApplications(Long approverId, Pageable pageable) {
-        // TODO: 实际应根据审批人的角色和权限过滤待审批申请
-        // 目前简化为查询所有待审批的申请
-        return statusChangeRepository.findByStatus(ApprovalStatus.PENDING, pageable);
+        log.info("查询审批人{}的待审批申请", approverId);
+        
+        // 获取审批人的审批级别
+        Integer approvalLevel = workflowService.getUserApprovalLevel(approverId);
+        
+        if (approvalLevel == null || approvalLevel < 1) {
+            log.warn("用户{}没有审批权限", approverId);
+            // 返回空结果
+            return Page.empty(pageable);
+        }
+        
+        // 查询该审批级别的所有待审批申请
+        Page<StudentStatusChange> pendingApplications = 
+                statusChangeRepository.findPendingByApprovalLevel(approvalLevel, pageable);
+        
+        log.info("审批人{}（级别{}）查询到{}个待审批申请", 
+                approverId, approvalLevel, pendingApplications.getTotalElements());
+        
+        return pendingApplications;
     }
 
     @Override

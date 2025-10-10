@@ -1,5 +1,6 @@
 package com.university.academic.service;
 
+import com.university.academic.dto.StudentStatusChangeDTO;
 import com.university.academic.entity.ApprovalStatus;
 import com.university.academic.entity.ChangeType;
 import com.university.academic.entity.StudentStatusChange;
@@ -133,5 +134,13 @@ public interface StudentStatusChangeService {
      * @return 异动申请
      */
     StudentStatusChange getApplicationById(Long applicationId, Long studentId);
+
+    /**
+     * 查询学生异动历史并转换为DTO（在事务内完成）
+     *
+     * @param studentId 学生ID
+     * @return 异动记录DTO列表
+     */
+    List<StudentStatusChangeDTO> getStudentHistoryDTO(Long studentId);
 }
 

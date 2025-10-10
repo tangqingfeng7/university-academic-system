@@ -53,6 +53,14 @@ public class StatusChangeStatisticsServiceImpl implements StatusChangeStatistics
         log.info("查询异动记录，条件: {}", queryDTO);
 
         Specification<StudentStatusChange> spec = (root, query, cb) -> {
+            // 预加载关联对象（避免 LazyInitializationException）
+            // 注意：只在非 COUNT 查询时使用 fetch，COUNT 查询不需要加载关联对象
+            if (query != null && query.getResultType() != Long.class && query.getResultType() != long.class) {
+                query.distinct(true);
+                root.fetch("student", jakarta.persistence.criteria.JoinType.LEFT)
+                    .fetch("major", jakarta.persistence.criteria.JoinType.LEFT);
+            }
+            
             List<Predicate> predicates = new ArrayList<>();
 
             // 软删除过滤
@@ -465,6 +473,14 @@ public class StatusChangeStatisticsServiceImpl implements StatusChangeStatistics
 
     private Specification<StudentStatusChange> buildSpecification(StatusChangeQueryDTO queryDTO) {
         return (root, query, cb) -> {
+            // 预加载关联对象（避免 LazyInitializationException）
+            // 注意：只在非 COUNT 查询时使用 fetch，COUNT 查询不需要加载关联对象
+            if (query != null && query.getResultType() != Long.class && query.getResultType() != long.class) {
+                query.distinct(true);
+                root.fetch("student", jakarta.persistence.criteria.JoinType.LEFT)
+                    .fetch("major", jakarta.persistence.criteria.JoinType.LEFT);
+            }
+            
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("deleted"), false));
 

@@ -41,7 +41,9 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
      * @param studentId 学生ID
      * @return 异动记录列表
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query("SELECT DISTINCT sc FROM StudentStatusChange sc " +
+           "LEFT JOIN FETCH sc.student s " +
+           "LEFT JOIN FETCH s.major " +
            "WHERE sc.student.id = :studentId AND sc.deleted = false " +
            "ORDER BY sc.createdAt DESC")
     List<StudentStatusChange> findAllByStudentId(@Param("studentId") Long studentId);
@@ -53,9 +55,13 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
      * @param pageable 分页参数
      * @return 异动记录分页列表
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query(value = "SELECT DISTINCT sc FROM StudentStatusChange sc " +
+           "LEFT JOIN FETCH sc.student s " +
+           "LEFT JOIN FETCH s.major " +
            "WHERE sc.status = :status AND sc.deleted = false " +
-           "ORDER BY sc.createdAt DESC")
+           "ORDER BY sc.createdAt DESC",
+           countQuery = "SELECT COUNT(sc) FROM StudentStatusChange sc " +
+           "WHERE sc.status = :status AND sc.deleted = false")
     Page<StudentStatusChange> findByStatus(@Param("status") ApprovalStatus status, Pageable pageable);
 
     /**
@@ -65,9 +71,13 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
      * @param pageable 分页参数
      * @return 异动记录分页列表
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query(value = "SELECT DISTINCT sc FROM StudentStatusChange sc " +
+           "LEFT JOIN FETCH sc.student s " +
+           "LEFT JOIN FETCH s.major " +
            "WHERE sc.type = :type AND sc.deleted = false " +
-           "ORDER BY sc.createdAt DESC")
+           "ORDER BY sc.createdAt DESC",
+           countQuery = "SELECT COUNT(sc) FROM StudentStatusChange sc " +
+           "WHERE sc.type = :type AND sc.deleted = false")
     Page<StudentStatusChange> findByType(@Param("type") ChangeType type, Pageable pageable);
 
     /**
@@ -77,10 +87,30 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
      * @param pageable   分页参数
      * @return 异动记录分页列表
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query(value = "SELECT DISTINCT sc FROM StudentStatusChange sc " +
+           "LEFT JOIN FETCH sc.student s " +
+           "LEFT JOIN FETCH s.major " +
            "WHERE sc.currentApproverId = :approverId AND sc.status = 'PENDING' AND sc.deleted = false " +
-           "ORDER BY sc.createdAt ASC")
+           "ORDER BY sc.createdAt ASC",
+           countQuery = "SELECT COUNT(sc) FROM StudentStatusChange sc " +
+           "WHERE sc.currentApproverId = :approverId AND sc.status = 'PENDING' AND sc.deleted = false")
     Page<StudentStatusChange> findPendingByApproverId(@Param("approverId") Long approverId, Pageable pageable);
+
+    /**
+     * 根据审批级别查询待审批记录
+     *
+     * @param approvalLevel 审批级别
+     * @param pageable      分页参数
+     * @return 异动记录分页列表
+     */
+    @Query(value = "SELECT DISTINCT sc FROM StudentStatusChange sc " +
+           "LEFT JOIN FETCH sc.student s " +
+           "LEFT JOIN FETCH s.major " +
+           "WHERE sc.approvalLevel = :approvalLevel AND sc.status = 'PENDING' AND sc.deleted = false " +
+           "ORDER BY sc.createdAt ASC",
+           countQuery = "SELECT COUNT(sc) FROM StudentStatusChange sc " +
+           "WHERE sc.approvalLevel = :approvalLevel AND sc.status = 'PENDING' AND sc.deleted = false")
+    Page<StudentStatusChange> findPendingByApprovalLevel(@Param("approvalLevel") Integer approvalLevel, Pageable pageable);
 
     /**
      * 查询学生是否有进行中的异动申请
@@ -93,27 +123,31 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
     boolean existsPendingByStudentId(@Param("studentId") Long studentId);
 
     /**
-     * 根据ID和学生ID查询异动记录
+     * 根据ID和学生ID查询异动记录（包含审批历史）
      *
      * @param id        异动ID
      * @param studentId 学生ID
      * @return 异动记录
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query("SELECT DISTINCT sc FROM StudentStatusChange sc " +
            "LEFT JOIN FETCH sc.student s " +
            "LEFT JOIN FETCH s.major " +
+           "LEFT JOIN FETCH sc.approvals a " +
+           "LEFT JOIN FETCH a.approver " +
            "WHERE sc.id = :id AND sc.student.id = :studentId AND sc.deleted = false")
     Optional<StudentStatusChange> findByIdAndStudentId(@Param("id") Long id, @Param("studentId") Long studentId);
 
     /**
-     * 根据ID查询异动记录（带关联数据）
+     * 根据ID查询异动记录（带关联数据和审批历史）
      *
      * @param id 异动ID
      * @return 异动记录
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query("SELECT DISTINCT sc FROM StudentStatusChange sc " +
            "LEFT JOIN FETCH sc.student s " +
            "LEFT JOIN FETCH s.major " +
+           "LEFT JOIN FETCH sc.approvals a " +
+           "LEFT JOIN FETCH a.approver " +
            "WHERE sc.id = :id AND sc.deleted = false")
     Optional<StudentStatusChange> findByIdWithDetails(@Param("id") Long id);
 
@@ -236,9 +270,13 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
      * @param pageable 分页参数
      * @return 超时申请列表
      */
-    @Query("SELECT sc FROM StudentStatusChange sc " +
+    @Query(value = "SELECT DISTINCT sc FROM StudentStatusChange sc " +
+           "LEFT JOIN FETCH sc.student s " +
+           "LEFT JOIN FETCH s.major " +
            "WHERE sc.isOverdue = true AND sc.deleted = false " +
-           "ORDER BY sc.deadline ASC")
+           "ORDER BY sc.deadline ASC",
+           countQuery = "SELECT COUNT(sc) FROM StudentStatusChange sc " +
+           "WHERE sc.isOverdue = true AND sc.deleted = false")
     Page<StudentStatusChange> findOverdueApplications(Pageable pageable);
 
     /**

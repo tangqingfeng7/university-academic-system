@@ -27,6 +27,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import com.university.academic.dto.converter.StatusChangeConverter;
+import com.university.academic.dto.StudentStatusChangeDTO;
 
 /**
  * 学籍异动管理Service实现类
@@ -42,6 +45,7 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
     private final StudentService studentService;
     private final MajorService majorService;
     private final ApprovalWorkflowService workflowService;
+    private final StatusChangeConverter statusChangeConverter;
 
     @Value("${file.upload.path:/uploads/status-change}")
     private String uploadPath;
@@ -138,7 +142,17 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
     @Override
     @Transactional(readOnly = true)
     public List<StudentStatusChange> getStudentHistory(Long studentId) {
-        return statusChangeRepository.findAllByStudentId(studentId);
+        List<StudentStatusChange> changes = statusChangeRepository.findAllByStudentId(studentId);
+        // 强制初始化关联实体，避免懒加载异常
+        changes.forEach(change -> {
+            if (change.getStudent() != null) {
+                change.getStudent().getName();
+                if (change.getStudent().getMajor() != null) {
+                    change.getStudent().getMajor().getName();
+                }
+            }
+        });
+        return changes;
     }
 
     @Override
@@ -239,11 +253,20 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
             throw new BusinessException(ErrorCode.SUSPENSION_PERIOD_INVALID);
         }
 
-        // 4. 检查学生当前状态（如果学生已经休学，不能再次申请休学）
-        // TODO: 需要在Student实体中添加status字段来记录学生当前状态
-        // 或者通过查询最近的已批准的休学记录来判断
+        // 4. 检查学生当前状态（如果学生已经休学或退学，不能再次申请休学）
+        StudentStatus currentStatus = student.getStatus();
+        if (currentStatus == StudentStatus.SUSPENDED) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, "学生当前已处于休学状态，不能重复申请休学");
+        }
+        if (currentStatus == StudentStatus.WITHDRAWN) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, "学生已退学，不能申请休学");
+        }
+        if (currentStatus == StudentStatus.GRADUATED) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, "学生已毕业，不能申请休学");
+        }
 
-        log.info("休学申请验证通过: 学生={}, 期限={}个月", student.getName(), months);
+        log.info("休学申请验证通过: 学生={}, 当前状态={}, 期限={}个月", 
+                student.getName(), currentStatus.getDescription(), months);
     }
 
     /**
@@ -258,21 +281,44 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
             throw new BusinessException(ErrorCode.INVALID_DATE_RANGE);
         }
 
-        // 2. 检查学生是否处于休学状态
-        // TODO: 需要查询学生最近的已批准的休学记录，确保学生确实在休学中
-        // 临时简化处理：查询是否有已批准的休学记录
-        List<StudentStatusChange> history = statusChangeRepository.findAllByStudentId(student.getId());
-        boolean hasSuspension = history.stream()
-                .anyMatch(sc -> sc.getType() == ChangeType.SUSPENSION &&
-                               sc.getStatus() == ApprovalStatus.APPROVED);
-
-        if (!hasSuspension) {
-            log.warn("学生 {} 没有休学记录，不能申请复学", student.getName());
-            // 暂时不抛出异常，实际应该检查学生当前状态
-            // throw new BusinessException(ErrorCode.STUDENT_NOT_SUSPENDED);
+        // 2. 检查学生当前状态是否为休学
+        StudentStatus currentStatus = student.getStatus();
+        if (currentStatus != StudentStatus.SUSPENDED) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, 
+                    "学生当前状态不是休学，不能申请复学。当前状态: " + currentStatus.getDescription());
         }
 
-        log.info("复学申请验证通过: 学生={}", student.getName());
+        // 3. 查询学生最近的已批准的休学记录，确保学生确实在休学中
+        List<StudentStatusChange> history = statusChangeRepository.findAllByStudentId(student.getId());
+        
+        // 查找最近的已批准休学记录
+        StudentStatusChange latestSuspension = history.stream()
+                .filter(sc -> sc.getType() == ChangeType.SUSPENSION 
+                           && sc.getStatus() == ApprovalStatus.APPROVED)
+                .max((sc1, sc2) -> sc1.getCreatedAt().compareTo(sc2.getCreatedAt()))
+                .orElse(null);
+
+        if (latestSuspension == null) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, "未找到已批准的休学记录");
+        }
+
+        // 4. 验证是否已有复学申请
+        boolean hasResumption = history.stream()
+                .anyMatch(sc -> sc.getType() == ChangeType.RESUMPTION 
+                             && sc.getStatus() == ApprovalStatus.APPROVED
+                             && sc.getCreatedAt().isAfter(latestSuspension.getCreatedAt()));
+
+        if (hasResumption) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, "已经有复学记录，不能重复申请");
+        }
+
+        // 5. 验证复学日期是否合理（不能早于休学开始日期）
+        if (latestSuspension.getStartDate() != null && startDate.isBefore(latestSuspension.getStartDate())) {
+            throw new BusinessException(ErrorCode.INVALID_DATE_RANGE, "复学日期不能早于休学开始日期");
+        }
+
+        log.info("复学申请验证通过: 学生={}, 当前状态={}, 休学开始日期={}", 
+                student.getName(), currentStatus.getDescription(), latestSuspension.getStartDate());
     }
 
     /**
@@ -292,18 +338,57 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
 
         // 3. 验证是否转入同一专业
         if (student.getMajor().getId().equals(targetMajorId)) {
-            throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET);
+            throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, "不能转入当前专业");
         }
 
-        // 4. 验证转专业条件
-        // TODO: 可以添加更多条件验证，例如：
-        // - 学生成绩要求（GPA >= 3.0）
-        // - 学分要求（已修满一定学分）
-        // - 目标专业是否接受转入
-        // - 学生年级限制（通常只允许大一、大二转专业）
+        // 4. 检查学生当前状态（只有在读状态的学生才能转专业）
+        StudentStatus currentStatus = student.getStatus();
+        if (currentStatus != StudentStatus.ACTIVE) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_NOT_ALLOWED, 
+                    "只有在读状态的学生才能申请转专业。当前状态: " + currentStatus.getDescription());
+        }
 
-        log.info("转专业申请验证通过: 学生={}, 当前专业={}, 目标专业={}",
-                student.getName(), student.getMajor().getName(), targetMajor.getName());
+        // 5. 验证学生年级限制（通常只允许大一、大二学生转专业）
+        int currentYear = LocalDate.now().getYear();
+        int studyYears = currentYear - student.getEnrollmentYear();
+        if (studyYears > 2) {
+            throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, 
+                    "转专业仅限大一、大二学生申请，您已就读" + studyYears + "年");
+        }
+
+        // 6. 检查是否有未完成的其他异动申请
+        List<StudentStatusChange> history = statusChangeRepository.findAllByStudentId(student.getId());
+        boolean hasOtherPendingChange = history.stream()
+                .anyMatch(sc -> sc.getStatus() == ApprovalStatus.PENDING 
+                             && sc.getType() != ChangeType.TRANSFER);
+        
+        if (hasOtherPendingChange) {
+            throw new BusinessException(ErrorCode.STATUS_CHANGE_ALREADY_EXISTS, 
+                    "您有其他待处理的学籍异动申请，请先完成或取消后再申请转专业");
+        }
+
+        // 7. 检查是否已有成功的转专业记录（避免频繁转专业）
+        boolean hasApprovedTransfer = history.stream()
+                .anyMatch(sc -> sc.getType() == ChangeType.TRANSFER 
+                             && sc.getStatus() == ApprovalStatus.APPROVED);
+        
+        if (hasApprovedTransfer) {
+            log.warn("学生 {} 已有转专业成功记录，可能不允许再次转专业", student.getName());
+            // 根据学校政策决定是否允许多次转专业
+            // throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, "已有转专业记录，不能再次转专业");
+        }
+
+        // 8. 其他可扩展的验证条件（预留接口）
+        // TODO: 可以进一步添加以下验证：
+        // - 学生成绩要求（GPA >= 3.0）：需要查询学生的平均成绩
+        // - 学分要求（已修满一定学分）：需要统计学生已获得的学分
+        // - 目标专业接受转入的名额限制：需要查询目标专业的转入配额
+        // - 学生无违纪记录：需要查询学生的违纪处分记录
+        // - 转出专业的特殊限制：某些专业可能限制学生转出
+
+        log.info("转专业申请验证通过: 学生={}, 当前专业={}, 目标专业={}, 入学年份={}, 就读{}年",
+                student.getName(), student.getMajor().getName(), targetMajor.getName(), 
+                student.getEnrollmentYear(), studyYears);
     }
 
     /**
@@ -373,6 +458,29 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
 
         return statusChangeRepository.findByIdAndStudentId(applicationId, studentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STATUS_CHANGE_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentStatusChangeDTO> getStudentHistoryDTO(Long studentId) {
+        log.info("查询学生{}的异动申请DTO列表", studentId);
+        
+        List<StudentStatusChange> changes = statusChangeRepository.findAllByStudentId(studentId);
+        
+        // 在事务内完成DTO转换，确保所有关联都已加载
+        return changes.stream()
+                .map(change -> {
+                    // 强制初始化关联实体
+                    if (change.getStudent() != null) {
+                        change.getStudent().getName();
+                        if (change.getStudent().getMajor() != null) {
+                            change.getStudent().getMajor().getName();
+                        }
+                    }
+                    // 转换为DTO
+                    return statusChangeConverter.toDTO(change, false);
+                })
+                .collect(Collectors.toList());
     }
 }
 
