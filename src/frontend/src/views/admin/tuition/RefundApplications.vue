@@ -27,6 +27,7 @@
       <el-table
         v-loading="loading"
         :data="tableData"
+        :show-overflow-tooltip="false"
         border
         stripe
         style="width: 100%"
@@ -59,7 +60,7 @@
 
         <el-table-column prop="reason" label="退费原因" min-width="200" show-overflow-tooltip />
 
-        <el-table-column prop="status" label="状态" width="100" align="center">
+        <el-table-column prop="status" label="状态" width="100" align="center" :show-overflow-tooltip="false">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">
               {{ getStatusLabel(row.status) }}
@@ -73,29 +74,29 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" align="center" fixed="right">
+        <el-table-column label="操作" width="180" align="center" :show-overflow-tooltip="false">
           <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="handleViewDetail(row)">
-              详情
-            </el-button>
-            <el-button 
-              v-if="row.status === 'PENDING'" 
-              link 
-              type="success" 
-              size="small" 
-              @click="handleApprove(row)"
-            >
-              审批
-            </el-button>
-            <el-button 
-              v-if="row.status === 'APPROVED'" 
-              link 
-              type="warning" 
-              size="small" 
-              @click="handleExecute(row)"
-            >
-              执行退费
-            </el-button>
+            <div class="action-buttons">
+              <el-button type="text" class="action-btn detail-btn" @click="handleViewDetail(row)">
+                详情
+              </el-button>
+              <el-button 
+                v-if="row.status === 'PENDING'" 
+                type="text"
+                class="action-btn approve-btn"
+                @click="handleApprove(row)"
+              >
+                审批
+              </el-button>
+              <el-button 
+                v-if="row.status === 'APPROVED'" 
+                type="text"
+                class="action-btn execute-btn"
+                @click="handleExecute(row)"
+              >
+                执行退费
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -459,6 +460,67 @@ onMounted(() => {
 
 .search-form {
   margin-bottom: 20px;
+}
+
+
+.refund-applications-container :deep(.el-table__expand-icon) {
+  display: none !important;
+}
+
+.refund-applications-container :deep(.el-table__placeholder) {
+  display: none !important;
+}
+
+.refund-applications-container :deep(.el-table__cell .cell) {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.action-buttons .action-btn {
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.action-buttons .action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.action-buttons .action-btn.detail-btn {
+  color: #606266;
+}
+
+.action-buttons .action-btn.detail-btn:hover {
+  color: #409EFF;
+  background: rgba(64, 158, 255, 0.1);
+}
+
+.action-buttons .action-btn.approve-btn {
+  color: #909399;
+}
+
+.action-buttons .action-btn.approve-btn:hover {
+  color: #67C23A;
+  background: rgba(103, 194, 58, 0.1);
+}
+
+.action-buttons .action-btn.execute-btn {
+  color: #909399;
+}
+
+.action-buttons .action-btn.execute-btn:hover {
+  color: #E6A23C;
+  background: rgba(230, 162, 60, 0.1);
 }
 </style>
 

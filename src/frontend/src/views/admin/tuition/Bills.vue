@@ -139,13 +139,14 @@
         <el-table 
           :data="bills" 
           v-loading="loading"
+          :show-overflow-tooltip="false"
           stripe
           border
           style="width: 100%"
         >
           <el-table-column prop="studentNo" label="学号" width="120" />
           <el-table-column prop="studentName" label="姓名" width="100" />
-          <el-table-column prop="majorName" label="专业" width="150" />
+          <el-table-column prop="majorName" label="专业" min-width="180" />
           <el-table-column prop="academicYear" label="学年" width="120" align="center" />
           <el-table-column prop="totalAmount" label="应缴金额" width="120" align="right">
             <template #default="{ row }">
@@ -171,27 +172,28 @@
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="100" align="center">
+          <el-table-column prop="status" label="状态" width="100" align="center" :show-overflow-tooltip="false">
             <template #default="{ row }">
               <el-tag :type="getBillStatusType(row.status)">
                 {{ row.statusDescription }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right" align="center">
+          <el-table-column label="操作" width="140" align="center" :show-overflow-tooltip="false">
             <template #default="{ row }">
-              <el-button type="primary" link :icon="View" @click="handleView(row)">
-                查看
-              </el-button>
-              <el-button 
-                type="warning" 
-                link 
-                :icon="Bell"
-                :disabled="row.status === 'PAID'"
-                @click="handleSendReminder(row)"
-              >
-                催缴
-              </el-button>
+              <div class="action-buttons">
+                <el-button type="text" class="action-btn view-btn" @click="handleView(row)">
+                  查看
+                </el-button>
+                <el-button 
+                  type="text"
+                  class="action-btn remind-btn"
+                  :disabled="row.status === 'PAID'"
+                  @click="handleSendReminder(row)"
+                >
+                  催缴
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -697,6 +699,71 @@ onMounted(() => {
 
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out;
+}
+
+// 隐藏Element Plus表格内部可能出现的三个点
+:deep(.el-table__expand-icon) {
+  display: none !important;
+}
+
+:deep(.el-table__placeholder) {
+  display: none !important;
+}
+
+:deep(.el-table__cell) {
+  .cell {
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  .action-btn {
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &.view-btn {
+      color: #606266;
+      
+      &:hover {
+        color: #409EFF;
+        background: rgba(64, 158, 255, 0.1);
+      }
+    }
+
+    &.remind-btn {
+      color: #909399;
+      
+      &:hover {
+        color: #E6A23C;
+        background: rgba(230, 162, 60, 0.1);
+      }
+
+      &:disabled {
+        color: #C0C4CC;
+        cursor: not-allowed;
+        
+        &:hover {
+          color: #C0C4CC;
+          background: transparent;
+          transform: none;
+        }
+      }
+    }
+  }
 }
 </style>
 

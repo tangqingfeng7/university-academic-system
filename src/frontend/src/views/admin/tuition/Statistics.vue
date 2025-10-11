@@ -179,26 +179,26 @@
           border
           style="width: 100%"
         >
-          <el-table-column prop="departmentName" label="院系" width="200" />
-          <el-table-column prop="totalStudents" label="学生总数" width="100" align="center" />
+          <el-table-column prop="departmentName" label="院系" min-width="160" />
+          <el-table-column prop="totalStudents" label="学生总数" width="110" align="center" />
           <el-table-column prop="paidStudents" label="已缴费" width="100" align="center" />
           <el-table-column prop="unpaidStudents" label="未缴费" width="100" align="center" />
-          <el-table-column prop="totalAmount" label="应收金额" width="150" align="right">
+          <el-table-column prop="totalAmount" label="应收金额" width="140" align="right">
             <template #default="{ row }">
-              ¥{{ row.totalAmount.toFixed(2) }}
+              ¥{{ (row.totalAmount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="paidAmount" label="已收金额" width="150" align="right">
+          <el-table-column prop="paidAmount" label="已收金额" width="140" align="right">
             <template #default="{ row }">
-              ¥{{ row.paidAmount.toFixed(2) }}
+              ¥{{ (row.paidAmount || 0).toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="outstandingAmount" label="欠费金额" width="150" align="right">
+          <el-table-column prop="outstandingAmount" label="欠费金额" width="140" align="right">
             <template #default="{ row }">
-              <span class="amount-danger">¥{{ row.outstandingAmount.toFixed(2) }}</span>
+              <span class="amount-danger">¥{{ ((row.totalAmount || 0) - (row.paidAmount || 0)).toFixed(2) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="paymentRate" label="缴费率" width="120" align="center">
+          <el-table-column prop="paymentRate" label="缴费率" width="160" align="center">
             <template #default="{ row }">
               <el-progress 
                 :percentage="row.paymentRate" 
@@ -265,14 +265,32 @@ const fetchStatistics = async () => {
       paymentRate: data.paymentRate || 0
     })
 
-    // 更新院系统计
-    departmentStats.value = data.departmentStats || []
+    // 更新院系统计 - 处理数据，确保所有字段都存在
+    departmentStats.value = (data.departmentStatistics || []).map(item => {
+      const totalAmount = item.totalAmount || 0
+      const paidAmount = item.paidAmount || 0
+      const studentCount = item.studentCount || 0
+      // 根据缴费率估算已缴费和未缴费学生数
+      const paymentRate = item.paymentRate || 0
+      const paidStudents = Math.round(studentCount * paymentRate / 100)
+      const unpaidStudents = studentCount - paidStudents
+      
+      return {
+        departmentName: item.departmentName || '未知院系',
+        totalStudents: studentCount,
+        paidStudents: paidStudents,
+        unpaidStudents: unpaidStudents,
+        totalAmount: totalAmount,
+        paidAmount: paidAmount,
+        paymentRate: paymentRate
+      }
+    })
 
     // 更新图表
     await nextTick()
-    updateStatusChart(data.statusDistribution || {})
-    updateMethodChart(data.methodDistribution || {})
-    updateDepartmentChart(data.departmentStats || [])
+    updateStatusChart(data.billStatusCount || {})
+    updateMethodChart(data.methodStatistics || {})
+    updateDepartmentChart(departmentStats.value)
   } catch (error) {
     console.error('获取统计数据失败:', error)
     ElMessage.error('获取统计数据失败')

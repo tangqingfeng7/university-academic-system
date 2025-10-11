@@ -68,55 +68,59 @@
           v-loading="loading"
           stripe
           border
+          :show-overflow-tooltip="false"
           style="width: 100%"
         >
-          <el-table-column prop="majorName" label="专业" width="200" />
-          <el-table-column prop="departmentName" label="院系" width="150" />
+          <el-table-column prop="majorName" label="专业" min-width="180" />
+          <el-table-column prop="departmentName" label="院系" min-width="140" />
           <el-table-column prop="academicYear" label="学年" width="120" align="center" />
-          <el-table-column prop="gradeLevel" label="年级" width="80" align="center">
+          <el-table-column prop="gradeLevel" label="年级" width="90" align="center">
             <template #default="{ row }">
               {{ row.gradeLevel }}年级
             </template>
           </el-table-column>
-          <el-table-column prop="tuitionFee" label="学费" width="100" align="right">
+          <el-table-column prop="tuitionFee" label="学费" width="120" align="right">
             <template #default="{ row }">
               ¥{{ row.tuitionFee.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="accommodationFee" label="住宿费" width="100" align="right">
+          <el-table-column prop="accommodationFee" label="住宿费" width="120" align="right">
             <template #default="{ row }">
               ¥{{ row.accommodationFee.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="textbookFee" label="教材费" width="100" align="right">
+          <el-table-column prop="textbookFee" label="教材费" width="120" align="right">
             <template #default="{ row }">
               ¥{{ row.textbookFee.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="totalFee" label="合计" width="120" align="right">
+          <el-table-column prop="totalFee" label="合计" width="140" align="right">
             <template #default="{ row }">
               <span class="total-amount">¥{{ row.totalFee.toFixed(2) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="active" label="状态" width="80" align="center">
+          <el-table-column prop="active" label="状态" width="90" align="center" :show-overflow-tooltip="false">
             <template #default="{ row }">
               <el-tag :type="row.active ? 'success' : 'info'">
                 {{ row.active ? '启用' : '停用' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right" align="center">
+          <el-table-column label="操作" width="140" align="center" :show-overflow-tooltip="false">
             <template #default="{ row }">
-              <el-button type="primary" link :icon="Edit" @click="handleEdit(row)">
-                编辑
-              </el-button>
-              <el-button 
-                :type="row.active ? 'warning' : 'success'" 
-                link 
-                @click="handleToggleStatus(row)"
-              >
-                {{ row.active ? '停用' : '启用' }}
-              </el-button>
+              <div class="action-buttons">
+                <el-button text :icon="Edit" size="small" @click="handleEdit(row)" class="action-btn edit-btn">
+                  编辑
+                </el-button>
+                <el-button 
+                  text
+                  size="small"
+                  @click="handleToggleStatus(row)"
+                  :class="['action-btn', row.active ? 'disable-btn' : 'enable-btn']"
+                >
+                  {{ row.active ? '停用' : '启用' }}
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -512,6 +516,93 @@ onMounted(() => {
     .total-amount {
       font-weight: 600;
       color: #409EFF;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+
+      .action-btn {
+        padding: 4px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          transform: translateY(-1px);
+        }
+
+        &.edit-btn {
+          color: #606266;
+          
+          &:hover {
+            color: #409EFF;
+            background: rgba(64, 158, 255, 0.1);
+          }
+        }
+
+        &.disable-btn {
+          color: #909399;
+          
+          &:hover {
+            color: #F56C6C;
+            background: rgba(245, 108, 108, 0.1);
+          }
+        }
+
+        &.enable-btn {
+          color: #909399;
+          
+          &:hover {
+            color: #67C23A;
+            background: rgba(103, 194, 58, 0.1);
+          }
+        }
+      }
+    }
+  }
+
+  
+  :deep(.el-table__expand-icon) {
+    display: none !important;
+  }
+
+  :deep(.el-table__placeholder) {
+    display: none !important;
+  }
+
+  :deep(.el-table__cell) {
+    .cell {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: normal !important;
+    }
+  }
+
+  :deep(.el-table__fixed-right) {
+    display: none !important;
+  }
+
+  :deep(.el-icon) {
+    &.el-icon--right {
+      display: none !important;
+    }
+  }
+
+ 
+  :deep(.el-dropdown) {
+    display: none !important;
+  }
+
+  :deep(.el-table__column) {
+    &:last-child {
+      .cell::after {
+        content: none !important;
+      }
     }
   }
 

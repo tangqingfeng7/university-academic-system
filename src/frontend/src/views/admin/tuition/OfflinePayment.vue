@@ -28,27 +28,29 @@
           ref="formRef"
           :model="form"
           :rules="formRules"
-          label-width="120px"
-          size="large"
+          label-width="100px"
+          class="offline-payment-form"
         >
           <!-- 学生信息查询 -->
           <el-form-item label="学号" prop="studentNo">
-            <el-input 
-              v-model="form.studentNo" 
-              placeholder="请输入学号"
-              style="width: 300px;"
-              @blur="handleSearchStudent"
-            >
-              <template #append>
-                <el-button 
-                  :icon="Search"
-                  :loading="searching"
-                  @click="handleSearchStudent"
-                >
-                  查询
-                </el-button>
-              </template>
-            </el-input>
+            <div class="search-input-wrapper">
+              <el-input 
+                v-model="form.studentNo" 
+                placeholder="请输入学号"
+                class="search-input"
+                @blur="handleSearchStudent"
+                @keyup.enter="handleSearchStudent"
+              />
+              <el-button 
+                type="primary"
+                :icon="Search"
+                :loading="searching"
+                @click="handleSearchStudent"
+                class="search-btn"
+              >
+                查询
+              </el-button>
+            </div>
           </el-form-item>
 
           <!-- 学生信息显示 -->
@@ -56,7 +58,7 @@
             <el-input 
               :value="student.name"
               disabled
-              style="width: 300px;"
+              class="info-input"
             />
           </el-form-item>
 
@@ -64,7 +66,7 @@
             <el-input 
               :value="`${student.majorName} (${student.departmentName})`"
               disabled
-              style="width: 400px;"
+              class="info-input-long"
             />
           </el-form-item>
 
@@ -73,7 +75,7 @@
             <el-select 
               v-model="form.billId" 
               placeholder="请选择账单"
-              style="width: 500px;"
+              class="bill-select"
               @change="handleBillChange"
             >
               <el-option
@@ -106,23 +108,27 @@
           <el-divider content-position="left">缴费信息</el-divider>
 
           <el-form-item label="缴费金额" prop="amount">
-            <el-input-number
-              v-model="form.amount"
-              :min="0.01"
-              :max="selectedBill?.outstandingAmount"
-              :precision="2"
-              :step="100"
-              controls-position="right"
-              style="width: 300px;"
-            />
-            <el-button 
-              type="text" 
-              v-if="selectedBill"
-              @click="form.amount = selectedBill.outstandingAmount"
-              style="margin-left: 12px;"
-            >
-              全额缴清
-            </el-button>
+            <div style="display: flex; align-items: center;">
+              <el-input-number
+                v-model="form.amount"
+                :min="0.01"
+                :max="selectedBill?.outstandingAmount"
+                :precision="2"
+                :step="100"
+                controls-position="right"
+              />
+              <el-button 
+                type="text" 
+                v-if="selectedBill"
+                @click="form.amount = selectedBill.outstandingAmount"
+                style="margin-left: 12px;"
+              >
+                全额缴清
+              </el-button>
+              <span class="hint-text" v-if="selectedBill">
+                （最多：¥{{ selectedBill.outstandingAmount.toFixed(2) }}）
+              </span>
+            </div>
           </el-form-item>
 
           <el-form-item label="缴费方式" prop="method">
@@ -136,7 +142,7 @@
             <el-input 
               v-model="form.transactionId" 
               placeholder="银行交易流水号或收据编号"
-              style="width: 400px;"
+              class="transaction-input"
             />
           </el-form-item>
 
@@ -145,7 +151,6 @@
               v-model="form.paidAt"
               type="datetime"
               placeholder="选择缴费时间"
-              style="width: 300px;"
             />
           </el-form-item>
 
@@ -155,7 +160,6 @@
               type="textarea"
               :rows="3"
               placeholder="备注信息（选填）"
-              style="width: 500px;"
             />
           </el-form-item>
 
@@ -197,8 +201,10 @@
           :data="recentPayments" 
           v-loading="loadingRecords"
           stripe
+          border
+          style="width: 100%"
         >
-          <el-table-column prop="paymentNo" label="缴费单号" width="180" />
+          <el-table-column prop="paymentNo" label="缴费单号" width="200" />
           <el-table-column prop="studentNo" label="学号" width="120" />
           <el-table-column prop="studentName" label="姓名" width="100" />
           <el-table-column prop="academicYear" label="学年" width="120" align="center" />
@@ -207,18 +213,26 @@
               ¥{{ row.amount.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="method" label="缴费方式" width="100" align="center">
+          <el-table-column prop="method" label="缴费方式" width="110" align="center">
             <template #default="{ row }">
               <el-tag size="small">{{ row.methodDescription }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="transactionId" label="交易流水号" width="180" />
+          <el-table-column prop="transactionId" label="交易流水号" min-width="180">
+            <template #default="{ row }">
+              <span class="text-secondary">{{ row.transactionId || '-' }}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="paidAt" label="缴费时间" width="160" align="center">
             <template #default="{ row }">
               {{ formatDateTime(row.paidAt) }}
             </template>
           </el-table-column>
-          <el-table-column prop="operatorName" label="录入人" width="100" />
+          <el-table-column prop="operatorName" label="录入人" width="100">
+            <template #default="{ row }">
+              <span class="text-secondary">{{ row.operatorName || '-' }}</span>
+            </template>
+          </el-table-column>
         </el-table>
       </el-card>
     </div>
@@ -484,6 +498,65 @@ fetchRecentPayments()
 
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out;
+}
+
+.offline-payment-form {
+  max-width: 900px;
+
+  .search-input-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .search-input {
+      width: 360px;
+    }
+
+    .search-btn {
+      height: 40px;
+      padding: 0 20px;
+    }
+  }
+
+  .info-input {
+    width: 360px;
+  }
+
+  .info-input-long {
+    width: 520px;
+  }
+
+  .bill-select {
+    width: 600px;
+  }
+
+  .el-input-number {
+    width: 280px;
+  }
+
+  .el-date-picker {
+    width: 280px;
+  }
+
+  .el-input {
+    &.transaction-input {
+      width: 400px;
+    }
+  }
+
+  .el-textarea {
+    width: 600px;
+  }
+
+  .hint-text {
+    margin-left: 12px;
+    color: #909399;
+    font-size: 13px;
+  }
+}
+
+.text-secondary {
+  color: #909399;
 }
 </style>
 
