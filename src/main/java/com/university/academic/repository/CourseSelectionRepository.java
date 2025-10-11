@@ -208,5 +208,25 @@ public interface CourseSelectionRepository extends JpaRepository<CourseSelection
     long countByStudentIdAndSemesterId(
             @Param("studentId") Long studentId,
             @Param("semesterId") Long semesterId);
+
+    /**
+     * 查询学生指定状态的选课记录（带关联实体，用于学分计算）
+     *
+     * @param studentId 学生ID
+     * @param status    选课状态
+     * @return 选课记录列表
+     */
+    @Query("SELECT DISTINCT cs FROM CourseSelection cs " +
+            "LEFT JOIN FETCH cs.student s " +
+            "LEFT JOIN FETCH s.major " +
+            "LEFT JOIN FETCH cs.offering co " +
+            "LEFT JOIN FETCH co.course c " +
+            "LEFT JOIN FETCH co.semester " +
+            "LEFT JOIN FETCH cs.grade g " +
+            "WHERE cs.student.id = :studentId " +
+            "AND cs.status = :status")
+    List<CourseSelection> findByStudentIdAndStatus(
+            @Param("studentId") Long studentId,
+            @Param("status") CourseSelection.SelectionStatus status);
 }
 

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -69,6 +70,11 @@ public class CourseSelectionDTO {
     private Integer credits;
 
     /**
+     * 课程类型 (REQUIRED/ELECTIVE/PUBLIC)
+     */
+    private String courseType;
+
+    /**
      * 教师姓名
      */
     private String teacherName;
@@ -97,6 +103,21 @@ public class CourseSelectionDTO {
      * 状态描述
      */
     private String statusDescription;
+
+    /**
+     * 总评成绩
+     */
+    private BigDecimal totalScore;
+
+    /**
+     * 绩点
+     */
+    private BigDecimal gradePoint;
+
+    /**
+     * 是否及格
+     */
+    private Boolean passed;
 
     /**
      * 创建时间

@@ -62,6 +62,25 @@
               <template #title>学籍异动</template>
             </el-menu-item>
 
+            <el-sub-menu index="graduation">
+              <template #title>
+                <el-icon><Medal /></el-icon>
+                <span>成绩查询</span>
+              </template>
+              <el-menu-item index="/student/graduation/progress">
+                <el-icon><TrendCharts /></el-icon>
+                <template #title>毕业进度</template>
+              </el-menu-item>
+              <el-menu-item index="/student/graduation/credits">
+                <el-icon><Tickets /></el-icon>
+                <template #title>学分汇总</template>
+              </el-menu-item>
+              <el-menu-item index="/student/graduation/audit">
+                <el-icon><DocumentChecked /></el-icon>
+                <template #title>审核结果</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-sub-menu index="tuition">
               <template #title>
                 <el-icon><Wallet /></el-icon>
@@ -214,7 +233,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   School, TrendCharts, Tickets, Calendar, Document, Notebook, Reading, Bell, User,
-  Expand, Fold, Lock, SwitchButton, Edit, Files, Wallet
+  Expand, Fold, Lock, SwitchButton, Edit, Files, Wallet, Medal, DocumentChecked
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

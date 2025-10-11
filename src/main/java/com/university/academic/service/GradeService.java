@@ -2,6 +2,7 @@ package com.university.academic.service;
 
 import com.university.academic.entity.CourseSelection;
 import com.university.academic.entity.Grade;
+import com.university.academic.event.GradePublishEvent;
 import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.CourseOfferingRepository;
@@ -9,6 +10,7 @@ import com.university.academic.repository.CourseSelectionRepository;
 import com.university.academic.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ public class GradeService {
     private final GradeRepository gradeRepository;
     private final CourseSelectionRepository selectionRepository;
     private final CourseOfferingRepository offeringRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 根据ID查询成绩
@@ -207,21 +210,45 @@ public class GradeService {
 
     /**
      * 发布成绩（学生可见）
+     * 同时更新选课状态为COMPLETED并发布事件
      *
      * @param offeringId 开课计划ID
      */
     @Transactional
     public void publishGrades(Long offeringId) {
         List<Grade> grades = gradeRepository.findByOfferingId(offeringId);
+        int publishCount = 0;
 
         for (Grade grade : grades) {
             if (grade.getStatus() == Grade.GradeStatus.SUBMITTED) {
+                // 1. 更新成绩状态为已公布
                 grade.setStatus(Grade.GradeStatus.PUBLISHED);
                 gradeRepository.save(grade);
+
+                // 2. 更新选课状态为已完成
+                CourseSelection selection = grade.getCourseSelection();
+                if (selection.getStatus() == CourseSelection.SelectionStatus.SELECTED) {
+                    selection.setStatus(CourseSelection.SelectionStatus.COMPLETED);
+                    selectionRepository.save(selection);
+                    log.debug("更新选课状态为COMPLETED: selectionId={}", selection.getId());
+                }
+
+                // 3. 发布成绩公布事件（用于更新学分汇总）
+                GradePublishEvent event = GradePublishEvent.builder()
+                        .gradeId(grade.getId())
+                        .studentId(selection.getStudent().getId())
+                        .courseOfferingId(offeringId)
+                        .score(grade.getTotalScore() != null ? grade.getTotalScore().doubleValue() : null)
+                        .passed(grade.isPassed())
+                        .publishedAt(LocalDateTime.now())
+                        .build();
+                eventPublisher.publishEvent(event);
+                
+                publishCount++;
             }
         }
 
-        log.info("发布成绩成功: offeringId={}, 发布数量={}", offeringId, grades.size());
+        log.info("发布成绩成功: offeringId={}, 发布数量={}", offeringId, publishCount);
     }
 
     /**

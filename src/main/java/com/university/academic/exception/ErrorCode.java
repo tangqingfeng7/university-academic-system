@@ -49,10 +49,17 @@ public enum ErrorCode {
     STUDENT_IMPORT_ERROR(3005, "学生数据导入失败"),
     STUDENT_EXPORT_ERROR(3006, "学生数据导出失败"),
 
-    // ========== 教师管理错误码 3100-3199 ==========
+    // ========== 教师管理错误码 3100-3149 ==========
     TEACHER_NOT_FOUND(3101, "教师不存在"),
     TEACHER_NO_ALREADY_EXISTS(3102, "工号已存在"),
     TEACHER_HAS_COURSES(3103, "教师有授课任务，无法删除"),
+
+    // ========== 毕业审核模块错误码 3150-3199 ==========
+    GRADUATION_REQUIREMENT_NOT_FOUND(3151, "未找到毕业要求"),
+    GRADUATION_REQUIREMENT_ALREADY_EXISTS(3152, "该专业和入学年份的毕业要求已存在"),
+    INVALID_CREDIT_REQUIREMENTS(3153, "学分要求不合理"),
+    GRADUATION_AUDIT_NOT_FOUND(3154, "毕业审核记录不存在"),
+    STUDENT_CREDIT_SUMMARY_NOT_FOUND(3155, "学生学分汇总不存在"),
 
     // ========== 课程管理错误码 3200-3299 ==========
     COURSE_NOT_FOUND(3201, "课程不存在"),

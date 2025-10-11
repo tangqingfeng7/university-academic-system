@@ -30,6 +30,8 @@ public class CacheConfig {
     public static final String CACHE_EVALUATION_PERIODS = "evaluationPeriods";
     public static final String CACHE_ACTIVE_EVALUATION_PERIOD = "activeEvaluationPeriod";
     public static final String CACHE_EVALUATION_STATS = "evaluationStats";
+    public static final String CACHE_GRADUATION_REQUIREMENTS = "graduationRequirements";
+    public static final String CACHE_CREDIT_SUMMARY = "creditSummary";
 
     /**
      * 配置缓存管理器

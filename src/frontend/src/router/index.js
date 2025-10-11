@@ -228,6 +228,33 @@ const router = createRouter({
           component: () => import('@/views/admin/tuition/RefundApplications.vue'),
           meta: { title: '退费审批', keepAlive: true }
         },
+        
+        // ==================== 毕业审核管理 ====================
+        {
+          path: 'graduation/requirements',
+          name: 'AdminGraduationRequirements',
+          component: () => import('@/views/admin/graduation/Requirements.vue'),
+          meta: { title: '毕业要求设置', keepAlive: true }
+        },
+        {
+          path: 'graduation/audit',
+          name: 'AdminGraduationAudit',
+          component: () => import('@/views/admin/graduation/BatchAudit.vue'),
+          meta: { title: '批量毕业审核' }
+        },
+        {
+          path: 'graduation/audits',
+          name: 'AdminGraduationAudits',
+          component: () => import('@/views/admin/graduation/Audits.vue'),
+          meta: { title: '审核结果查询', keepAlive: true }
+        },
+        {
+          path: 'graduation/graduates',
+          name: 'AdminGraduationGraduates',
+          component: () => import('@/views/admin/graduation/Graduates.vue'),
+          meta: { title: '毕业生名单', keepAlive: true }
+        },
+        
         {
           path: 'profile',
           name: 'AdminProfile',
@@ -459,6 +486,25 @@ const router = createRouter({
           name: 'StudentStatusChangeDetail',
           component: () => import('@/views/student/status-changes/ApplicationDetail.vue'),
           meta: { title: '申请详情' }
+        },
+        // ==================== 毕业审核 ====================
+        {
+          path: 'graduation/progress',
+          name: 'StudentGraduationProgress',
+          component: () => import('@/views/student/graduation/Progress.vue'),
+          meta: { title: '毕业进度' }
+        },
+        {
+          path: 'graduation/credits',
+          name: 'StudentGraduationCredits',
+          component: () => import('@/views/student/graduation/Credits.vue'),
+          meta: { title: '学分汇总', keepAlive: true }
+        },
+        {
+          path: 'graduation/audit',
+          name: 'StudentGraduationAudit',
+          component: () => import('@/views/student/graduation/Audit.vue'),
+          meta: { title: '审核结果' }
         },
         // ==================== 学费缴纳 ====================
         {
