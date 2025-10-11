@@ -9,6 +9,7 @@ import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.*;
 import com.university.academic.service.TuitionService;
+import com.university.academic.service.UserNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -16,8 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +41,7 @@ public class TuitionServiceImpl implements TuitionService {
     private final PaymentReminderRepository reminderRepository;
     private final StudentRepository studentRepository;
     private final MajorRepository majorRepository;
-    // private final NotificationService notificationService;
+    private final UserNotificationService notificationService;
     private final TuitionConverter tuitionConverter;
 
     // ==================== 学费标准管理 ====================
@@ -202,12 +205,21 @@ public class TuitionServiceImpl implements TuitionService {
                 bill.getId(), studentId, totalAmount);
 
         // 5. 发送通知
-        // TODO: 实现通知功能
-        // try {
-        //     notificationService.notifyBillGenerated(bill);
-        // } catch (Exception e) {
-        //     log.error("发送账单通知失败", e);
-        // }
+        try {
+            String content = String.format("您的%s学费账单已生成，应缴金额%.2f元，请在%s前完成缴费。",
+                    academicYear, totalAmount, dueDate.toString());
+            notificationService.sendToUser(
+                    student.getUser().getId(),
+                    "学费账单通知",
+                    content,
+                    "TUITION_BILL",
+                    "TUITION_BILL",
+                    bill.getId()
+            );
+            log.info("账单通知发送成功: billId={}", bill.getId());
+        } catch (Exception e) {
+            log.error("发送账单通知失败: billId={}", bill.getId(), e);
+        }
 
         return tuitionConverter.toTuitionBillDTO(bill);
     }
@@ -378,12 +390,21 @@ public class TuitionServiceImpl implements TuitionService {
         log.info("缴费成功: paymentId={}, paymentNo={}", payment.getId(), paymentNo);
 
         // 6. 发送通知
-        // TODO: 实现通知功能
-        // try {
-        //     notificationService.notifyPaymentSuccess(payment);
-        // } catch (Exception e) {
-        //     log.error("发送缴费通知失败", e);
-        // }
+        try {
+            String content = String.format("您已成功缴费%.2f元，缴费单号：%s。账单剩余金额：%.2f元。",
+                    request.getAmount(), paymentNo, bill.getOutstandingAmount());
+            notificationService.sendToUser(
+                    bill.getStudent().getUser().getId(),
+                    "缴费成功通知",
+                    content,
+                    "PAYMENT_SUCCESS",
+                    "TUITION_PAYMENT",
+                    payment.getId()
+            );
+            log.info("缴费通知发送成功: paymentId={}", payment.getId());
+        } catch (Exception e) {
+            log.error("发送缴费通知失败: paymentId={}", payment.getId(), e);
+        }
 
         return tuitionConverter.toTuitionPaymentDTO(payment);
     }
@@ -464,13 +485,51 @@ public class TuitionServiceImpl implements TuitionService {
 
     @Override
     public byte[] generateReceipt(Long paymentId) {
-        // TODO: 实现电子收据生成（PDF）
         log.info("生成电子收据: paymentId={}", paymentId);
-        findPaymentById(paymentId);
+        TuitionPayment payment = findPaymentById(paymentId);
         
-        // 这里应该使用PDF库（如iText）生成收据
-        // 暂时返回空字节数组
-        return new byte[0];
+        // 生成文本格式的收据
+        // 注意: 生产环境应使用PDF库(如iText、Apache PDFBox)生成正式收据
+        try {
+            StringBuilder receipt = new StringBuilder();
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            
+            receipt.append("========================================\n");
+            receipt.append("           学费缴纳电子收据\n");
+            receipt.append("========================================\n\n");
+            
+            receipt.append("收据编号: ").append(payment.getPaymentNo()).append("\n");
+            receipt.append("学生姓名: ").append(payment.getBill().getStudent().getName()).append("\n");
+            receipt.append("学号: ").append(payment.getBill().getStudent().getStudentNo()).append("\n");
+            receipt.append("专业: ").append(payment.getBill().getStudent().getMajor().getName()).append("\n");
+            receipt.append("学年: ").append(payment.getBill().getAcademicYear()).append("\n\n");
+            
+            receipt.append("缴费金额: ¥").append(String.format("%.2f", payment.getAmount())).append("\n");
+            receipt.append("缴费方式: ").append(payment.getMethod().getDescription()).append("\n");
+            receipt.append("缴费状态: ").append(payment.getStatus().getDescription()).append("\n");
+            receipt.append("缴费时间: ").append(payment.getPaidAt() != null ? 
+                    payment.getPaidAt().format(dateFormatter) : "-").append("\n");
+            
+            if (payment.getTransactionId() != null) {
+                receipt.append("交易流水号: ").append(payment.getTransactionId()).append("\n");
+            }
+            
+            receipt.append("\n账单信息:\n");
+            receipt.append("应缴总额: ¥").append(String.format("%.2f", payment.getBill().getTotalAmount())).append("\n");
+            receipt.append("已缴金额: ¥").append(String.format("%.2f", payment.getBill().getPaidAmount())).append("\n");
+            receipt.append("剩余金额: ¥").append(String.format("%.2f", payment.getBill().getOutstandingAmount())).append("\n\n");
+            
+            receipt.append("========================================\n");
+            receipt.append("       此收据仅作为缴费凭证\n");
+            receipt.append("生成时间: ").append(LocalDateTime.now().format(dateFormatter)).append("\n");
+            receipt.append("========================================\n");
+            
+            return receipt.toString().getBytes(StandardCharsets.UTF_8);
+            
+        } catch (Exception e) {
+            log.error("生成电子收据失败: paymentId={}", paymentId, e);
+            throw new BusinessException(ErrorCode.OPERATION_FAILED, "生成电子收据失败");
+        }
     }
 
     // ==================== 缴费提醒 ====================
@@ -506,15 +565,21 @@ public class TuitionServiceImpl implements TuitionService {
         reminderRepository.save(reminder);
 
         // 发送站内通知
-        // TODO: 实现通知功能
-        // try {
-        //     notificationService.notifyPaymentReminder(bill);
-        // } catch (Exception e) {
-        //     log.error("发送欠费提醒失败", e);
-        //     reminder.setSuccess(false);
-        //     reminder.setFailureReason(e.getMessage());
-        //     reminderRepository.save(reminder);
-        // }
+        try {
+            notificationService.sendToUser(
+                    bill.getStudent().getUser().getId(),
+                    "学费缴纳提醒",
+                    content,
+                    "PAYMENT_REMINDER",
+                    "TUITION_BILL",
+                    bill.getId()
+            );
+            log.info("欠费提醒发送成功: billId={}", billId);
+        } catch (Exception e) {
+            log.error("发送欠费提醒失败: billId={}", billId, e);
+            reminder.setSuccess(false);
+            reminderRepository.save(reminder);
+        }
     }
 
     @Override

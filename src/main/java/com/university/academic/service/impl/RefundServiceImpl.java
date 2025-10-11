@@ -15,11 +15,18 @@ import com.university.academic.service.RefundService;
 import com.university.academic.service.UserNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +49,9 @@ public class RefundServiceImpl implements RefundService {
     private final TuitionConverter tuitionConverter;
     private final ApprovalWorkflowService workflowService;
     private final UserNotificationService notificationService;
+
+    @Value("${file.upload.path:/uploads/refund}")
+    private String uploadPath;
 
     /**
      * 审批级别配置
@@ -104,11 +114,11 @@ public class RefundServiceImpl implements RefundService {
                 .submittedAt(LocalDateTime.now())
                 .build();
 
-        // TODO: 处理附件上传
+        // 处理附件上传
         if (request.getAttachment() != null && !request.getAttachment().isEmpty()) {
-            // String attachmentUrl = fileService.uploadFile(request.getAttachment());
-            // application.setAttachmentUrl(attachmentUrl);
-            log.info("附件上传功能待实现");
+            String attachmentUrl = uploadAttachment(request.getAttachment());
+            application.setAttachmentUrl(attachmentUrl);
+            log.info("附件上传成功: {}", attachmentUrl);
         }
 
         // 8. 分配第一级审批人（财务）
@@ -152,9 +162,13 @@ public class RefundServiceImpl implements RefundService {
             throw new BusinessException(ErrorCode.REFUND_APPLICATION_ALREADY_PROCESSED);
         }
 
-        // 3. 验证审批权限（简化版，可以集成ApprovalWorkflowService）
+        // 3. 验证审批权限
         Integer currentLevel = application.getApprovalLevel();
-        // TODO: 使用workflowService验证审批权限
+        if (!hasRefundApprovalPermission(approverId, currentLevel)) {
+            log.warn("用户无审批权限: userId={}, 申请ID={}, 当前级别={}",
+                    approverId, applicationId, currentLevel);
+            throw new BusinessException(ErrorCode.FORBIDDEN, "您没有权限审批该申请");
+        }
 
         // 4. 创建审批记录
         User approver = userRepository.findById(approverId)
@@ -441,6 +455,97 @@ public class RefundServiceImpl implements RefundService {
      */
     private String generateRefundTransactionId() {
         return "REFUND" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /**
+     * 验证用户是否有退费审批权限
+     * 
+     * 退费审批级别：
+     * 1 - 财务审核
+     * 2 - 管理员审批（最终审批）
+     *
+     * @param userId        用户ID
+     * @param approvalLevel 审批级别
+     * @return 是否有权限
+     */
+    private boolean hasRefundApprovalPermission(Long userId, Integer approvalLevel) {
+        // 使用工作流服务获取用户的审批级别
+        Integer userLevel = workflowService.getUserApprovalLevel(userId);
+        
+        if (userLevel == -1) {
+            log.debug("用户无审批权限: userId={}", userId);
+            return false;
+        }
+        
+        // 查询用户信息以进行更精确的权限判断
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null || !user.getEnabled()) {
+            log.debug("用户不存在或已禁用: userId={}", userId);
+            return false;
+        }
+        
+        // 退费审批权限规则：
+        // 级别1（财务审核）：需要教师角色或管理员角色
+        // 级别2（管理员审批）：需要管理员角色
+        boolean hasPermission = switch (approvalLevel) {
+            case 1 -> user.getRole() == User.UserRole.TEACHER || user.getRole() == User.UserRole.ADMIN;
+            case 2 -> user.getRole() == User.UserRole.ADMIN;
+            default -> false;
+        };
+        
+        log.debug("退费审批权限检查: userId={}, userRole={}, approvalLevel={}, hasPermission={}",
+                userId, user.getRole(), approvalLevel, hasPermission);
+        
+        return hasPermission;
+    }
+
+    /**
+     * 上传附件文件
+     *
+     * @param file 文件
+     * @return 文件URL
+     */
+    private String uploadAttachment(MultipartFile file) {
+        try {
+            // 1. 验证文件类型（只允许图片和PDF）
+            String contentType = file.getContentType();
+            if (contentType == null || (!contentType.startsWith("image/") && !contentType.equals("application/pdf"))) {
+                throw new BusinessException(ErrorCode.FILE_TYPE_NOT_SUPPORTED);
+            }
+
+            // 2. 验证文件大小（最大10MB）
+            long maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.getSize() > maxSize) {
+                throw new BusinessException(ErrorCode.FILE_SIZE_EXCEED);
+            }
+
+            // 3. 创建上传目录
+            Path uploadDir = Paths.get(uploadPath);
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            // 4. 生成唯一文件名
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                    : "";
+            String filename = UUID.randomUUID().toString() + extension;
+
+            // 5. 保存文件
+            Path targetPath = uploadDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            // 6. 返回相对路径
+            String fileUrl = "/uploads/refund/" + filename;
+            log.info("退费申请附件上传成功: {}", fileUrl);
+
+            return fileUrl;
+
+        } catch (IOException e) {
+            log.error("退费申请附件上传失败", e);
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_ERROR);
+        }
     }
 }
 

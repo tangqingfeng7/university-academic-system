@@ -4,16 +4,22 @@ import com.university.academic.dto.FinancialReportDTO;
 import com.university.academic.dto.PaymentStatisticsDTO;
 import com.university.academic.entity.tuition.BillStatus;
 import com.university.academic.entity.tuition.PaymentMethod;
+import com.university.academic.entity.tuition.TuitionBill;
 import com.university.academic.repository.StudentRepository;
 import com.university.academic.repository.TuitionBillRepository;
 import com.university.academic.repository.TuitionPaymentRepository;
 import com.university.academic.service.TuitionStatisticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -166,14 +172,24 @@ public class TuitionStatisticsServiceImpl implements TuitionStatisticsService {
             addMonthlyStatistics(monthlyStatistics, endYear, month, paymentRepository);
         }
 
+        // 获取各项费用的细化统计
+        Object[] feeBreakdown = billRepository.getFeeBreakdownByAcademicYear(academicYear);
+        Double tuitionIncome = feeBreakdown != null && feeBreakdown[0] != null ? (Double) feeBreakdown[0] : 0.0;
+        Double accommodationIncome = feeBreakdown != null && feeBreakdown[1] != null ? (Double) feeBreakdown[1] : 0.0;
+        Double textbookIncome = feeBreakdown != null && feeBreakdown[2] != null ? (Double) feeBreakdown[2] : 0.0;
+        Double otherIncome = feeBreakdown != null && feeBreakdown[3] != null ? (Double) feeBreakdown[3] : 0.0;
+
+        log.debug("费用细化统计: 学费={}, 住宿费={}, 教材费={}, 其他费用={}", 
+                tuitionIncome, accommodationIncome, textbookIncome, otherIncome);
+
         return FinancialReportDTO.builder()
                 .generatedAt(LocalDateTime.now())
                 .academicYear(academicYear)
                 .totalIncome(totalIncome)
-                .tuitionIncome(0.0) // TODO: 细化统计
-                .accommodationIncome(0.0)
-                .textbookIncome(0.0)
-                .otherIncome(0.0)
+                .tuitionIncome(tuitionIncome)
+                .accommodationIncome(accommodationIncome)
+                .textbookIncome(textbookIncome)
+                .otherIncome(otherIncome)
                 .paymentMethodStatistics(methodStatistics)
                 .monthlyStatistics(monthlyStatistics)
                 .build();
@@ -181,23 +197,99 @@ public class TuitionStatisticsServiceImpl implements TuitionStatisticsService {
 
     @Override
     public byte[] exportFinancialReport(String academicYear) {
-        // TODO: 实现Excel导出
         log.info("导出财务报表: academicYear={}", academicYear);
-        generateFinancialReport(academicYear);
         
-        // 这里应该使用Apache POI生成Excel
-        // 暂时返回空字节数组
-        return new byte[0];
+        FinancialReportDTO report = generateFinancialReport(academicYear);
+        
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            
+            // 创建概览Sheet
+            createSummarySheet(workbook, report);
+            
+            // 创建月度统计Sheet
+            createMonthlySheet(workbook, report);
+            
+            // 创建支付方式统计Sheet
+            createPaymentMethodSheet(workbook, report);
+            
+            workbook.write(out);
+            log.info("财务报表导出完成: academicYear={}", academicYear);
+            
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("导出财务报表失败: academicYear={}", academicYear, e);
+            throw new RuntimeException("导出财务报表失败", e);
+        }
     }
 
     @Override
     public byte[] exportBillList(String academicYear) {
-        // TODO: 实现Excel导出
         log.info("导出账单列表: academicYear={}", academicYear);
         
-        // 这里应该使用Apache POI生成Excel
-        // 暂时返回空字节数组
-        return new byte[0];
+        List<TuitionBill> bills = billRepository.findByAcademicYear(academicYear);
+        
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            
+            Sheet sheet = workbook.createSheet(academicYear + "学年学费账单");
+            
+            // 创建标题行
+            Row headerRow = sheet.createRow(0);
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            
+            String[] headers = {"序号", "学号", "姓名", "专业", "学费", "住宿费", 
+                               "教材费", "其他费用", "应缴总额", "已缴金额", "欠费金额", 
+                               "状态", "缴费截止日期"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+            
+            // 填充数据行
+            CellStyle dataStyle = createDataStyle(workbook);
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            
+            int rowIndex = 1;
+            for (TuitionBill bill : bills) {
+                Row row = sheet.createRow(rowIndex);
+                
+                row.createCell(0).setCellValue(rowIndex);
+                row.createCell(1).setCellValue(bill.getStudent().getStudentNo());
+                row.createCell(2).setCellValue(bill.getStudent().getName());
+                row.createCell(3).setCellValue(bill.getStudent().getMajor().getName());
+                row.createCell(4).setCellValue(bill.getTuitionFee());
+                row.createCell(5).setCellValue(bill.getAccommodationFee());
+                row.createCell(6).setCellValue(bill.getTextbookFee());
+                row.createCell(7).setCellValue(bill.getOtherFees() != null ? bill.getOtherFees() : 0.0);
+                row.createCell(8).setCellValue(bill.getTotalAmount());
+                row.createCell(9).setCellValue(bill.getPaidAmount());
+                row.createCell(10).setCellValue(bill.getOutstandingAmount());
+                row.createCell(11).setCellValue(bill.getStatus().getDescription());
+                row.createCell(12).setCellValue(bill.getDueDate().format(dateFormatter));
+                
+                // 应用样式
+                for (int i = 0; i < headers.length; i++) {
+                    row.getCell(i).setCellStyle(dataStyle);
+                }
+                
+                rowIndex++;
+            }
+            
+            // 自动调整列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            
+            workbook.write(out);
+            log.info("账单列表导出完成: count={}", bills.size());
+            
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("导出账单列表失败: academicYear={}", academicYear, e);
+            throw new RuntimeException("导出账单列表失败", e);
+        }
     }
 
     /**
@@ -218,12 +310,213 @@ public class TuitionStatisticsServiceImpl implements TuitionStatisticsService {
             amount = 0.0;
         }
 
+        Long count = paymentRepository.countByPaidTimeBetween(startTime, endTime);
+        if (count == null) {
+            count = 0L;
+        }
+
         list.add(FinancialReportDTO.MonthlyIncomeStatistics.builder()
                 .year(year)
                 .month(month)
-                .paymentCount(0L) // TODO: 添加数量统计
+                .paymentCount(count)
                 .amount(amount)
                 .build());
+    }
+
+    /**
+     * 创建概览Sheet
+     */
+    private void createSummarySheet(Workbook workbook, FinancialReportDTO report) {
+        Sheet sheet = workbook.createSheet("财务概览");
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle dataStyle = createDataStyle(workbook);
+        
+        int rowIndex = 0;
+        
+        // 标题
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(report.getAcademicYear() + "学年财务报表");
+        titleCell.setCellStyle(createTitleStyle(workbook));
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 3));
+        
+        rowIndex++; // 空行
+        
+        // 总收入
+        Row row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue("总收入");
+        row.createCell(1).setCellValue(String.format("%.2f 元", report.getTotalIncome()));
+        row.getCell(0).setCellStyle(headerStyle);
+        row.getCell(1).setCellStyle(dataStyle);
+        
+        // 学费收入
+        row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue("学费收入");
+        row.createCell(1).setCellValue(String.format("%.2f 元", report.getTuitionIncome()));
+        row.getCell(0).setCellStyle(headerStyle);
+        row.getCell(1).setCellStyle(dataStyle);
+        
+        // 住宿费收入
+        row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue("住宿费收入");
+        row.createCell(1).setCellValue(String.format("%.2f 元", report.getAccommodationIncome()));
+        row.getCell(0).setCellStyle(headerStyle);
+        row.getCell(1).setCellStyle(dataStyle);
+        
+        // 教材费收入
+        row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue("教材费收入");
+        row.createCell(1).setCellValue(String.format("%.2f 元", report.getTextbookIncome()));
+        row.getCell(0).setCellStyle(headerStyle);
+        row.getCell(1).setCellStyle(dataStyle);
+        
+        // 其他收入
+        row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue("其他收入");
+        row.createCell(1).setCellValue(String.format("%.2f 元", report.getOtherIncome()));
+        row.getCell(0).setCellStyle(headerStyle);
+        row.getCell(1).setCellStyle(dataStyle);
+        
+        // 生成时间
+        rowIndex++;
+        row = sheet.createRow(rowIndex++);
+        row.createCell(0).setCellValue("生成时间");
+        row.createCell(1).setCellValue(report.getGeneratedAt().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        row.getCell(0).setCellStyle(headerStyle);
+        row.getCell(1).setCellStyle(dataStyle);
+        
+        // 自动调整列宽
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+    }
+
+    /**
+     * 创建月度统计Sheet
+     */
+    private void createMonthlySheet(Workbook workbook, FinancialReportDTO report) {
+        Sheet sheet = workbook.createSheet("月度收入统计");
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle dataStyle = createDataStyle(workbook);
+        
+        // 创建标题行
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"年份", "月份", "缴费笔数", "收入金额（元）"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+        
+        // 填充数据
+        int rowIndex = 1;
+        for (FinancialReportDTO.MonthlyIncomeStatistics stat : report.getMonthlyStatistics()) {
+            Row row = sheet.createRow(rowIndex++);
+            row.createCell(0).setCellValue(stat.getYear());
+            row.createCell(1).setCellValue(stat.getMonth() + "月");
+            row.createCell(2).setCellValue(stat.getPaymentCount());
+            row.createCell(3).setCellValue(stat.getAmount());
+            
+            for (int i = 0; i < headers.length; i++) {
+                row.getCell(i).setCellStyle(dataStyle);
+            }
+        }
+        
+        // 自动调整列宽
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    /**
+     * 创建支付方式统计Sheet
+     */
+    private void createPaymentMethodSheet(Workbook workbook, FinancialReportDTO report) {
+        Sheet sheet = workbook.createSheet("支付方式统计");
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle dataStyle = createDataStyle(workbook);
+        
+        // 创建标题行
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"支付方式", "使用次数", "金额（元）", "占比（%）"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+        
+        // 填充数据
+        int rowIndex = 1;
+        for (FinancialReportDTO.PaymentMethodStatistics stat : 
+                report.getPaymentMethodStatistics().values()) {
+            Row row = sheet.createRow(rowIndex++);
+            row.createCell(0).setCellValue(stat.getMethodDescription());
+            row.createCell(1).setCellValue(stat.getCount());
+            row.createCell(2).setCellValue(stat.getAmount());
+            row.createCell(3).setCellValue(stat.getPercentage());
+            
+            for (int i = 0; i < headers.length; i++) {
+                row.getCell(i).setCellStyle(dataStyle);
+            }
+        }
+        
+        // 自动调整列宽
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    /**
+     * 创建标题样式
+     */
+    private CellStyle createTitleStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 16);
+        style.setFont(font);
+        
+        return style;
+    }
+
+    /**
+     * 创建表头样式
+     */
+    private CellStyle createHeaderStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 11);
+        style.setFont(font);
+        
+        return style;
+    }
+
+    /**
+     * 创建数据样式
+     */
+    private CellStyle createDataStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        
+        return style;
     }
 }
 

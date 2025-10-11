@@ -2,6 +2,11 @@ package com.university.academic.dto.converter;
 
 import com.university.academic.dto.GraduationAuditDTO;
 import com.university.academic.entity.GraduationAudit;
+import com.university.academic.entity.User;
+import com.university.academic.repository.StudentRepository;
+import com.university.academic.repository.TeacherRepository;
+import com.university.academic.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,7 +18,12 @@ import java.util.stream.Collectors;
  * @author Academic System Team
  */
 @Component
+@RequiredArgsConstructor
 public class GraduationAuditConverter {
+
+    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
 
     /**
      * 实体转DTO
@@ -26,7 +36,7 @@ public class GraduationAuditConverter {
             return null;
         }
 
-        return GraduationAuditDTO.builder()
+        GraduationAuditDTO.GraduationAuditDTOBuilder builder = GraduationAuditDTO.builder()
                 .id(entity.getId())
                 .studentId(entity.getStudent().getId())
                 .studentNo(entity.getStudent().getStudentNo())
@@ -42,12 +52,43 @@ public class GraduationAuditConverter {
                 .statusDescription(entity.getStatus().getDescription())
                 .failReason(entity.getFailReason())
                 .auditedBy(entity.getAuditedBy())
-                // TODO: 查询审核人姓名
-                // .auditedByName(...)
                 .auditedAt(entity.getAuditedAt())
                 .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
-                .build();
+                .updatedAt(entity.getUpdatedAt());
+
+        // 查询审核人姓名
+        if (entity.getAuditedBy() != null) {
+            String auditedByName = getAuditorName(entity.getAuditedBy());
+            builder.auditedByName(auditedByName);
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * 根据用户ID获取审核人姓名
+     *
+     * @param userId 用户ID
+     * @return 审核人姓名
+     */
+    private String getAuditorName(Long userId) {
+        return userRepository.findById(userId)
+                .map(user -> {
+                    // 根据用户角色获取真实姓名
+                    if (user.getRole() == User.UserRole.STUDENT) {
+                        return studentRepository.findByUserId(user.getId())
+                                .map(student -> student.getName())
+                                .orElse(user.getUsername());
+                    } else if (user.getRole() == User.UserRole.TEACHER) {
+                        return teacherRepository.findByUserId(user.getId())
+                                .map(teacher -> teacher.getName())
+                                .orElse(user.getUsername());
+                    } else {
+                        // 管理员返回用户名
+                        return user.getUsername();
+                    }
+                })
+                .orElse("未知");
     }
 
     /**

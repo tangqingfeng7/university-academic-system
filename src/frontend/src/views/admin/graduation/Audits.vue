@@ -118,7 +118,8 @@
           <el-descriptions-item label="必修学分">{{ currentAudit.requiredCredits }}</el-descriptions-item>
           <el-descriptions-item label="选修学分">{{ currentAudit.electiveCredits }}</el-descriptions-item>
           <el-descriptions-item label="实践学分">{{ currentAudit.practicalCredits }}</el-descriptions-item>
-          <el-descriptions-item label="审核时间" :span="2">{{ currentAudit.auditedAt || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="审核人">{{ currentAudit.auditedByName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="审核时间">{{ currentAudit.auditedAt || '-' }}</el-descriptions-item>
           <el-descriptions-item v-if="currentAudit.failReason" label="不通过原因" :span="2">
             <el-text type="danger">{{ currentAudit.failReason }}</el-text>
           </el-descriptions-item>

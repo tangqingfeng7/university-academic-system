@@ -229,6 +229,32 @@ const router = createRouter({
           meta: { title: '退费审批', keepAlive: true }
         },
         
+        // ==================== 奖学金评定管理 ====================
+        {
+          path: 'scholarships',
+          name: 'AdminScholarships',
+          component: () => import('@/views/admin/scholarships/ScholarshipManagement.vue'),
+          meta: { title: '奖学金管理', keepAlive: true }
+        },
+        {
+          path: 'scholarship-applications',
+          name: 'AdminScholarshipApplications',
+          component: () => import('@/views/admin/scholarships/ApplicationManagement.vue'),
+          meta: { title: '申请管理', keepAlive: true }
+        },
+        {
+          path: 'scholarship-awards',
+          name: 'AdminScholarshipAwards',
+          component: () => import('@/views/admin/scholarships/AwardManagement.vue'),
+          meta: { title: '获奖管理', keepAlive: true }
+        },
+        {
+          path: 'scholarship-statistics',
+          name: 'AdminScholarshipStatistics',
+          component: () => import('@/views/admin/scholarships/Statistics.vue'),
+          meta: { title: '奖学金统计' }
+        },
+        
         // ==================== 毕业审核管理 ====================
         {
           path: 'graduation/requirements',
@@ -380,6 +406,19 @@ const router = createRouter({
           component: () => import('@/views/teacher/status-changes/ApprovalDetail.vue'),
           meta: { title: '审批处理' }
         },
+        // ==================== 奖学金审批 ====================
+        {
+          path: 'scholarship-approvals',
+          name: 'TeacherScholarshipApprovals',
+          component: () => import('@/views/teacher/scholarships/ApprovalList.vue'),
+          meta: { title: '奖学金审批', keepAlive: true }
+        },
+        {
+          path: 'scholarship-approvals/:id',
+          name: 'TeacherScholarshipApproval',
+          component: () => import('@/views/teacher/scholarships/ApprovalDetail.vue'),
+          meta: { title: '审批详情' }
+        },
         {
           path: 'profile',
           name: 'TeacherProfile',
@@ -530,6 +569,31 @@ const router = createRouter({
           name: 'StudentRefundApplications',
           component: () => import('@/views/student/tuition/RefundApplications.vue'),
           meta: { title: '退费申请', keepAlive: true }
+        },
+        // ==================== 奖学金评定 ====================
+        {
+          path: 'scholarships',
+          name: 'StudentScholarships',
+          component: () => import('@/views/student/scholarships/Index.vue'),
+          meta: { title: '奖学金申请', keepAlive: true }
+        },
+        {
+          path: 'scholarships/apply/:id',
+          name: 'StudentScholarshipApply',
+          component: () => import('@/views/student/scholarships/Apply.vue'),
+          meta: { title: '提交申请' }
+        },
+        {
+          path: 'scholarship-applications',
+          name: 'StudentScholarshipApplications',
+          component: () => import('@/views/student/scholarships/Applications.vue'),
+          meta: { title: '我的申请', keepAlive: true }
+        },
+        {
+          path: 'scholarship-awards',
+          name: 'StudentScholarshipAwards',
+          component: () => import('@/views/student/scholarships/Awards.vue'),
+          meta: { title: '获奖记录', keepAlive: true }
         },
         {
           path: 'profile',

@@ -133,6 +133,29 @@
               </el-menu-item>
             </el-sub-menu>
 
+            <el-sub-menu index="scholarship">
+              <template #title>
+                <el-icon><Trophy /></el-icon>
+                <span>奖学金管理</span>
+              </template>
+              <el-menu-item index="/admin/scholarships">
+                <el-icon><Star /></el-icon>
+                <template #title>奖学金管理</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/scholarship-applications">
+                <el-icon><Document /></el-icon>
+                <template #title>申请管理</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/scholarship-awards">
+                <el-icon><Medal /></el-icon>
+                <template #title>获奖管理</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/scholarship-statistics">
+                <el-icon><DataLine /></el-icon>
+                <template #title>奖学金统计</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-sub-menu index="graduation">
               <template #title>
                 <el-icon><Medal /></el-icon>
@@ -308,7 +331,7 @@ import {
   Platform, TrendCharts, UserFilled, User, Reading, Calendar, Memo, Clock, 
   OfficeBuilding, School, Setting, Document, DataAnalysis, Bell,
   Expand, Fold, Lock, SwitchButton, DocumentChecked, List, DataLine,
-  Coin, Tickets, Files, Select, RefreshLeft, Medal
+  Coin, Tickets, Files, Select, RefreshLeft, Medal, Trophy, Star
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

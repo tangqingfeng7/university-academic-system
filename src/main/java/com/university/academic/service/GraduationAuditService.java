@@ -10,6 +10,7 @@ import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.CourseSelectionRepository;
 import com.university.academic.repository.GraduationAuditRepository;
 import com.university.academic.repository.StudentRepository;
+import com.university.academic.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -318,10 +319,17 @@ public class GraduationAuditService {
             audit.setFailReason(String.join("；", failReasons));
         }
 
-        // 设置审核时间和审核人（当前为系统自动审核）
+        // 设置审核时间和审核人
         audit.setAuditedAt(LocalDateTime.now());
-        // TODO: 设置审核人ID（从SecurityContext获取）
-        // audit.setAuditedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+        
+        // 从SecurityContext获取当前登录用户ID作为审核人
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId != null) {
+            audit.setAuditedBy(currentUserId);
+            log.debug("设置审核人ID: {}", currentUserId);
+        } else {
+            log.warn("无法获取当前用户ID，审核记录将不包含审核人信息");
+        }
 
         return audit;
     }

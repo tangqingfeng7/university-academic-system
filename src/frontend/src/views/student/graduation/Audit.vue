@@ -54,7 +54,10 @@
                       {{ statusText }}
                     </el-tag>
                   </el-descriptions-item>
-                  <el-descriptions-item label="审核时间">
+                  <el-descriptions-item label="审核人">
+                    {{ auditResult.auditedByName || '-' }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="审核时间" :span="2">
                     {{ formatDateTime(auditResult.auditedAt) }}
                   </el-descriptions-item>
                 </el-descriptions>

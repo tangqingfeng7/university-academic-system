@@ -57,6 +57,11 @@
               <template #title>学籍审批</template>
             </el-menu-item>
 
+            <el-menu-item index="/teacher/scholarship-approvals">
+              <el-icon><Checked /></el-icon>
+              <template #title>奖学金审批</template>
+            </el-menu-item>
+
             <el-sub-menu index="classrooms">
               <template #title>
                 <el-icon><OfficeBuilding /></el-icon>
@@ -211,7 +216,7 @@ import { ElMessage } from 'element-plus'
 import {
   Notebook, TrendCharts, Reading, Calendar, Memo, View, Bell, User,
   Expand, Fold, Lock, SwitchButton, Document, EditPen, OfficeBuilding,
-  Search, DataLine
+  Search, DataLine, Select, Checked
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

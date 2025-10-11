@@ -137,6 +137,7 @@ public enum ErrorCode {
     FILE_SIZE_EXCEED(4004, "文件大小超过限制"),
     FILE_NOT_FOUND(4005, "文件不存在"),
     EXPORT_ERROR(4006, "数据导出失败"),
+    FILE_NAME_INVALID(4007, "文件名无效"),
 
     // ========== 数据操作错误码 4100-4199 ==========
     DATA_NOT_FOUND(4101, "数据不存在"),
@@ -235,7 +236,27 @@ public enum ErrorCode {
     REFUND_APPLICATION_ALREADY_PROCESSED(5014, "退费申请已处理"),
     REFUND_APPLICATION_ALREADY_EXISTS(5015, "该缴费记录已存在退费申请"),
     PAYMENT_CANNOT_BE_REFUNDED(5016, "该缴费记录不支持退费"),
-    REFUND_APPROVAL_PERMISSION_DENIED(5017, "无退费审批权限");
+    REFUND_APPROVAL_PERMISSION_DENIED(5017, "无退费审批权限"),
+    
+    // ========== 奖学金评定模块错误码 5100-5199 ==========
+    SCHOLARSHIP_NOT_FOUND(5101, "奖学金不存在"),
+    SCHOLARSHIP_ALREADY_EXISTS(5102, "奖学金名称已存在"),
+    SCHOLARSHIP_NOT_ACTIVE(5103, "奖学金未启用"),
+    SCHOLARSHIP_HAS_APPLICATIONS(5104, "该奖学金已有申请记录，无法删除"),
+    SCHOLARSHIP_APPLICATION_NOT_FOUND(5105, "奖学金申请不存在"),
+    SCHOLARSHIP_APPLICATION_ALREADY_EXISTS(5106, "已提交过该奖学金申请"),
+    SCHOLARSHIP_APPLICATION_NOT_ELIGIBLE(5107, "不符合申请条件"),
+    SCHOLARSHIP_APPLICATION_PERIOD_CLOSED(5108, "申请期已关闭"),
+    SCHOLARSHIP_AWARD_NOT_FOUND(5109, "获奖记录不存在"),
+    SCHOLARSHIP_APPROVAL_NOT_FOUND(5110, "审批记录不存在"),
+    SCHOLARSHIP_APPROVAL_PERMISSION_DENIED(5111, "无审批权限"),
+    SCHOLARSHIP_ALREADY_APPROVED(5112, "该申请已审批过"),
+    SCHOLARSHIP_APPLICATION_REJECTED(5113, "该申请已被拒绝"),
+    SCHOLARSHIP_APPLICATION_STATUS_INVALID(5114, "申请状态不符合审批条件"),
+    
+    // ========== 通用错误码 9000-9999 ==========
+    EXPORT_FAILED(9001, "导出失败"),
+    IMPORT_FAILED(9002, "导入失败");
 
     /**
      * 错误码

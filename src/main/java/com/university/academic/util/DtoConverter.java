@@ -740,5 +740,65 @@ public class DtoConverter {
                 .updatedAt(period.getUpdatedAt())
                 .build();
     }
+    
+    /**
+     * 将ScholarshipApplication实体转换为ScholarshipApplicationDTO
+     * 静态方法用于在Service中直接调用
+     *
+     * @param application ScholarshipApplication实体
+     * @return ScholarshipApplicationDTO
+     */
+    public static com.university.academic.dto.ScholarshipApplicationDTO toScholarshipApplicationDTO(
+            com.university.academic.entity.ScholarshipApplication application) {
+        if (application == null) {
+            return null;
+        }
+
+        com.university.academic.entity.Scholarship scholarship = application.getScholarship();
+        com.university.academic.entity.Student student = application.getStudent();
+        
+        // 构建奖学金DTO
+        com.university.academic.dto.ScholarshipDTO scholarshipDTO = null;
+        if (scholarship != null) {
+            scholarshipDTO = com.university.academic.dto.ScholarshipDTO.builder()
+                    .id(scholarship.getId())
+                    .name(scholarship.getName())
+                    .level(scholarship.getLevel())
+                    .amount(scholarship.getAmount())
+                    .quota(scholarship.getQuota())
+                    .description(scholarship.getDescription())
+                    .minGpa(scholarship.getMinGpa())
+                    .minCredits(scholarship.getMinCredits())
+                    .build();
+        }
+        
+        // 构建学生DTO
+        com.university.academic.dto.StudentDTO studentDTO = null;
+        if (student != null) {
+            studentDTO = com.university.academic.dto.StudentDTO.builder()
+                    .id(student.getId())
+                    .studentNo(student.getStudentNo())
+                    .name(student.getName())
+                    .build();
+        }
+
+        return com.university.academic.dto.ScholarshipApplicationDTO.builder()
+                .id(application.getId())
+                .scholarship(scholarshipDTO)
+                .student(studentDTO)
+                .academicYear(application.getAcademicYear())
+                .gpa(application.getGpa())
+                .totalCredits(application.getTotalCredits())
+                .comprehensiveScore(application.getComprehensiveScore())
+                .personalStatement(application.getPersonalStatement())
+                .attachmentUrl(application.getAttachmentUrl())
+                .status(application.getStatus())
+                .statusDescription(application.getStatus() != null ? 
+                        application.getStatus().getDescription() : null)
+                .submittedAt(application.getSubmittedAt())
+                .createdAt(application.getCreatedAt())
+                .updatedAt(application.getUpdatedAt())
+                .build();
+    }
 }
 

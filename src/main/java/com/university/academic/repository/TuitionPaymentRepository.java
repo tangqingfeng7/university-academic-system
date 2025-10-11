@@ -88,6 +88,18 @@ public interface TuitionPaymentRepository extends JpaRepository<TuitionPayment, 
     );
 
     /**
+     * 统计指定时间范围的缴费笔数
+     */
+    @Query("SELECT COUNT(tp) FROM TuitionPayment tp " +
+           "WHERE tp.paidAt >= :startTime " +
+           "AND tp.paidAt <= :endTime " +
+           "AND tp.status = 'SUCCESS'")
+    Long countByPaidTimeBetween(
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime
+    );
+
+    /**
      * 统计指定学年的缴费金额
      */
     @Query("SELECT SUM(tp.amount) FROM TuitionPayment tp " +

@@ -146,6 +146,16 @@ public interface TuitionBillRepository extends JpaRepository<TuitionBill, Long> 
     List<Object[]> getStatisticsByMajor(@Param("academicYear") String academicYear);
 
     /**
+     * 统计指定学年各项费用的总和
+     */
+    @Query("SELECT SUM(tb.tuitionFee), SUM(tb.accommodationFee), " +
+           "SUM(tb.textbookFee), SUM(tb.otherFees) " +
+           "FROM TuitionBill tb " +
+           "WHERE tb.academicYear = :academicYear " +
+           "AND tb.status != 'UNPAID'")
+    Object[] getFeeBreakdownByAcademicYear(@Param("academicYear") String academicYear);
+
+    /**
      * 多条件查询账单
      */
     @Query(value = "SELECT tb FROM TuitionBill tb " +

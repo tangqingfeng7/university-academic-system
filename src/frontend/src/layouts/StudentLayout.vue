@@ -100,6 +100,25 @@
               </el-menu-item>
             </el-sub-menu>
 
+            <el-sub-menu index="scholarship">
+              <template #title>
+                <el-icon><Trophy /></el-icon>
+                <span>奖学金</span>
+              </template>
+              <el-menu-item index="/student/scholarships">
+                <el-icon><Star /></el-icon>
+                <template #title>奖学金申请</template>
+              </el-menu-item>
+              <el-menu-item index="/student/scholarship-applications">
+                <el-icon><Document /></el-icon>
+                <template #title>我的申请</template>
+              </el-menu-item>
+              <el-menu-item index="/student/scholarship-awards">
+                <el-icon><Medal /></el-icon>
+                <template #title>获奖记录</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/student/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>
@@ -233,7 +252,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   School, TrendCharts, Tickets, Calendar, Document, Notebook, Reading, Bell, User,
-  Expand, Fold, Lock, SwitchButton, Edit, Files, Wallet, Medal, DocumentChecked
+  Expand, Fold, Lock, SwitchButton, Edit, Files, Wallet, Medal, DocumentChecked,
+  Trophy, Star
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'
