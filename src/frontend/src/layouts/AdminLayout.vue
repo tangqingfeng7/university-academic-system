@@ -1,7 +1,7 @@
 <template>
   <div class="layout-container">
     <el-container>
-      <!-- 侧边栏 - Apple 风格 -->
+      <!-- 侧边栏 - 管理后台 -->
       <el-aside :width="isCollapse ? '80px' : '240px'" class="apple-sidebar">
         <div class="sidebar-header">
           <div class="logo-wrapper" :class="{ collapsed: isCollapse }">
@@ -106,6 +106,33 @@
               <template #title>学籍审批</template>
             </el-menu-item>
 
+            <el-sub-menu index="tuition">
+              <template #title>
+                <el-icon><Coin /></el-icon>
+                <span>学费管理</span>
+              </template>
+              <el-menu-item index="/admin/tuition/standards">
+                <el-icon><Setting /></el-icon>
+                <template #title>学费标准</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/tuition/bills">
+                <el-icon><Document /></el-icon>
+                <template #title>账单管理</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/tuition/payments/offline">
+                <el-icon><Tickets /></el-icon>
+                <template #title>线下缴费</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/tuition/refund-applications">
+                <el-icon><RefreshLeft /></el-icon>
+                <template #title>退费审批</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/tuition/statistics">
+                <el-icon><DataLine /></el-icon>
+                <template #title>财务统计</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/admin/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假审批</template>
@@ -135,7 +162,7 @@
       </el-aside>
 
       <el-container class="main-container">
-        <!-- 顶部导航 - Apple 风格 -->
+        <!-- 顶部导航  -->
         <el-header class="apple-header">
           <div class="header-content">
             <div class="header-left">
@@ -257,7 +284,8 @@ import { ElMessage } from 'element-plus'
 import {
   Platform, TrendCharts, UserFilled, User, Reading, Calendar, Memo, Clock, 
   OfficeBuilding, School, Setting, Document, DataAnalysis, Bell,
-  Expand, Fold, Lock, SwitchButton, DocumentChecked, List, DataLine
+  Expand, Fold, Lock, SwitchButton, DocumentChecked, List, DataLine,
+  Coin, Tickets, Files, Select, RefreshLeft
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -370,7 +398,7 @@ const handlePasswordSubmit = () => {
 }
 
 // ===================================
-// 侧边栏 - Apple 风格
+// 侧边栏
 // ===================================
 
 .apple-sidebar {
@@ -478,7 +506,7 @@ const handlePasswordSubmit = () => {
 }
 
 // ===================================
-// 顶部导航 - Apple 风格
+// 顶部导航
 // ===================================
 
 .main-container {
@@ -608,7 +636,7 @@ const handlePasswordSubmit = () => {
 }
 
 // ===================================
-// 响应式设计
+// 响应式
 // ===================================
 
 @media (max-width: 768px) {

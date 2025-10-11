@@ -207,7 +207,28 @@ public enum ErrorCode {
     STUDENT_ALREADY_SUSPENDED(4908, "学生已处于休学状态"),
     TARGET_MAJOR_NOT_FOUND(4909, "目标专业不存在"),
     INVALID_DATE_RANGE(4910, "日期范围无效"),
-    SUSPENSION_PERIOD_INVALID(4911, "休学期限无效");
+    SUSPENSION_PERIOD_INVALID(4911, "休学期限无效"),
+
+    // ========== 学费缴纳模块错误码 5000-5099 ==========
+    TUITION_STANDARD_NOT_FOUND(5001, "学费标准不存在"),
+    TUITION_STANDARD_ALREADY_EXISTS(5002, "学费标准已存在"),
+    TUITION_BILL_NOT_FOUND(5003, "学费账单不存在"),
+    TUITION_BILL_ALREADY_EXISTS(5004, "学费账单已存在"),
+    TUITION_BILL_ALREADY_PAID(5005, "学费账单已支付"),
+    PAYMENT_NOT_FOUND(5006, "缴费记录不存在"),
+    PAYMENT_FAILED(5007, "支付失败"),
+    PAYMENT_AMOUNT_EXCEEDS_OUTSTANDING(5008, "缴费金额超过欠费金额"),
+    PAYMENT_AMOUNT_INVALID(5009, "缴费金额无效"),
+    PAYMENT_METHOD_NOT_SUPPORTED(5010, "不支持的支付方式"),
+    
+    // 退费相关错误码 5011-5020
+    REFUND_APPLICATION_NOT_FOUND(5011, "退费申请不存在"),
+    REFUND_AMOUNT_EXCEEDS_PAYMENT(5012, "退费金额超过原缴费金额"),
+    REFUND_AMOUNT_INVALID(5013, "退费金额无效"),
+    REFUND_APPLICATION_ALREADY_PROCESSED(5014, "退费申请已处理"),
+    REFUND_APPLICATION_ALREADY_EXISTS(5015, "该缴费记录已存在退费申请"),
+    PAYMENT_CANNOT_BE_REFUNDED(5016, "该缴费记录不支持退费"),
+    REFUND_APPROVAL_PERMISSION_DENIED(5017, "无退费审批权限");
 
     /**
      * 错误码

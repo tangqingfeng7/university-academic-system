@@ -45,6 +45,14 @@ export function getStudentById(id) {
   })
 }
 
+// 根据学号获取学生信息
+export function getStudentByNo(studentNo) {
+  return request({
+    url: `/admin/students/by-student-no/${studentNo}`,
+    method: 'get'
+  })
+}
+
 // 创建学生
 export function createStudent(data) {
   return request({

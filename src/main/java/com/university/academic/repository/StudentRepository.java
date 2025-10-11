@@ -137,5 +137,13 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @EntityGraph(attributePaths = {"user", "major", "major.department"})
     @Query("SELECT s FROM Student s WHERE s.id = :id")
     Optional<Student> findByIdWithDetails(@Param("id") Long id);
+
+    /**
+     * 查询所有在校学生（未删除、状态为ACTIVE）
+     *
+     * @return 学生列表
+     */
+    @Query("SELECT s FROM Student s WHERE s.deleted = false AND s.status = 'ACTIVE'")
+    List<Student> findAllActive();
 }
 

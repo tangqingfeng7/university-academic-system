@@ -197,6 +197,37 @@ const router = createRouter({
           component: () => import('@/views/admin/status-changes/Detail.vue'),
           meta: { title: '异动详情' }
         },
+        // ==================== 学费缴纳管理 ====================
+        {
+          path: 'tuition/standards',
+          name: 'AdminTuitionStandards',
+          component: () => import('@/views/admin/tuition/Standards.vue'),
+          meta: { title: '学费标准设置', keepAlive: true }
+        },
+        {
+          path: 'tuition/bills',
+          name: 'AdminTuitionBills',
+          component: () => import('@/views/admin/tuition/Bills.vue'),
+          meta: { title: '账单管理', keepAlive: true }
+        },
+        {
+          path: 'tuition/payments/offline',
+          name: 'AdminTuitionOfflinePayment',
+          component: () => import('@/views/admin/tuition/OfflinePayment.vue'),
+          meta: { title: '线下缴费录入' }
+        },
+        {
+          path: 'tuition/statistics',
+          name: 'AdminTuitionStatistics',
+          component: () => import('@/views/admin/tuition/Statistics.vue'),
+          meta: { title: '财务统计' }
+        },
+        {
+          path: 'tuition/refund-applications',
+          name: 'AdminRefundApplications',
+          component: () => import('@/views/admin/tuition/RefundApplications.vue'),
+          meta: { title: '退费审批', keepAlive: true }
+        },
         {
           path: 'profile',
           name: 'AdminProfile',
@@ -428,6 +459,31 @@ const router = createRouter({
           name: 'StudentStatusChangeDetail',
           component: () => import('@/views/student/status-changes/ApplicationDetail.vue'),
           meta: { title: '申请详情' }
+        },
+        // ==================== 学费缴纳 ====================
+        {
+          path: 'tuition/bills',
+          name: 'StudentTuitionBills',
+          component: () => import('@/views/student/tuition/BillList.vue'),
+          meta: { title: '学费账单', keepAlive: true }
+        },
+        {
+          path: 'tuition/payment',
+          name: 'StudentTuitionPayment',
+          component: () => import('@/views/student/tuition/Payment.vue'),
+          meta: { title: '学费缴纳' }
+        },
+        {
+          path: 'tuition/payments',
+          name: 'StudentTuitionPayments',
+          component: () => import('@/views/student/tuition/PaymentList.vue'),
+          meta: { title: '缴费记录', keepAlive: true }
+        },
+        {
+          path: 'tuition/refund-applications',
+          name: 'StudentRefundApplications',
+          component: () => import('@/views/student/tuition/RefundApplications.vue'),
+          meta: { title: '退费申请', keepAlive: true }
         },
         {
           path: 'profile',

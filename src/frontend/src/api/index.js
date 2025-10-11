@@ -11,4 +11,5 @@ export * from './selection'
 export * from './statistics'
 export * from './notification'
 export * from './system'
+export * from './tuition'
 

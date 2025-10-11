@@ -62,6 +62,25 @@
               <template #title>学籍异动</template>
             </el-menu-item>
 
+            <el-sub-menu index="tuition">
+              <template #title>
+                <el-icon><Wallet /></el-icon>
+                <span>学费缴纳</span>
+              </template>
+              <el-menu-item index="/student/tuition/bills">
+                <el-icon><Document /></el-icon>
+                <template #title>学费账单</template>
+              </el-menu-item>
+              <el-menu-item index="/student/tuition/payments">
+                <el-icon><Tickets /></el-icon>
+                <template #title>缴费记录</template>
+              </el-menu-item>
+              <el-menu-item index="/student/tuition/refund-applications">
+                <el-icon><Files /></el-icon>
+                <template #title>退费申请</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/student/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>
@@ -195,7 +214,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   School, TrendCharts, Tickets, Calendar, Document, Notebook, Reading, Bell, User,
-  Expand, Fold, Lock, SwitchButton
+  Expand, Fold, Lock, SwitchButton, Edit, Files, Wallet
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -389,6 +408,59 @@ const handlePasswordSubmit = () => {
       font-size: 18px;
       color: var(--text-secondary);
       transition: color var(--transition-fast);
+    }
+  }
+
+  :deep(.el-sub-menu) {
+    .el-sub-menu__title {
+      height: 40px;
+      line-height: 40px;
+      margin-bottom: 2px;
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      transition: all var(--transition-fast);
+      font-size: 15px;
+      font-weight: 500;
+
+      &:hover {
+        background: var(--bg-secondary);
+      }
+
+      .el-icon {
+        font-size: 18px;
+        color: var(--text-secondary);
+        transition: color var(--transition-fast);
+      }
+    }
+
+    &.is-active .el-sub-menu__title {
+      background: var(--info-color);
+      color: white;
+
+      .el-icon {
+        color: white;
+      }
+    }
+
+    .el-menu {
+      background: transparent;
+    }
+
+    .el-menu-item {
+      height: 36px;
+      line-height: 36px;
+      padding-left: 56px !important;
+      font-size: 14px;
+      margin-bottom: 2px;
+
+      &.is-active {
+        background: rgba(64, 158, 255, 0.1);
+        color: var(--info-color);
+
+        .el-icon {
+          color: var(--info-color);
+        }
+      }
     }
   }
 
