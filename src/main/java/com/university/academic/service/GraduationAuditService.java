@@ -9,6 +9,7 @@ import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.CourseSelectionRepository;
 import com.university.academic.repository.GraduationAuditRepository;
+import com.university.academic.repository.StudentDisciplineRepository;
 import com.university.academic.repository.StudentRepository;
 import com.university.academic.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class GraduationAuditService {
     private final GraduationRequirementService graduationRequirementService;
     private final CreditCalculationService creditCalculationService;
     private final GraduationAuditConverter graduationAuditConverter;
+    private final StudentDisciplineRepository studentDisciplineRepository;
 
     /**
      * 执行毕业审核
@@ -275,18 +277,36 @@ public class GraduationAuditService {
      * @return 是否符合毕业条件
      */
     private boolean checkDisciplinaryStatus(Student student, List<String> failReasons) {
-        // TODO: 实现违纪处分检查逻辑
-        // 这里需要集成违纪处分管理模块
-        // 暂时默认通过
-
-        // 示例逻辑（待实现）：
-        // if (student.hasPendingDisciplinaryAction()) {
-        //     String reason = "存在未解除的违纪处分，暂缓毕业";
-        //     failReasons.add(reason);
-        //     log.warn("违纪处分检查未通过: studentId={}", student.getId());
-        //     return false;
-        // }
-
+        // 检查学生是否有未解除的违纪处分
+        boolean hasActiveDiscipline = studentDisciplineRepository.hasActiveDiscipline(student.getId());
+        
+        if (hasActiveDiscipline) {
+            // 获取学生的有效处分记录
+            List<StudentDiscipline> activeDisciplines = studentDisciplineRepository
+                    .findByStudentIdAndStatusAndDeletedFalse(student.getId(), 
+                            com.university.academic.entity.enums.DisciplineStatus.ACTIVE);
+            
+            // 构建详细的失败原因
+            StringBuilder reason = new StringBuilder("存在未解除的违纪处分，暂缓毕业：");
+            for (int i = 0; i < activeDisciplines.size(); i++) {
+                StudentDiscipline discipline = activeDisciplines.get(i);
+                if (i > 0) {
+                    reason.append("；");
+                }
+                reason.append(discipline.getDisciplineType().getDescription())
+                      .append("（处分日期：")
+                      .append(discipline.getPunishmentDate())
+                      .append("）");
+            }
+            
+            failReasons.add(reason.toString());
+            log.warn("违纪处分检查未通过: studentId={}, studentNo={}, activeDisciplineCount={}", 
+                    student.getId(), student.getStudentNo(), activeDisciplines.size());
+            return false;
+        }
+        
+        log.debug("违纪处分检查通过: studentId={}, studentNo={}", 
+                student.getId(), student.getStudentNo());
         return true;
     }
 

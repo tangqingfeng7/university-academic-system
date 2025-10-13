@@ -10,7 +10,9 @@ import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.ScholarshipApplicationRepository;
 import com.university.academic.repository.ScholarshipRepository;
+import com.university.academic.repository.StudentDisciplineRepository;
 import com.university.academic.repository.StudentRepository;
+import com.university.academic.repository.TuitionBillRepository;
 import com.university.academic.service.CreditCalculationService;
 import com.university.academic.service.ScholarshipEvaluationService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,8 @@ public class ScholarshipEvaluationServiceImpl implements ScholarshipEvaluationSe
     private final StudentRepository studentRepository;
     private final CreditCalculationService creditCalculationService;
     private final ObjectMapper objectMapper;
+    private final StudentDisciplineRepository studentDisciplineRepository;
+    private final TuitionBillRepository tuitionBillRepository;
     
     /**
      * 自动评定奖学金
@@ -123,7 +127,7 @@ public class ScholarshipEvaluationServiceImpl implements ScholarshipEvaluationSe
         double totalCredits = creditSummary.getTotalCredits();
         
         // 3. 检查基本条件
-        String excludeReason = checkEligibility(gpa, totalCredits, rule);
+        String excludeReason = checkEligibility(studentId, gpa, totalCredits, rule);
         if (excludeReason != null) {
             return ComprehensiveScoreDTO.builder()
                     .studentId(studentId)
@@ -288,9 +292,13 @@ public class ScholarshipEvaluationServiceImpl implements ScholarshipEvaluationSe
     /**
      * 检查学生是否符合基本条件
      *
+     * @param studentId 学生ID
+     * @param gpa 学生GPA
+     * @param totalCredits 总学分
+     * @param rule 评定规则
      * @return 不符合原因，符合则返回null
      */
-    private String checkEligibility(double gpa, double totalCredits, EvaluationRuleDTO rule) {
+    private String checkEligibility(Long studentId, double gpa, double totalCredits, EvaluationRuleDTO rule) {
         if (gpa < rule.getMinGpa()) {
             return "GPA不足：" + gpa + "（要求≥" + rule.getMinGpa() + "）";
         }
@@ -299,17 +307,42 @@ public class ScholarshipEvaluationServiceImpl implements ScholarshipEvaluationSe
             return "学分不足：" + totalCredits + "（要求≥" + rule.getMinCredits() + "）";
         }
         
-        // TODO: 检查处分记录
-        // if (rule.getRequireCleanRecord() && hasDisciplinaryRecord(studentId)) {
-        //     return "存在未解除的处分记录";
-        // }
+        // 检查处分记录
+        if (rule.getRequireCleanRecord() != null && rule.getRequireCleanRecord()) {
+            boolean hasActiveDiscipline = studentDisciplineRepository.hasActiveDiscipline(studentId);
+            if (hasActiveDiscipline) {
+                return "存在未解除的处分记录，不符合申请条件";
+            }
+        }
         
-        // TODO: 检查学费缴纳情况
-        // if (rule.getRequirePaidTuition() && hasUnpaidTuition(studentId)) {
-        //     return "存在未缴学费";
-        // }
+        // 检查学费缴纳情况
+        if (rule.getRequirePaidTuition() != null && rule.getRequirePaidTuition()) {
+            boolean hasUnpaidTuition = hasUnpaidTuition(studentId);
+            if (hasUnpaidTuition) {
+                return "存在未缴学费，不符合申请条件";
+            }
+        }
         
         return null;
+    }
+    
+    /**
+     * 检查学生是否有未缴学费
+     *
+     * @param studentId 学生ID
+     * @return true-有未缴学费, false-无未缴学费
+     */
+    private boolean hasUnpaidTuition(Long studentId) {
+        List<com.university.academic.entity.tuition.TuitionBill> bills = 
+                tuitionBillRepository.findByStudentId(studentId);
+        
+        // 检查是否有未支付或部分支付或逾期的账单
+        return bills.stream()
+                .anyMatch(bill -> 
+                    bill.getStatus() == com.university.academic.entity.tuition.BillStatus.UNPAID ||
+                    bill.getStatus() == com.university.academic.entity.tuition.BillStatus.PARTIAL ||
+                    bill.getStatus() == com.university.academic.entity.tuition.BillStatus.OVERDUE
+                );
     }
     
     /**

@@ -72,3 +72,20 @@ export function checkMajorCode(code) {
   })
 }
 
+// ==================== 公共接口（所有用户可访问）====================
+
+// 获取所有专业列表（公共接口）
+export function getAllMajorsPublic() {
+  return request({
+    url: '/common/majors',
+    method: 'get'
+  })
+}
+
+// 根据院系ID获取专业列表（公共接口）
+export function getMajorsByDepartmentPublic(departmentId) {
+  return request({
+    url: `/common/majors/by-department/${departmentId}`,
+    method: 'get'
+  })
+}

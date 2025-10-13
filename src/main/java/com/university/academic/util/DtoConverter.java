@@ -2,6 +2,9 @@ package com.university.academic.util;
 
 import com.university.academic.dto.*;
 import com.university.academic.entity.*;
+import com.university.academic.repository.StudentRepository;
+import com.university.academic.repository.TeacherRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,7 +14,35 @@ import org.springframework.stereotype.Component;
  * @author Academic System Team
  */
 @Component
+@RequiredArgsConstructor
 public class DtoConverter {
+
+    private final TeacherRepository teacherRepository;
+    private final StudentRepository studentRepository;
+
+    /**
+     * 获取用户的真实姓名（优先从Teacher/Student获取，否则返回用户名）
+     */
+    private String getUserRealName(User user) {
+        if (user == null) {
+            return null;
+        }
+        
+        // 尝试从Teacher获取
+        Teacher teacher = teacherRepository.findByUserId(user.getId()).orElse(null);
+        if (teacher != null && teacher.getName() != null) {
+            return teacher.getName();
+        }
+        
+        // 尝试从Student获取
+        Student student = studentRepository.findByUserId(user.getId()).orElse(null);
+        if (student != null && student.getName() != null) {
+            return student.getName();
+        }
+        
+        // 都没有则返回用户名
+        return user.getUsername();
+    }
 
     /**
      * 将User实体转换为UserDTO
@@ -324,6 +355,11 @@ public class DtoConverter {
                         selection.getStudent().getStudentNo() : null)
                 .studentName(selection != null && selection.getStudent() != null ? 
                         selection.getStudent().getName() : null)
+                .majorName(selection != null && selection.getStudent() != null && 
+                        selection.getStudent().getMajor() != null ? 
+                        selection.getStudent().getMajor().getName() : null)
+                .className(selection != null && selection.getStudent() != null ? 
+                        selection.getStudent().getClassName() : null)
                 .courseId(offering != null && offering.getCourse() != null ? 
                         offering.getCourse().getId() : null)
                 .courseNo(offering != null && offering.getCourse() != null ? 
@@ -798,6 +834,92 @@ public class DtoConverter {
                 .submittedAt(application.getSubmittedAt())
                 .createdAt(application.getCreatedAt())
                 .updatedAt(application.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 将StudentDiscipline实体转换为StudentDisciplineDTO
+     */
+    public StudentDisciplineDTO toStudentDisciplineDTO(StudentDiscipline discipline) {
+        if (discipline == null) {
+            return null;
+        }
+
+        Student student = discipline.getStudent();
+        
+        return StudentDisciplineDTO.builder()
+                .id(discipline.getId())
+                .studentId(student != null ? student.getId() : null)
+                .studentNo(student != null ? student.getStudentNo() : null)
+                .studentName(student != null ? student.getName() : null)
+                .majorName(student != null && student.getMajor() != null ? 
+                        student.getMajor().getName() : null)
+                .className(student != null ? student.getClassName() : null)
+                .disciplineType(discipline.getDisciplineType() != null ? 
+                        discipline.getDisciplineType().name() : null)
+                .disciplineTypeDescription(discipline.getDisciplineType() != null ? 
+                        discipline.getDisciplineType().getDescription() : null)
+                .reason(discipline.getReason())
+                .description(discipline.getDescription())
+                .occurrenceDate(discipline.getOccurrenceDate())
+                .punishmentDate(discipline.getPunishmentDate())
+                .status(discipline.getStatus() != null ? discipline.getStatus().name() : null)
+                .statusDescription(discipline.getStatus() != null ? 
+                        discipline.getStatus().getDescription() : null)
+                .approvalStatus(discipline.getApprovalStatus() != null ? 
+                        discipline.getApprovalStatus().name() : null)
+                .approvalStatusDescription(discipline.getApprovalStatus() != null ? 
+                        discipline.getApprovalStatus().getDescription() : null)
+                .canRemove(discipline.getCanRemove())
+                .removedDate(discipline.getRemovedDate())
+                .removedReason(discipline.getRemovedReason())
+                .removedByName(getUserRealName(discipline.getRemovedBy()))
+                .attachmentUrl(discipline.getAttachmentUrl())
+                .reporterName(getUserRealName(discipline.getReporter()))
+                .approverName(getUserRealName(discipline.getApprover()))
+                .approvedAt(discipline.getApprovedAt())
+                .approvalComment(discipline.getApprovalComment())
+                .createdAt(discipline.getCreatedAt())
+                .updatedAt(discipline.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 将DisciplineAppeal实体转换为DisciplineAppealDTO
+     */
+    public DisciplineAppealDTO toDisciplineAppealDTO(DisciplineAppeal appeal) {
+        if (appeal == null) {
+            return null;
+        }
+
+        StudentDiscipline discipline = appeal.getDiscipline();
+        Student student = appeal.getStudent();
+        
+        return DisciplineAppealDTO.builder()
+                .id(appeal.getId())
+                .disciplineId(discipline != null ? discipline.getId() : null)
+                .disciplineTypeDescription(discipline != null && discipline.getDisciplineType() != null ? 
+                        discipline.getDisciplineType().getDescription() : null)
+                .disciplineReason(discipline != null ? discipline.getReason() : null)
+                .studentId(student != null ? student.getId() : null)
+                .studentNo(student != null ? student.getStudentNo() : null)
+                .studentName(student != null ? student.getName() : null)
+                .appealReason(appeal.getAppealReason())
+                .evidence(appeal.getEvidence())
+                .attachmentUrl(appeal.getAttachmentUrl())
+                .status(appeal.getStatus() != null ? appeal.getStatus().name() : null)
+                .statusDescription(appeal.getStatus() != null ? 
+                        appeal.getStatus().getDescription() : null)
+                .reviewResult(appeal.getReviewResult() != null ? 
+                        appeal.getReviewResult().name() : null)
+                .reviewResultDescription(appeal.getReviewResult() != null ? 
+                        appeal.getReviewResult().getDescription() : null)
+                .reviewComment(appeal.getReviewComment())
+                .reviewedByName(appeal.getReviewedBy() != null ? 
+                        appeal.getReviewedBy().getUsername() : null)
+                .reviewedAt(appeal.getReviewedAt())
+                .createdAt(appeal.getCreatedAt())
+                .updatedAt(appeal.getUpdatedAt())
                 .build();
     }
 }

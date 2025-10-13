@@ -1,7 +1,6 @@
 package com.university.academic.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -51,4 +50,3 @@ public class UpdateGraduationRequirementRequest {
      */
     private String additionalRequirements;
 }
-

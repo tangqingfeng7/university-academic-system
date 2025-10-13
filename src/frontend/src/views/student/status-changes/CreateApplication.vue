@@ -128,6 +128,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { createApplication } from '@/api/statusChange'
+import { getAllMajorsPublic } from '@/api/major'
 
 const router = useRouter()
 const formRef = ref()
@@ -195,8 +196,14 @@ const goBack = () => {
 }
 
 const fetchMajors = async () => {
-  // TODO: 获取专业列表
-  majors.value = []
+  try {
+    const { data } = await getAllMajorsPublic()
+    majors.value = data || []
+  } catch (error) {
+    console.error('获取专业列表失败:', error)
+    ElMessage.error('获取专业列表失败')
+    majors.value = []
+  }
 }
 
 onMounted(() => {

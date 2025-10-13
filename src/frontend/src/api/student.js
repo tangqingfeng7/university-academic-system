@@ -120,3 +120,12 @@ export function exportStudents(params) {
   })
 }
 
+// 教师端获取学生列表（用于选择学生）
+export function getStudentListForTeacher(params) {
+  return request({
+    url: '/teacher/students',
+    method: 'get',
+    params
+  })
+}
+

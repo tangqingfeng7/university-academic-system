@@ -77,6 +77,12 @@ const router = createRouter({
           meta: { title: '专业管理' }
         },
         {
+          path: 'classes',
+          name: 'AdminClasses',
+          component: () => import('@/views/admin/classes/Index.vue'),
+          meta: { title: '班级管理', keepAlive: true }
+        },
+        {
           path: 'system-config',
           name: 'AdminSystemConfig',
           component: () => import('@/views/admin/system/SystemConfig.vue'),
@@ -306,6 +312,13 @@ const router = createRouter({
           component: () => import('@/views/admin/scheduling/Preview.vue'),
           meta: { title: '课表预览' }
         },
+        // ==================== 处分管理 ====================
+        {
+          path: 'disciplines',
+          name: 'AdminDisciplines',
+          component: () => import('@/views/admin/discipline/DisciplineList.vue'),
+          meta: { title: '处分管理', keepAlive: true }
+        },
         
         {
           path: 'profile',
@@ -402,6 +415,12 @@ const router = createRouter({
           meta: { title: '教学评价统计' }
         },
         {
+          path: 'my-classes',
+          name: 'TeacherMyClasses',
+          component: () => import('@/views/teacher/MyClasses.vue'),
+          meta: { title: '我的班级', keepAlive: true }
+        },
+        {
           path: 'evaluations/list',
           name: 'TeacherEvaluationList',
           component: () => import('@/views/teacher/evaluations/EvaluationList.vue'),
@@ -437,6 +456,19 @@ const router = createRouter({
           name: 'TeacherStatusChangeDetail',
           component: () => import('@/views/teacher/status-changes/ApprovalDetail.vue'),
           meta: { title: '审批处理' }
+        },
+        // ==================== 处分上报 ====================
+        {
+          path: 'discipline/report',
+          name: 'TeacherReportDiscipline',
+          component: () => import('@/views/teacher/discipline/ReportDiscipline.vue'),
+          meta: { title: '上报处分' }
+        },
+        {
+          path: 'discipline/my-reports',
+          name: 'TeacherMyReports',
+          component: () => import('@/views/teacher/discipline/MyReports.vue'),
+          meta: { title: '上报记录', keepAlive: true }
         },
         // ==================== 奖学金审批 ====================
         {
@@ -626,6 +658,13 @@ const router = createRouter({
           name: 'StudentScholarshipAwards',
           component: () => import('@/views/student/scholarships/Awards.vue'),
           meta: { title: '获奖记录', keepAlive: true }
+        },
+        // ==================== 处分记录 ====================
+        {
+          path: 'disciplines',
+          name: 'StudentDisciplines',
+          component: () => import('@/views/student/discipline/MyDisciplines.vue'),
+          meta: { title: '处分记录', keepAlive: true }
         },
         {
           path: 'profile',

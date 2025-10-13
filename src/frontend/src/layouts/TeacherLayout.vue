@@ -52,6 +52,11 @@
               <template #title>教学评价</template>
             </el-menu-item>
 
+            <el-menu-item index="/teacher/my-classes">
+              <el-icon><School /></el-icon>
+              <template #title>我的班级</template>
+            </el-menu-item>
+
             <el-menu-item index="/teacher/status-changes/approvals">
               <el-icon><Select /></el-icon>
               <template #title>学籍审批</template>
@@ -91,6 +96,21 @@
               <el-icon><Setting /></el-icon>
               <template #title>排课偏好</template>
             </el-menu-item>
+
+            <el-sub-menu index="discipline">
+              <template #title>
+                <el-icon><Warning /></el-icon>
+                <span>处分管理</span>
+              </template>
+              <el-menu-item index="/teacher/discipline/report">
+                <el-icon><Plus /></el-icon>
+                <template #title>上报处分</template>
+              </el-menu-item>
+              <el-menu-item index="/teacher/discipline/my-reports">
+                <el-icon><Document /></el-icon>
+                <template #title>上报记录</template>
+              </el-menu-item>
+            </el-sub-menu>
 
             <el-menu-item index="/teacher/notifications">
               <el-icon><Bell /></el-icon>
@@ -221,7 +241,7 @@ import { ElMessage } from 'element-plus'
 import {
   Notebook, TrendCharts, Reading, Calendar, Memo, View, Bell, User,
   Expand, Fold, Lock, SwitchButton, Document, EditPen, OfficeBuilding,
-  Search, DataLine, Select, Checked
+  Search, DataLine, Select, Checked, School, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -444,6 +464,9 @@ const handlePasswordSubmit = () => {
 .main-container {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .apple-header {
@@ -510,6 +533,9 @@ const handlePasswordSubmit = () => {
   padding: 0;
   background: var(--bg-secondary);
   min-height: calc(100vh - 64px);
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
 }
 
 .fade-enter-active,

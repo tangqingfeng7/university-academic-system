@@ -1,7 +1,12 @@
 package com.university.academic.controller;
 
 import com.university.academic.entity.CourseOffering;
+import com.university.academic.entity.CourseSelection;
+import com.university.academic.entity.Student;
+import com.university.academic.exception.BusinessException;
+import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.CourseOfferingRepository;
+import com.university.academic.repository.CourseSelectionRepository;
 import com.university.academic.security.CustomUserDetailsService;
 import com.university.academic.vo.Result;
 import lombok.AllArgsConstructor;
@@ -16,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +41,7 @@ public class TeacherCourseController {
 
     private final CustomUserDetailsService userDetailsService;
     private final CourseOfferingRepository courseOfferingRepository;
+    private final CourseSelectionRepository courseSelectionRepository;
 
     /**
      * 查询教师的授课列表
@@ -73,6 +81,112 @@ public class TeacherCourseController {
 
         log.info("查询到 {} 门课程", dtoList.size());
         return Result.success(dtoList);
+    }
+
+    /**
+     * 获取开课班级详情
+     *
+     * @param authentication 认证信息
+     * @param offeringId     开课计划ID
+     * @return 开课计划详情
+     */
+    @GetMapping("/courses/{offeringId}")
+    @Transactional(readOnly = true)
+    public Result<Map<String, Object>> getCourseDetail(
+            Authentication authentication,
+            @PathVariable Long offeringId) {
+        
+        Long teacherId = userDetailsService.getTeacherIdFromAuth(authentication);
+        log.info("教师查询开课班级详情: teacherId={}, offeringId={}", teacherId, offeringId);
+        
+        // 验证开课计划是否存在
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "开课计划不存在"));
+        
+        // 验证该开课计划是否是当前教师授课的
+        if (!offering.getTeacher().getId().equals(teacherId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "无权查看该课程信息");
+        }
+        
+        // 强制加载关联对象
+        offering.getCourse().getName();
+        offering.getSemester().getAcademicYear();
+        offering.getTeacher().getName();
+        
+        // 构建返回数据
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", offering.getId());
+        result.put("courseNo", offering.getCourse().getCourseNo());
+        result.put("courseName", offering.getCourse().getName());
+        result.put("credits", offering.getCourse().getCredits());
+        result.put("semesterName", offering.getSemester().getAcademicYear() + 
+                   " 第" + offering.getSemester().getSemesterType() + "学期");
+        result.put("schedule", offering.getSchedule());
+        result.put("location", offering.getLocation());
+        result.put("capacity", offering.getCapacity());
+        result.put("enrolled", offering.getEnrolled());
+        result.put("status", offering.getStatus().name());
+        
+        return Result.success(result);
+    }
+
+    /**
+     * 查询开课班级的学生名单
+     *
+     * @param authentication 认证信息
+     * @param offeringId     开课计划ID
+     * @return 学生名单列表
+     */
+    @GetMapping("/courses/{offeringId}/students")
+    @Transactional(readOnly = true)
+    public Result<List<Map<String, Object>>> getCourseStudents(
+            Authentication authentication,
+            @PathVariable Long offeringId) {
+        
+        Long teacherId = userDetailsService.getTeacherIdFromAuth(authentication);
+        log.info("教师查询开课班级学生名单: teacherId={}, offeringId={}", teacherId, offeringId);
+        
+        // 验证开课计划是否存在
+        CourseOffering offering = courseOfferingRepository.findById(offeringId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "开课计划不存在"));
+        
+        // 验证该开课计划是否是当前教师授课的
+        if (!offering.getTeacher().getId().equals(teacherId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "无权查看该班级学生信息");
+        }
+        
+        // 查询该开课班级的所有选课记录（只包含SELECTED状态）
+        List<CourseSelection> selections = courseSelectionRepository.findByOfferingId(offeringId)
+                .stream()
+                .filter(selection -> selection.getStatus() == CourseSelection.SelectionStatus.SELECTED)
+                .collect(Collectors.toList());
+        
+        // 转换为简化的Map格式
+        List<Map<String, Object>> studentList = selections.stream()
+                .map(selection -> {
+                    Student student = selection.getStudent();
+                    // 强制加载懒加载属性
+                    if (student.getMajor() != null) {
+                        student.getMajor().getName();
+                    }
+                    
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", student.getId());
+                    map.put("studentNo", student.getStudentNo());
+                    map.put("name", student.getName());
+                    map.put("gender", student.getGender() != null ? student.getGender().name() : null);
+                    map.put("phone", student.getPhone());
+                    map.put("email", student.getEmail());
+                    map.put("majorName", student.getMajor() != null ? student.getMajor().getName() : null);
+                    map.put("className", student.getClassName());
+                    map.put("enrollmentYear", student.getEnrollmentYear());
+                    map.put("status", student.getStatus() != null ? student.getStatus().name() : null);
+                    return map;
+                })
+                .collect(Collectors.toList());
+        
+        log.info("查询到 {} 个学生", studentList.size());
+        return Result.success(studentList);
     }
 
     /**

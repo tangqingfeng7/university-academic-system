@@ -1,69 +1,66 @@
 <template>
-  <div class="grade-input-container">
-    <!-- 课程信息卡片 -->
-    <el-card v-if="courseInfo" class="course-info-card">
-      <div class="course-header">
-        <div>
-          <h3>{{ courseInfo.courseName }}</h3>
-          <p class="course-meta">
-            <span>课程编号：{{ courseInfo.courseNo }}</span>
-            <span style="margin-left: 20px">学期：{{ courseInfo.semesterName }}</span>
-            <span style="margin-left: 20px">选课人数：{{ gradeList.length }}</span>
-          </p>
-        </div>
-        <div class="action-buttons">
-          <el-upload
-            action=""
-            :auto-upload="false"
-            :on-change="handleImport"
-            :show-file-list="false"
-            accept=".xls,.xlsx"
-          >
-            <el-button type="success">
-              <el-icon><Upload /></el-icon>
-              导入成绩
-            </el-button>
-          </el-upload>
-          <el-button type="primary" @click="handleBatchSave" :loading="saving">
-            <el-icon><Select /></el-icon>
-            批量保存
-          </el-button>
-          <el-button type="warning" @click="handleSubmit" :loading="submitting">
-            <el-icon><Check /></el-icon>
-            提交成绩
-          </el-button>
-          <el-button type="danger" @click="handlePublish" :loading="publishing">
-            <el-icon><Promotion /></el-icon>
-            发布成绩
-          </el-button>
+  <div class="grade-input-page">
+    <!-- 顶部操作栏 -->
+    <div class="page-header">
+      <div class="header-info">
+        <h2>{{ courseInfo?.courseName || '成绩录入' }}</h2>
+        <div class="meta-info" v-if="courseInfo">
+          <span>课程编号：{{ courseInfo.courseNo }}</span>
+          <el-divider direction="vertical" />
+          <span>学期：{{ courseInfo.semesterName }}</span>
+          <el-divider direction="vertical" />
+          <span>选课人数：{{ gradeList.length }}</span>
         </div>
       </div>
-    </el-card>
+      <div class="header-actions">
+        <el-upload
+          action=""
+          :auto-upload="false"
+          :on-change="handleImport"
+          :show-file-list="false"
+          accept=".xls,.xlsx"
+        >
+          <el-button type="success">
+            <el-icon><Upload /></el-icon>
+            导入成绩
+          </el-button>
+        </el-upload>
+        <el-button type="primary" @click="handleBatchSave" :loading="saving">
+          <el-icon><Select /></el-icon>
+          批量保存
+        </el-button>
+        <el-button type="warning" @click="handleSubmit" :loading="submitting">
+          <el-icon><Check /></el-icon>
+          提交成绩
+        </el-button>
+        <el-button type="danger" @click="handlePublish" :loading="publishing">
+          <el-icon><Promotion /></el-icon>
+          发布成绩
+        </el-button>
+      </div>
+    </div>
 
-    <!-- 成绩列表 -->
-    <el-card style="margin-top: 20px">
-      <template #header>
-        <span class="card-title">成绩录入</span>
-      </template>
-
+    <!-- 成绩表格 -->
+    <div class="table-wrapper">
       <el-table
         v-loading="loading"
         :data="gradeList"
         stripe
+        border
+        height="calc(100vh - 240px)"
         style="width: 100%"
-        max-height="600"
       >
-        <el-table-column type="index" label="序号" width="60" fixed="left" />
+        <el-table-column type="index" label="序号" width="60" align="center" fixed />
         
-        <el-table-column prop="studentNo" label="学号" width="120" fixed="left" />
+        <el-table-column prop="studentNo" label="学号" min-width="120" fixed />
         
-        <el-table-column prop="studentName" label="姓名" width="120" fixed="left" />
+        <el-table-column prop="studentName" label="姓名" min-width="100" fixed />
         
-        <el-table-column prop="majorName" label="专业" width="150" />
+        <el-table-column prop="majorName" label="专业" min-width="180" show-overflow-tooltip />
         
-        <el-table-column prop="className" label="班级" width="100" />
+        <el-table-column prop="className" label="班级" min-width="120" />
 
-        <el-table-column label="平时成绩" width="120">
+        <el-table-column label="平时成绩" min-width="130" align="center">
           <template #default="{ row }">
             <el-input-number
               v-model="row.regularScore"
@@ -72,13 +69,12 @@
               :precision="1"
               :controls="false"
               size="small"
-              style="width: 100%"
               @change="calculateTotal(row)"
             />
           </template>
         </el-table-column>
 
-        <el-table-column label="期中成绩" width="120">
+        <el-table-column label="期中成绩" min-width="130" align="center">
           <template #default="{ row }">
             <el-input-number
               v-model="row.midtermScore"
@@ -87,13 +83,12 @@
               :precision="1"
               :controls="false"
               size="small"
-              style="width: 100%"
               @change="calculateTotal(row)"
             />
           </template>
         </el-table-column>
 
-        <el-table-column label="期末成绩" width="120">
+        <el-table-column label="期末成绩" min-width="130" align="center">
           <template #default="{ row }">
             <el-input-number
               v-model="row.finalScore"
@@ -102,27 +97,28 @@
               :precision="1"
               :controls="false"
               size="small"
-              style="width: 100%"
               @change="calculateTotal(row)"
             />
           </template>
         </el-table-column>
 
-        <el-table-column label="总评成绩" width="100">
+        <el-table-column label="总评成绩" min-width="110" align="center">
           <template #default="{ row }">
-            <span :class="getScoreClass(row.totalScore)">
+            <span :class="getScoreClass(row.totalScore)" class="score-text">
               {{ row.totalScore != null ? row.totalScore.toFixed(1) : '-' }}
             </span>
           </template>
         </el-table-column>
 
-        <el-table-column label="绩点" width="80">
+        <el-table-column label="绩点" min-width="90" align="center">
           <template #default="{ row }">
-            {{ row.gradePoint != null ? row.gradePoint.toFixed(2) : '-' }}
+            <span class="gpa-text">
+              {{ row.gradePoint != null ? row.gradePoint.toFixed(2) : '-' }}
+            </span>
           </template>
         </el-table-column>
 
-        <el-table-column label="状态" width="100" fixed="right">
+        <el-table-column label="状态" min-width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusTag(row.status)" size="small">
               {{ getStatusName(row.status) }}
@@ -130,7 +126,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="100" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
               type="primary"
@@ -144,21 +140,22 @@
         </el-table-column>
       </el-table>
 
-      <div v-if="gradeList.length === 0 && !loading" class="empty-text">
-        暂无学生数据
+      <div v-if="gradeList.length === 0 && !loading" class="empty-state">
+        <el-empty description="暂无学生数据" />
       </div>
-    </el-card>
+    </div>
 
     <!-- 导入结果对话框 -->
     <el-dialog
       v-model="importDialogVisible"
       title="成绩导入结果"
-      width="60%"
+      width="600px"
     >
       <div v-if="importResult">
         <el-alert
           :type="importResult.errorCount > 0 ? 'warning' : 'success'"
           :closable="false"
+          show-icon
         >
           <template #title>
             导入完成：成功 {{ importResult.successCount }} 条，失败 {{ importResult.errorCount }} 条
@@ -420,58 +417,78 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.grade-input-container {
-  padding: 20px;
+.grade-input-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  overflow: hidden;
 }
 
-.course-info-card {
-  margin-bottom: 20px;
-}
-
-.course-header {
+.page-header {
+  background: white;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-.course-header h3 {
-  margin: 0 0 10px 0;
+.header-info h2 {
+  margin: 0 0 8px 0;
   font-size: 20px;
-  color: #303133;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.course-meta {
-  margin: 0;
-  color: #606266;
-  font-size: 14px;
-}
-
-.action-buttons {
+.meta-info {
   display: flex;
-  gap: 10px;
-}
-
-.card-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #303133;
-}
-
-.empty-text {
-  text-align: center;
-  padding: 40px 0;
-  color: #909399;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.table-wrapper {
+  flex: 1;
+  padding: 20px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: var(--radius-lg);
+}
+
+.score-text {
+  font-weight: 600;
+  font-size: 15px;
 }
 
 .score-excellent {
   color: #67C23A;
-  font-weight: bold;
 }
 
 .score-good {
   color: #409EFF;
-  font-weight: bold;
 }
 
 .score-pass {
@@ -480,15 +497,38 @@ onMounted(() => {
 
 .score-fail {
   color: #F56C6C;
-  font-weight: bold;
+}
+
+.gpa-text {
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 :deep(.el-input-number) {
-  width: 100%;
+  width: 100px;
 }
 
 :deep(.el-input-number .el-input__inner) {
   text-align: center;
+  padding: 0 8px;
+}
+
+:deep(.el-table) {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: 100% !important;
+}
+
+:deep(.el-table__header) {
+  font-weight: 600;
+}
+
+:deep(.el-table__body) {
+  font-size: 14px;
+}
+
+:deep(.el-table__header-wrapper),
+:deep(.el-table__body-wrapper) {
+  width: 100% !important;
 }
 </style>
-

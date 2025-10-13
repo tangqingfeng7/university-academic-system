@@ -273,6 +273,16 @@ public enum ErrorCode {
     SCHEDULING_CONFLICT(5231, "排课冲突"),
     SCHEDULING_FAILED(5232, "排课失败"),
     
+    // ========== 学生处分管理模块错误码 5300-5399 ==========
+    DISCIPLINE_NOT_FOUND(5301, "处分记录不存在"),
+    DISCIPLINE_CANNOT_REMOVE(5302, "该处分不允许解除"),
+    DISCIPLINE_ALREADY_REMOVED(5303, "处分已被解除"),
+    
+    APPEAL_NOT_FOUND(5311, "申诉记录不存在"),
+    APPEAL_ALREADY_EXISTS(5312, "已存在待审核的申诉"),
+    APPEAL_ALREADY_REVIEWED(5313, "申诉已被审核"),
+    APPEAL_CANNOT_CANCEL(5314, "申诉无法撤销"),
+    
     // ========== 通用错误码 9000-9999 ==========
     EXPORT_FAILED(9001, "导出失败"),
     IMPORT_FAILED(9002, "导入失败");

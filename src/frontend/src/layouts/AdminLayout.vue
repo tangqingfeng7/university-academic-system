@@ -52,6 +52,11 @@
               <template #title>专业管理</template>
             </el-menu-item>
 
+            <el-menu-item index="/admin/classes">
+              <el-icon><UserFilled /></el-icon>
+              <template #title>班级管理</template>
+            </el-menu-item>
+
             <el-menu-item index="/admin/courses">
               <el-icon><Reading /></el-icon>
               <template #title>课程管理</template>
@@ -193,6 +198,11 @@
                 <template #title>排课约束</template>
               </el-menu-item>
             </el-sub-menu>
+
+            <el-menu-item index="/admin/disciplines">
+              <el-icon><Warning /></el-icon>
+              <template #title>处分管理</template>
+            </el-menu-item>
 
             <el-menu-item index="/admin/leave-requests">
               <el-icon><Document /></el-icon>

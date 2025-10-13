@@ -118,18 +118,23 @@
         </el-form-item>
 
         <el-form-item label="班级" prop="className">
-          <el-input
+          <el-select
             v-model="formData.className"
-            placeholder="请输入班级名称"
-            maxlength="50"
+            placeholder="请选择班级"
+            clearable
+            filterable
+            style="width: 100%"
           >
-            <template #prefix>
-              <el-icon><School /></el-icon>
-            </template>
-          </el-input>
+            <el-option
+              v-for="className in classList"
+              :key="className"
+              :label="className"
+              :value="className"
+            />
+          </el-select>
           <template #extra>
             <div style="color: #909399; font-size: 12px; margin-top: 4px">
-              例如：计算机1班、软件工程2班
+              从班级管理中选择规范的班级名称
             </div>
           </template>
         </el-form-item>
@@ -246,6 +251,7 @@ import {
 } from '@element-plus/icons-vue'
 import { getStudentById, createStudent, updateStudent } from '@/api/student'
 import { getAllMajors } from '@/api/system'
+import { getAllClasses } from '@/api/class'
 
 const props = defineProps({
   modelValue: {
@@ -270,6 +276,7 @@ const formRef = ref(null)
 const submitting = ref(false)
 const currentStep = ref(0)
 const majorList = ref([])
+const classList = ref([])
 
 const title = computed(() => {
   return props.mode === 'add' ? '添加学生' : '编辑学生'
@@ -328,6 +335,7 @@ watch(() => props.modelValue, (val) => {
       resetForm()
     }
     loadMajorList()
+    loadClassList()
   }
 })
 
@@ -349,6 +357,16 @@ const loadMajorList = async () => {
     majorList.value = res.data || []
   } catch (error) {
     console.error('加载专业列表失败:', error)
+  }
+}
+
+const loadClassList = async () => {
+  try {
+    const res = await getAllClasses()
+    // 从班级表获取规范的班级列表，提取className
+    classList.value = (res.data || []).map(item => item.className)
+  } catch (error) {
+    console.error('加载班级列表失败:', error)
   }
 }
 

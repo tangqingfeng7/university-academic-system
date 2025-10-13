@@ -45,6 +45,16 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findByMajorId(Long majorId);
 
     /**
+     * 根据班级名称查询学生列表
+     *
+     * @param className 班级名称
+     * @return 学生列表
+     */
+    @EntityGraph(attributePaths = {"user", "major", "major.department"})
+    @Query("SELECT s FROM Student s WHERE s.className = :className AND s.deleted = false")
+    List<Student> findByClassName(@Param("className") String className);
+
+    /**
      * 查询未删除的学生（分页）- 使用EntityGraph避免N+1查询
      *
      * @param pageable 分页参数

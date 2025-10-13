@@ -119,6 +119,11 @@
               </el-menu-item>
             </el-sub-menu>
 
+            <el-menu-item index="/student/disciplines">
+              <el-icon><Warning /></el-icon>
+              <template #title>处分记录</template>
+            </el-menu-item>
+
             <el-menu-item index="/student/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假申请</template>

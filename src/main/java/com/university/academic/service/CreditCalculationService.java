@@ -193,7 +193,8 @@ public class CreditCalculationService {
     }
 
     /**
-     * 查询学生学分汇总（从数据库）
+     * 查询学生学分汇总（实时计算）
+     * 总是实时计算以确保数据准确性，特别是GPA
      *
      * @param studentId 学生ID
      * @return 学分汇总DTO
@@ -201,20 +202,11 @@ public class CreditCalculationService {
     @Cacheable(value = CacheConfig.CACHE_CREDIT_SUMMARY, key = "'student:' + #studentId")
     @Transactional(readOnly = true)
     public StudentCreditSummaryDTO getStudentCreditSummary(Long studentId) {
-        log.debug("查询学生学分汇总: studentId={}", studentId);
+        log.debug("查询学生学分汇总（实时计算）: studentId={}", studentId);
 
-        // 尝试从数据库查询
-        StudentCreditSummary summary = creditSummaryRepository
-                .findByStudentIdWithDetails(studentId)
-                .orElse(null);
-
-        // 如果没有记录，直接计算返回（不保存）
-        if (summary == null) {
-            log.info("学分汇总记录不存在，实时计算: studentId={}", studentId);
-            return calculateStudentCredits(studentId);
-        }
-
-        return creditSummaryConverter.toDTO(summary);
+        // 直接实时计算，确保数据准确
+        // 这样可以保证GPA始终是最新的，无需手动更新数据库
+        return calculateStudentCredits(studentId);
     }
 
     /**
@@ -354,11 +346,12 @@ public class CreditCalculationService {
      */
     private com.university.academic.dto.CourseSelectionDTO convertToDTO(CourseSelection selection) {
         Course course = selection.getOffering().getCourse();
+        CourseOffering offering = selection.getOffering();
         Grade grade = selection.getGrade();
 
         com.university.academic.dto.CourseSelectionDTO dto = new com.university.academic.dto.CourseSelectionDTO();
         dto.setId(selection.getId());
-        dto.setOfferingId(selection.getOffering().getId());
+        dto.setOfferingId(offering.getId());
         dto.setCourseId(course.getId());
         dto.setCourseNo(course.getCourseNo());
         dto.setCourseName(course.getName());
@@ -366,6 +359,13 @@ public class CreditCalculationService {
         dto.setCredits(course.getCredits());
         dto.setSelectionTime(selection.getSelectionTime());
         dto.setStatus(selection.getStatus().name());
+        
+        // 添加学期信息
+        if (offering.getSemester() != null) {
+            Semester semester = offering.getSemester();
+            String semesterName = semester.getAcademicYear() + "学年第" + semester.getSemesterType() + "学期";
+            dto.setSemesterName(semesterName);
+        }
         
         // 添加成绩信息
         if (grade != null) {

@@ -40,8 +40,16 @@
         <el-table-column prop="name" label="专业名称" min-width="200" />
         <el-table-column prop="departmentName" label="所属院系" width="200" />
         <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
+            <el-button 
+              type="success" 
+              size="small" 
+              plain
+              @click="handleClassManage(row)"
+            >
+              班级管理
+            </el-button>
             <el-button 
               type="primary" 
               size="small" 
@@ -136,6 +144,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import {
@@ -146,6 +155,8 @@ import {
   checkMajorCode
 } from '@/api/major'
 import { getAllDepartments } from '@/api/department'
+
+const router = useRouter()
 
 const loading = ref(false)
 const majorList = ref({
@@ -246,6 +257,14 @@ const handleReset = () => {
   queryParams.departmentId = null
   queryParams.page = 0
   fetchMajorList()
+}
+
+// 班级管理
+const handleClassManage = (row) => {
+  router.push({
+    path: '/admin/classes',
+    query: { majorId: row.id, majorName: row.name }
+  })
 }
 
 // 新建专业

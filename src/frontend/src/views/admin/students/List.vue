@@ -292,10 +292,10 @@ import FileUpload from '@/components/FileUpload.vue'
 import {
   getStudentList,
   deleteStudent,
-  exportStudents,
-  getAllClasses
+  exportStudents
 } from '@/api/student'
 import { getAllMajors } from '@/api/system'
+import { getAllClasses } from '@/api/class'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
@@ -385,7 +385,8 @@ const loadMajorList = async () => {
 const loadClassList = async () => {
   try {
     const res = await getAllClasses()
-    classList.value = res.data || []
+    // 从班级表获取规范的班级列表，提取className
+    classList.value = (res.data || []).map(item => item.className)
   } catch (error) {
     console.error('加载班级列表失败:', error)
   }

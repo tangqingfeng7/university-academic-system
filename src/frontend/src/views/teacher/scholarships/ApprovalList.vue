@@ -43,7 +43,7 @@
 
     <!-- 筛选和搜索区域 -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="queryForm" :inline="true">
+      <el-form :model="queryForm" label-width="80px">
         <el-row :gutter="16">
           <el-col :xs="24" :sm="12" :md="6">
             <el-form-item label="学年">

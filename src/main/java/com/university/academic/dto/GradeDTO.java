@@ -45,6 +45,16 @@ public class GradeDTO {
     private String studentName;
 
     /**
+     * 专业名称
+     */
+    private String majorName;
+
+    /**
+     * 班级名称
+     */
+    private String className;
+
+    /**
      * 课程ID
      */
     private Long courseId;

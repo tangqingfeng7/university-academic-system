@@ -31,15 +31,14 @@ import java.util.stream.Collectors;
 
 /**
  * 学生管理控制器
- * 提供学生CRUD接口（仅管理员可访问）
+ * 提供学生CRUD接口
  *
  * @author Academic System Team
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/admin/students")
+@RequestMapping("/api")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class StudentController {
 
     private final StudentService studentService;
@@ -49,7 +48,8 @@ public class StudentController {
     /**
      * 分页查询学生列表
      */
-    @GetMapping
+    @GetMapping("/admin/students")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Map<String, Object>> getStudentList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -93,7 +93,8 @@ public class StudentController {
     /**
      * 获取所有学生（不分页）
      */
-    @GetMapping("/all")
+    @GetMapping("/admin/students/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<StudentDTO>> getAllStudents() {
         log.info("查询所有学生");
 
@@ -108,7 +109,8 @@ public class StudentController {
     /**
      * 获取所有班级列表（去重）
      */
-    @GetMapping("/classes")
+    @GetMapping("/admin/students/classes")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<String>> getAllClasses() {
         log.info("查询所有班级列表");
 
@@ -125,7 +127,8 @@ public class StudentController {
     /**
      * 根据专业ID获取学生列表
      */
-    @GetMapping("/by-major/{majorId}")
+    @GetMapping("/admin/students/by-major/{majorId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<StudentDTO>> getStudentsByMajor(@PathVariable Long majorId) {
         log.info("根据专业ID查询学生列表: majorId={}", majorId);
 
@@ -140,7 +143,8 @@ public class StudentController {
     /**
      * 获取学生详情
      */
-    @GetMapping("/{id}")
+    @GetMapping("/admin/students/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<StudentDTO> getStudentById(@PathVariable Long id) {
         log.info("查询学生详情: id={}", id);
 
@@ -153,7 +157,8 @@ public class StudentController {
     /**
      * 创建学生
      */
-    @PostMapping
+    @PostMapping("/admin/students")
+    @PreAuthorize("hasRole('ADMIN')")
     @OperationLog("创建学生")
     public Result<StudentDTO> createStudent(@Valid @RequestBody CreateStudentRequest request) {
         log.info("创建学生: studentNo={}, name={}, majorId={}",
@@ -187,7 +192,8 @@ public class StudentController {
     /**
      * 更新学生信息
      */
-    @PutMapping("/{id}")
+    @PutMapping("/admin/students/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @OperationLog("更新学生信息")
     public Result<StudentDTO> updateStudent(@PathVariable Long id,
                                             @Valid @RequestBody UpdateStudentRequest request) {
@@ -219,7 +225,8 @@ public class StudentController {
     /**
      * 删除学生（软删除）
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/students/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @OperationLog("删除学生")
     public Result<String> deleteStudent(@PathVariable Long id) {
         log.info("删除学生: id={}", id);
@@ -232,7 +239,8 @@ public class StudentController {
     /**
      * 检查学号是否存在
      */
-    @GetMapping("/check-student-no")
+    @GetMapping("/admin/students/check-student-no")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Map<String, Boolean>> checkStudentNo(@RequestParam String studentNo) {
         boolean exists = studentService.existsByStudentNo(studentNo);
         Map<String, Boolean> response = new HashMap<>();
@@ -243,7 +251,8 @@ public class StudentController {
     /**
      * 获取学生统计信息
      */
-    @GetMapping("/statistics")
+    @GetMapping("/admin/students/statistics")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Map<String, Object>> getStudentStatistics() {
         log.info("查询学生统计信息");
 
@@ -256,7 +265,8 @@ public class StudentController {
     /**
      * 导入学生数据（Excel）
      */
-    @PostMapping("/import")
+    @PostMapping("/admin/students/import")
+    @PreAuthorize("hasRole('ADMIN')")
     @OperationLog("批量导入学生")
     public Result<Map<String, Object>> importStudents(@RequestParam("file") MultipartFile file) {
         log.info("导入学生数据: filename={}", file.getOriginalFilename());
@@ -342,7 +352,8 @@ public class StudentController {
     /**
      * 导出学生数据（Excel）
      */
-    @GetMapping("/export")
+    @GetMapping("/admin/students/export")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportStudents(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long majorId,
@@ -373,6 +384,41 @@ public class StudentController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(excelBytes);
+    }
+
+    /**
+     * 教师端查询学生列表（用于选择学生）
+     */
+    @GetMapping("/teacher/students")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public Result<Map<String, Object>> getStudentListForTeacher(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String keyword) {
+
+        log.info("教师查询学生列表: page={}, size={}, keyword={}", page, size, keyword);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+
+        Page<Student> studentPage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            studentPage = studentService.searchStudents(keyword, null, null, null, pageable);
+        } else {
+            studentPage = studentService.findAll(pageable);
+        }
+
+        List<StudentDTO> studentDTOList = studentPage.getContent().stream()
+                .map(dtoConverter::toStudentDTO)
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", studentDTOList);
+        result.put("totalElements", studentPage.getTotalElements());
+        result.put("totalPages", studentPage.getTotalPages());
+        result.put("currentPage", studentPage.getNumber());
+        result.put("pageSize", studentPage.getSize());
+
+        return Result.success(result);
     }
 }
 

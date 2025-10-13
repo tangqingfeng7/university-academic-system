@@ -82,9 +82,9 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="type" label="考试类型" width="120" align="center">
+        <el-table-column prop="examType" label="考试类型" width="120" align="center">
           <template #default="{ row }">
-            <ExamTypeTag :type="row.type" :type-description="row.typeDescription" />
+            <ExamTypeTag :type="row.examType" :type-description="row.examTypeDescription" />
           </template>
         </el-table-column>
 

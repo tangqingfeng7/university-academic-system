@@ -17,7 +17,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -237,24 +241,156 @@ public class AdminSchedulingController {
             @RequestParam(required = false, defaultValue = "excel") String format) {
         log.info("导出课表: solutionId={}, format={}", id, format);
         
-        // TODO: 实现导出功能（Task 90）
-        String fileName = "schedule_" + id + "_" + 
-            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        
-        byte[] content = new byte[0]; // 暂时返回空内容
-        
-        HttpHeaders headers = new HttpHeaders();
-        if ("pdf".equalsIgnoreCase(format)) {
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", fileName + ".pdf");
-        } else {
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", fileName + ".xlsx");
+        try {
+            // 获取排课结果
+            SchedulingResultDTO result = solutionService.getSolutionResult(id);
+            SchedulingSolutionDTO solution = solutionService.getSolutionById(id);
+            
+            String fileName = "课表_" + solution.getSemesterName() + "_" + 
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            
+            byte[] content;
+            HttpHeaders headers = new HttpHeaders();
+            
+            if ("pdf".equalsIgnoreCase(format)) {
+                // PDF导出（未实现）
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDispositionFormData("attachment", fileName + ".pdf");
+                content = new byte[0]; // PDF功能待实现
+            } else {
+                // Excel导出
+                content = generateExcelSchedule(solution, result);
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                headers.setContentDispositionFormData("attachment", fileName + ".xlsx");
+            }
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(content);
+        } catch (Exception e) {
+            log.error("导出课表失败: solutionId={}", id, e);
+            return ResponseEntity.internalServerError().build();
         }
+    }
+    
+    /**
+     * 生成Excel格式的课表
+     */
+    private byte[] generateExcelSchedule(SchedulingSolutionDTO solution, SchedulingResultDTO result) 
+            throws IOException {
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            
+            // 创建课表工作表
+            Sheet sheet = workbook.createSheet("课表");
+            
+            // 创建样式
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle dataStyle = createDataStyle(workbook);
+            
+            int rowNum = 0;
+            
+            // 标题行
+            Row titleRow = sheet.createRow(rowNum++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("排课方案：" + solution.getName() + " - " + solution.getSemesterName());
+            titleCell.setCellStyle(headerStyle);
+            
+            // 信息行
+            Row infoRow = sheet.createRow(rowNum++);
+            infoRow.createCell(0).setCellValue("质量分数：" + 
+                (result.getQualityScore() != null ? String.format("%.2f", result.getQualityScore()) : "N/A"));
+            
+            Row conflictRow = sheet.createRow(rowNum++);
+            conflictRow.createCell(0).setCellValue("冲突数：" + result.getConflictCount());
+            
+            Row countRow = sheet.createRow(rowNum++);
+            countRow.createCell(0).setCellValue("已排课程：" + result.getScheduledCourseCount() + 
+                " / 总课程：" + (result.getScheduledCourseCount() + result.getUnscheduledCourseCount()));
+            
+            // 空行
+            rowNum++;
+            
+            // 表头
+            Row headerRow = sheet.createRow(rowNum++);
+            String[] headers = {"序号", "课程编号", "课程名称", "教师", "星期", "时间段", "教室编号", "教室名称", "学生人数", "质量分"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+            
+            // 数据行
+            int index = 1;
+            for (ScheduleItemDTO item : result.getScheduleItems()) {
+                Row dataRow = sheet.createRow(rowNum++);
+                
+                dataRow.createCell(0).setCellValue(index++);
+                dataRow.createCell(1).setCellValue(item.getCourseNo() != null ? item.getCourseNo() : "");
+                dataRow.createCell(2).setCellValue(item.getCourseName());
+                dataRow.createCell(3).setCellValue(item.getTeacherName());
+                dataRow.createCell(4).setCellValue(item.getDayOfWeekDescription());
+                dataRow.createCell(5).setCellValue(item.getTimeSlotDescription());
+                dataRow.createCell(6).setCellValue(item.getClassroomNo() != null ? item.getClassroomNo() : "");
+                dataRow.createCell(7).setCellValue(item.getClassroomName());
+                dataRow.createCell(8).setCellValue(item.getStudentCount() != null ? 
+                    item.getStudentCount().toString() : "");
+                dataRow.createCell(9).setCellValue(item.getSoftConstraintScore() != null ? 
+                    String.format("%.2f", item.getSoftConstraintScore()) : "");
+                
+                // 应用样式
+                for (int i = 0; i < headers.length; i++) {
+                    dataRow.getCell(i).setCellStyle(dataStyle);
+                }
+            }
+            
+            // 自动调整列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+                // 设置最小宽度
+                int width = sheet.getColumnWidth(i);
+                sheet.setColumnWidth(i, Math.max(width, 3000));
+            }
+            
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+    
+    /**
+     * 创建表头样式
+     */
+    private CellStyle createHeaderStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(content);
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 11);
+        style.setFont(font);
+        
+        return style;
+    }
+    
+    /**
+     * 创建数据样式
+     */
+    private CellStyle createDataStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        
+        return style;
     }
     
     // ==================== 教师偏好管理（管理员视角） ====================

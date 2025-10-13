@@ -11,7 +11,7 @@
         min-width="200"
       />
       <el-table-column 
-        prop="courseCode" 
+        prop="courseNo" 
         label="课程代码" 
         width="120"
       />
@@ -35,14 +35,14 @@
         align="center"
       />
       <el-table-column 
-        prop="score" 
+        prop="totalScore" 
         label="成绩" 
         width="80"
         align="center"
       >
         <template #default="{ row }">
-          <span :class="getScoreClass(row.score)">
-            {{ row.score || '-' }}
+          <span :class="getScoreClass(row.totalScore)">
+            {{ row.totalScore || '-' }}
           </span>
         </template>
       </el-table-column>
@@ -68,10 +68,10 @@
       >
         <template #default="{ row }">
           <el-tag 
-            :type="row.score >= 60 ? 'success' : 'danger'" 
+            :type="row.totalScore >= 60 ? 'success' : 'danger'" 
             size="small"
           >
-            {{ row.score >= 60 ? '通过' : '未通过' }}
+            {{ row.totalScore >= 60 ? '通过' : '未通过' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -148,9 +148,9 @@ const totalCredits = computed(() => {
 // 平均成绩
 const averageScore = computed(() => {
   if (!props.courses || props.courses.length === 0) return 0
-  const validScores = props.courses.filter(c => c.score)
+  const validScores = props.courses.filter(c => c.totalScore)
   if (validScores.length === 0) return 0
-  const sum = validScores.reduce((total, course) => total + course.score, 0)
+  const sum = validScores.reduce((total, course) => total + course.totalScore, 0)
   return sum / validScores.length
 })
 
