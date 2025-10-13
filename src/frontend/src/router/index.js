@@ -281,6 +281,32 @@ const router = createRouter({
           meta: { title: '毕业生名单', keepAlive: true }
         },
         
+        // ==================== 排课优化管理 ====================
+        {
+          path: 'scheduling/constraints',
+          name: 'AdminSchedulingConstraints',
+          component: () => import('@/views/admin/scheduling/Constraints.vue'),
+          meta: { title: '排课约束设置', keepAlive: true }
+        },
+        {
+          path: 'scheduling/solutions',
+          name: 'AdminSchedulingSolutions',
+          component: () => import('@/views/admin/scheduling/Solutions.vue'),
+          meta: { title: '排课方案管理', keepAlive: true }
+        },
+        {
+          path: 'scheduling/optimize/:id',
+          name: 'AdminSchedulingOptimize',
+          component: () => import('@/views/admin/scheduling/Optimize.vue'),
+          meta: { title: '智能排课' }
+        },
+        {
+          path: 'scheduling/preview/:id',
+          name: 'AdminSchedulingPreview',
+          component: () => import('@/views/admin/scheduling/Preview.vue'),
+          meta: { title: '课表预览' }
+        },
+        
         {
           path: 'profile',
           name: 'AdminProfile',
@@ -356,6 +382,12 @@ const router = createRouter({
           name: 'TeacherCourseExamDetail',
           component: () => import('@/views/teacher/exam/CourseExamDetail.vue'),
           meta: { title: '考试详情' }
+        },
+        {
+          path: 'scheduling/preferences',
+          name: 'TeacherSchedulePreferences',
+          component: () => import('@/views/teacher/SchedulePreferences.vue'),
+          meta: { title: '排课偏好设置' }
         },
         {
           path: 'exams/invigilation',

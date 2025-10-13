@@ -79,3 +79,6 @@ export function getOfferingStatistics() {
   })
 }
 
+// 别名导出
+export const getCourseOfferings = getOfferingList
+

@@ -1,6 +1,10 @@
 package com.university.academic.security;
 
+import com.university.academic.entity.Teacher;
 import com.university.academic.entity.User;
+import com.university.academic.exception.BusinessException;
+import com.university.academic.exception.ErrorCode;
+import com.university.academic.repository.TeacherRepository;
 import com.university.academic.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +26,16 @@ import java.util.Optional;
 public class SecurityUtils {
 
     private static UserRepository userRepository;
+    private static TeacherRepository teacherRepository;
 
     @Autowired
     public void setUserRepository(UserRepository userRepository) {
         SecurityUtils.userRepository = userRepository;
+    }
+
+    @Autowired
+    public void setTeacherRepository(TeacherRepository teacherRepository) {
+        SecurityUtils.teacherRepository = teacherRepository;
     }
 
     private SecurityUtils() {
@@ -54,6 +64,40 @@ public class SecurityUtils {
         }
 
         return null;
+    }
+
+    /**
+     * 获取当前登录教师ID
+     *
+     * @return 教师ID
+     */
+    public static Long getCurrentTeacherId() {
+        String username = getCurrentUsername();
+        if (username == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 根据用户名查询用户
+        if (userRepository != null && teacherRepository != null) {
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                
+                // 查询教师信息
+                Optional<Teacher> teacherOpt = teacherRepository.findByUserId(user.getId());
+                if (teacherOpt.isPresent()) {
+                    return teacherOpt.get().getId();
+                } else {
+                    log.warn("用户不是教师: username={}, userId={}", username, user.getId());
+                    throw new BusinessException(ErrorCode.TEACHER_NOT_FOUND);
+                }
+            } else {
+                log.warn("未找到用户: username={}", username);
+                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            }
+        }
+
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR);
     }
 
     /**

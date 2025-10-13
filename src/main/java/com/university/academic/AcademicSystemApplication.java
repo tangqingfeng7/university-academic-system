@@ -2,7 +2,10 @@ package com.university.academic;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -14,6 +17,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableScheduling
+@ComponentScan(basePackages = {"com.university.academic", "com.university.ems"})
+@EnableJpaRepositories(basePackages = {"com.university.academic.repository", "com.university.ems.repository"})
+@EntityScan(basePackages = {"com.university.academic.entity", "com.university.ems.entity"})
 public class AcademicSystemApplication {
 
     public static void main(String[] args) {

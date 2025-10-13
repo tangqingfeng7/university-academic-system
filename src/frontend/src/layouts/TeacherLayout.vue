@@ -87,6 +87,11 @@
               <template #title>调课申请</template>
             </el-menu-item>
 
+            <el-menu-item index="/teacher/scheduling/preferences">
+              <el-icon><Setting /></el-icon>
+              <template #title>排课偏好</template>
+            </el-menu-item>
+
             <el-menu-item index="/teacher/notifications">
               <el-icon><Bell /></el-icon>
               <template #title>通知管理</template>

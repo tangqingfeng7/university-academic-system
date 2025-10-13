@@ -254,6 +254,25 @@ public enum ErrorCode {
     SCHOLARSHIP_APPLICATION_REJECTED(5113, "该申请已被拒绝"),
     SCHOLARSHIP_APPLICATION_STATUS_INVALID(5114, "申请状态不符合审批条件"),
     
+    // ========== 排课优化模块错误码 5200-5299 ==========
+    CONSTRAINT_NOT_FOUND(5201, "排课约束不存在"),
+    CONSTRAINT_NAME_ALREADY_EXISTS(5202, "约束名称已存在"),
+    CONSTRAINT_IN_USE(5203, "约束正在使用中，无法删除"),
+    CONSTRAINT_TYPE_INVALID(5204, "约束类型无效"),
+    CONSTRAINT_WEIGHT_INVALID(5205, "约束权重无效"),
+    
+    SOLUTION_NOT_FOUND(5211, "排课方案不存在"),
+    SOLUTION_ALREADY_APPLIED(5212, "排课方案已应用"),
+    SOLUTION_STATUS_INVALID(5213, "排课方案状态无效"),
+    SOLUTION_CANNOT_MODIFY(5214, "排课方案不可修改"),
+    
+    TEACHER_PREFERENCE_NOT_FOUND(5221, "教师排课偏好不存在"),
+    TEACHER_PREFERENCE_ALREADY_EXISTS(5222, "教师排课偏好已存在"),
+    PREFERENCE_NOT_FOUND(5223, "偏好设置不存在"),
+    
+    SCHEDULING_CONFLICT(5231, "排课冲突"),
+    SCHEDULING_FAILED(5232, "排课失败"),
+    
     // ========== 通用错误码 9000-9999 ==========
     EXPORT_FAILED(9001, "导出失败"),
     IMPORT_FAILED(9002, "导入失败");

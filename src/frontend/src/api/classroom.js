@@ -95,3 +95,6 @@ export function checkConflict(params) {
   })
 }
 
+// 别名导出
+export const getClassrooms = getClassroomList
+

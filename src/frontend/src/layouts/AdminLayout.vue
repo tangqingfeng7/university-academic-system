@@ -179,6 +179,21 @@
               </el-menu-item>
             </el-sub-menu>
 
+            <el-sub-menu index="scheduling">
+              <template #title>
+                <el-icon><Grid /></el-icon>
+                <span>排课管理</span>
+              </template>
+              <el-menu-item index="/admin/scheduling/solutions">
+                <el-icon><Files /></el-icon>
+                <template #title>排课方案</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/scheduling/constraints">
+                <el-icon><Setting /></el-icon>
+                <template #title>排课约束</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/admin/leave-requests">
               <el-icon><Document /></el-icon>
               <template #title>请假审批</template>

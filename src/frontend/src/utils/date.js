@@ -137,3 +137,11 @@ export function isExpired(date) {
   return new Date(date) < new Date()
 }
 
+/**
+ * 格式化日期时间（别名）
+ * @param {string|Date} date - 日期
+ * @param {string} format - 格式，默认 'YYYY-MM-DD HH:mm:ss'
+ * @returns {string} 格式化后的日期字符串
+ */
+export const formatDateTime = formatDate
+

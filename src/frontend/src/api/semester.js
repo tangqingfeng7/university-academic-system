@@ -70,3 +70,7 @@ export function getSemesterStatistics() {
   })
 }
 
+// 别名导出
+export const getSemesters = getAllSemesters
+export const getSemester = getSemesterById
+
