@@ -311,5 +311,24 @@ public interface StudentStatusChangeRepository extends JpaRepository<StudentStat
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    /**
+     * 统计指定年份转入目标专业的已批准申请数量
+     * 用于转专业名额限制验证
+     *
+     * @param targetMajorId 目标专业ID
+     * @param year          年份
+     * @return 已批准的转入数量
+     */
+    @Query("SELECT COUNT(sc) FROM StudentStatusChange sc " +
+           "WHERE sc.type = 'TRANSFER' " +
+           "AND sc.targetMajorId = :targetMajorId " +
+           "AND sc.status = 'APPROVED' " +
+           "AND YEAR(sc.createdAt) = :year " +
+           "AND sc.deleted = false")
+    int countApprovedTransfersByTargetMajorAndYear(
+            @Param("targetMajorId") Long targetMajorId,
+            @Param("year") int year
+    );
 }
 

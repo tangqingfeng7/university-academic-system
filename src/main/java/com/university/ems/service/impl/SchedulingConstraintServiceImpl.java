@@ -8,6 +8,7 @@ import com.university.ems.dto.UpdateConstraintRequest;
 import com.university.ems.entity.SchedulingConstraint;
 import com.university.ems.enums.ConstraintType;
 import com.university.ems.repository.SchedulingConstraintRepository;
+import com.university.ems.repository.SchedulingSolutionRepository;
 import com.university.ems.service.SchedulingConstraintService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 public class SchedulingConstraintServiceImpl implements SchedulingConstraintService {
 
     private final SchedulingConstraintRepository constraintRepository;
+    private final SchedulingSolutionRepository solutionRepository;
 
     @Override
     @Transactional
@@ -175,8 +177,12 @@ public class SchedulingConstraintServiceImpl implements SchedulingConstraintServ
         SchedulingConstraint constraint = constraintRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CONSTRAINT_NOT_FOUND));
 
-        // TODO: 可以在这里检查约束是否正在被使用
-        // 如果有排课方案正在使用该约束，则不允许删除
+        // 检查约束是否正在被使用
+        // 如果存在正在优化(OPTIMIZING)或已应用(APPLIED)的排课方案，不允许删除约束
+        if (solutionRepository.existsActiveSolution()) {
+            throw new BusinessException(ErrorCode.CONSTRAINT_IN_USE, 
+                "存在正在优化或已应用的排课方案，无法删除约束。请先完成或撤销相关排课方案。");
+        }
 
         constraintRepository.delete(constraint);
         log.info("排课约束删除成功: id={}", id);

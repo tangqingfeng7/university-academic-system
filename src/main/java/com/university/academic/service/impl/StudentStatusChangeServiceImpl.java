@@ -8,6 +8,8 @@ import com.university.academic.service.ApprovalWorkflowService;
 import com.university.academic.service.MajorService;
 import com.university.academic.service.StudentService;
 import com.university.academic.service.StudentStatusChangeService;
+import com.university.academic.service.CreditCalculationService;
+import com.university.academic.dto.StudentCreditSummaryDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +48,7 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
     private final MajorService majorService;
     private final ApprovalWorkflowService workflowService;
     private final StatusChangeConverter statusChangeConverter;
+    private final CreditCalculationService creditCalculationService;
 
     @Value("${file.upload.path:/uploads/status-change}")
     private String uploadPath;
@@ -378,17 +381,60 @@ public class StudentStatusChangeServiceImpl implements StudentStatusChangeServic
             // throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, "已有转专业记录，不能再次转专业");
         }
 
-        // 8. 其他可扩展的验证条件（预留接口）
-        // TODO: 可以进一步添加以下验证：
-        // - 学生成绩要求（GPA >= 3.0）：需要查询学生的平均成绩
-        // - 学分要求（已修满一定学分）：需要统计学生已获得的学分
-        // - 目标专业接受转入的名额限制：需要查询目标专业的转入配额
-        // - 学生无违纪记录：需要查询学生的违纪处分记录
-        // - 转出专业的特殊限制：某些专业可能限制学生转出
+        // 8. 验证学生成绩要求（GPA >= 2.5）
+        StudentCreditSummaryDTO creditSummary = creditCalculationService.calculateStudentCredits(student.getId());
+        double requiredGpa = 2.5; // 转专业要求的最低GPA
+        if (creditSummary.getGpa() < requiredGpa) {
+            throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, 
+                    String.format("转专业要求GPA不低于%.1f，您的当前GPA为%.2f", requiredGpa, creditSummary.getGpa()));
+        }
+        log.info("GPA验证通过: 学生={}, GPA={}", student.getName(), creditSummary.getGpa());
 
-        log.info("转专业申请验证通过: 学生={}, 当前专业={}, 目标专业={}, 入学年份={}, 就读{}年",
+        // 9. 验证学分要求（已修满一定学分）
+        double requiredMinCredits = 30.0; // 转专业要求至少修满30学分
+        if (creditSummary.getTotalCredits() < requiredMinCredits) {
+            throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, 
+                    String.format("转专业要求至少修满%.0f学分，您当前已修%.1f学分", 
+                            requiredMinCredits, creditSummary.getTotalCredits()));
+        }
+        log.info("学分验证通过: 学生={}, 已修学分={}", student.getName(), creditSummary.getTotalCredits());
+
+        // 10. 验证目标专业转入名额限制（可选）
+        // 统计当前学期已批准的转入该专业的申请数量
+        int currentYearTransferCount = statusChangeRepository.countApprovedTransfersByTargetMajorAndYear(
+                targetMajor.getId(), currentYear);
+        int maxTransferQuota = 10; // 每个专业每年最多接受10名转入学生
+        
+        if (currentYearTransferCount >= maxTransferQuota) {
+            log.warn("目标专业转入名额已满: 专业={}, 当前年度已转入{}人，限额{}人", 
+                    targetMajor.getName(), currentYearTransferCount, maxTransferQuota);
+            throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, 
+                    String.format("目标专业本年度转入名额已满（已接受%d人，限额%d人），请选择其他专业或等待下一年度", 
+                            currentYearTransferCount, maxTransferQuota));
+        }
+        log.info("转入名额验证通过: 目标专业={}, 已转入{}人，限额{}人", 
+                targetMajor.getName(), currentYearTransferCount, maxTransferQuota);
+
+        // 11. 验证学生无违纪记录（预留接口）
+        // 注意：这需要集成学生违纪管理模块，目前仅记录日志
+        // boolean hasDisciplinaryRecord = disciplinaryService.hasUnresolvedRecords(student.getId());
+        // if (hasDisciplinaryRecord) {
+        //     throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, 
+        //             "存在未解除的违纪处分记录，暂不能申请转专业");
+        // }
+        log.info("违纪记录验证跳过（功能未实现）");
+
+        // 12. 验证转出专业的特殊限制（预留接口）
+        // 某些特殊专业可能限制学生转出，例如：定向培养专业、免费师范生等
+        // if (isRestrictedMajor(student.getMajor())) {
+        //     throw new BusinessException(ErrorCode.TRANSFER_REQUIREMENTS_NOT_MET, 
+        //             "您所在的专业属于定向培养或特殊类型专业，不允许转出");
+        // }
+        log.info("转出专业限制验证跳过（功能未实现）");
+
+        log.info("转专业申请验证通过: 学生={}, 当前专业={}, 目标专业={}, 入学年份={}, 就读{}年, GPA={}, 已修学分={}",
                 student.getName(), student.getMajor().getName(), targetMajor.getName(), 
-                student.getEnrollmentYear(), studyYears);
+                student.getEnrollmentYear(), studyYears, creditSummary.getGpa(), creditSummary.getTotalCredits());
     }
 
     /**

@@ -65,5 +65,16 @@ public interface SchedulingSolutionRepository extends JpaRepository<SchedulingSo
     @Query("SELECT s FROM SchedulingSolution s WHERE s.semester.id = :semesterId AND s.status = :status")
     List<SchedulingSolution> findBySemesterIdAndStatus(@Param("semesterId") Long semesterId, 
                                                         @Param("status") SolutionStatus status);
+
+    /**
+     * 检查是否存在活跃的排课方案（正在优化或已应用的方案）
+     * 这些方案可能正在使用排课约束，不应删除约束
+     *
+     * @return true-存在活跃方案，false-不存在
+     */
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
+           "FROM SchedulingSolution s " +
+           "WHERE s.status IN ('OPTIMIZING', 'APPLIED')")
+    boolean existsActiveSolution();
 }
 

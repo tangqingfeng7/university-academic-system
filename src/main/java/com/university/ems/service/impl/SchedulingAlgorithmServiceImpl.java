@@ -7,6 +7,7 @@ import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
 import com.university.academic.repository.ClassroomRepository;
 import com.university.academic.repository.CourseOfferingRepository;
+import com.university.academic.repository.CourseSelectionRepository;
 import com.university.academic.repository.SemesterRepository;
 import com.university.ems.dto.*;
 import com.university.ems.entity.SchedulingSolution;
@@ -40,6 +41,7 @@ public class SchedulingAlgorithmServiceImpl implements SchedulingAlgorithmServic
 
     private final SemesterRepository semesterRepository;
     private final CourseOfferingRepository courseOfferingRepository;
+    private final CourseSelectionRepository courseSelectionRepository;
     private final ClassroomRepository classroomRepository;
     private final SchedulingSolutionRepository solutionRepository;
     private final TeacherPreferenceService teacherPreferenceService;
@@ -373,12 +375,21 @@ public class SchedulingAlgorithmServiceImpl implements SchedulingAlgorithmServic
     }
 
     /**
-     * 获取课程学生人数（简化实现，实际应查询选课表）
+     * 获取课程实际选课人数
+     * 
+     * @param offering 开课计划
+     * @return 选课人数
      */
     private int getCourseStudentCount(CourseOffering offering) {
-        // TODO: 实际应该查询course_selection表统计选课人数
-        // 这里先返回默认值
-        return offering.getCapacity() != null ? offering.getCapacity() / 2 : 30;
+        // 查询course_selection表统计选课人数
+        long count = courseSelectionRepository.countActiveByOfferingId(offering.getId());
+        
+        // 如果没有选课记录，返回预估值（容量的50%或30人）
+        if (count == 0) {
+            return offering.getCapacity() != null ? offering.getCapacity() / 2 : 30;
+        }
+        
+        return (int) count;
     }
 
     /**

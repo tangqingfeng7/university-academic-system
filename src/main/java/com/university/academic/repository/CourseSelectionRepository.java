@@ -228,5 +228,17 @@ public interface CourseSelectionRepository extends JpaRepository<CourseSelection
     List<CourseSelection> findByStudentIdAndStatus(
             @Param("studentId") Long studentId,
             @Param("status") CourseSelection.SelectionStatus status);
+
+    /**
+     * 统计开课计划的选课人数（已选课程）
+     *
+     * @param offeringId 开课计划ID
+     * @return 选课人数
+     */
+    @Query("SELECT COUNT(cs) " +
+            "FROM CourseSelection cs " +
+            "WHERE cs.offering.id = :offeringId " +
+            "AND cs.status = 'SELECTED'")
+    long countActiveByOfferingId(@Param("offeringId") Long offeringId);
 }
 
