@@ -1,9 +1,11 @@
 package com.university.academic.security;
 
+import com.university.academic.entity.Student;
 import com.university.academic.entity.Teacher;
 import com.university.academic.entity.User;
 import com.university.academic.exception.BusinessException;
 import com.university.academic.exception.ErrorCode;
+import com.university.academic.repository.StudentRepository;
 import com.university.academic.repository.TeacherRepository;
 import com.university.academic.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ public class SecurityUtils {
 
     private static UserRepository userRepository;
     private static TeacherRepository teacherRepository;
+    private static StudentRepository studentRepository;
 
     @Autowired
     public void setUserRepository(UserRepository userRepository) {
@@ -36,6 +39,11 @@ public class SecurityUtils {
     @Autowired
     public void setTeacherRepository(TeacherRepository teacherRepository) {
         SecurityUtils.teacherRepository = teacherRepository;
+    }
+
+    @Autowired
+    public void setStudentRepository(StudentRepository studentRepository) {
+        SecurityUtils.studentRepository = studentRepository;
     }
 
     private SecurityUtils() {
@@ -90,6 +98,40 @@ public class SecurityUtils {
                 } else {
                     log.warn("用户不是教师: username={}, userId={}", username, user.getId());
                     throw new BusinessException(ErrorCode.TEACHER_NOT_FOUND);
+                }
+            } else {
+                log.warn("未找到用户: username={}", username);
+                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            }
+        }
+
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+    }
+
+    /**
+     * 获取当前登录学生ID
+     *
+     * @return 学生ID
+     */
+    public static Long getCurrentStudentId() {
+        String username = getCurrentUsername();
+        if (username == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 根据用户名查询用户
+        if (userRepository != null && studentRepository != null) {
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                
+                // 查询学生信息
+                Optional<Student> studentOpt = studentRepository.findByUserId(user.getId());
+                if (studentOpt.isPresent()) {
+                    return studentOpt.get().getId();
+                } else {
+                    log.warn("用户不是学生: username={}, userId={}", username, user.getId());
+                    throw new BusinessException(ErrorCode.STUDENT_NOT_FOUND);
                 }
             } else {
                 log.warn("未找到用户: username={}", username);

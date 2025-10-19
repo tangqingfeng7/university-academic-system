@@ -319,6 +319,25 @@ const router = createRouter({
           component: () => import('@/views/admin/discipline/DisciplineList.vue'),
           meta: { title: '处分管理', keepAlive: true }
         },
+        // ==================== 考勤管理 ====================
+        {
+          path: 'attendance/statistics',
+          name: 'AdminAttendanceStatistics',
+          component: () => import('@/views/admin/attendance/Statistics.vue'),
+          meta: { title: '考勤统计', keepAlive: true }
+        },
+        {
+          path: 'attendance/warnings',
+          name: 'AdminAttendanceWarnings',
+          component: () => import('@/views/admin/attendance/Warnings.vue'),
+          meta: { title: '考勤预警', keepAlive: true }
+        },
+        {
+          path: 'attendance/config',
+          name: 'AdminAttendanceConfig',
+          component: () => import('@/views/admin/attendance/ConfigManagement.vue'),
+          meta: { title: '考勤配置' }
+        },
         
         {
           path: 'profile',
@@ -401,6 +420,25 @@ const router = createRouter({
           name: 'TeacherSchedulePreferences',
           component: () => import('@/views/teacher/SchedulePreferences.vue'),
           meta: { title: '排课偏好设置' }
+        },
+        // ==================== 考勤管理 ====================
+        {
+          path: 'attendance',
+          name: 'TeacherAttendanceList',
+          component: () => import('@/views/teacher/attendance/AttendanceList.vue'),
+          meta: { title: '考勤管理', keepAlive: true }
+        },
+        {
+          path: 'attendance/:id',
+          name: 'TeacherAttendanceDetail',
+          component: () => import('@/views/teacher/attendance/AttendanceDetail.vue'),
+          meta: { title: '考勤详情' }
+        },
+        {
+          path: 'attendance/requests',
+          name: 'TeacherAttendanceRequests',
+          component: () => import('@/views/teacher/attendance/RequestApproval.vue'),
+          meta: { title: '申请审批', keepAlive: true }
         },
         {
           path: 'exams/invigilation',
@@ -666,6 +704,20 @@ const router = createRouter({
           component: () => import('@/views/student/discipline/MyDisciplines.vue'),
           meta: { title: '处分记录', keepAlive: true }
         },
+        // ==================== 考勤管理 ====================
+        {
+          path: 'attendance',
+          name: 'StudentAttendance',
+          component: () => import('@/views/student/attendance/AttendanceRecords.vue'),
+          meta: { title: '考勤记录', keepAlive: true }
+        },
+        {
+          path: 'attendance/requests',
+          name: 'StudentAttendanceRequests',
+          component: () => import('@/views/student/attendance/MyRequests.vue'),
+          meta: { title: '我的申请', keepAlive: true }
+        },
+        
         {
           path: 'profile',
           name: 'StudentProfile',

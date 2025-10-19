@@ -1,5 +1,6 @@
 package com.university.academic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"majors", "teachers", "courses", "hibernateLazyInitializer", "handler"})
 public class Department extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 20)

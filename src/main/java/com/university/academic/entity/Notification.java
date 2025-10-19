@@ -55,7 +55,10 @@ public class Notification extends BaseEntity {
         EXAM("考试通知"),
         SCHOLARSHIP_APPROVAL("奖学金审批通知"),
         SCHOLARSHIP_APPROVAL_PENDING("待审批奖学金通知"),
-        SCHEDULE("排课通知");
+        SCHEDULE("排课通知"),
+        ATTENDANCE("考勤通知"),
+        ATTENDANCE_WARNING("考勤预警"),
+        ATTENDANCE_APPEAL("考勤申请");
 
         private final String description;
 

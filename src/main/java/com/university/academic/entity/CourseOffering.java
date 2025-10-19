@@ -1,5 +1,6 @@
 package com.university.academic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,18 +19,22 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"selections", "schedules", "exams", "evaluations", "hibernateLazyInitializer", "handler"})
 public class CourseOffering extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "semester_id", nullable = false)
+    @JsonIgnoreProperties({"offerings", "hibernateLazyInitializer", "handler"})
     private Semester semester;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
+    @JsonIgnoreProperties({"prerequisites", "hibernateLazyInitializer", "handler"})
     private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", nullable = false)
+    @JsonIgnoreProperties({"offerings", "user", "hibernateLazyInitializer", "handler"})
     private Teacher teacher;
 
     @Column(columnDefinition = "JSON")

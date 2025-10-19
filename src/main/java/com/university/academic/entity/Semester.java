@@ -1,5 +1,6 @@
 package com.university.academic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -53,6 +54,7 @@ public class Semester extends BaseEntity {
 
     @OneToMany(mappedBy = "semester", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnoreProperties({"semester", "schedules", "selections", "exams", "evaluations"})
     private List<CourseOffering> offerings = new ArrayList<>();
 
     /**

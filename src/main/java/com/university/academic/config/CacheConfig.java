@@ -32,6 +32,11 @@ public class CacheConfig {
     public static final String CACHE_EVALUATION_STATS = "evaluationStats";
     public static final String CACHE_GRADUATION_REQUIREMENTS = "graduationRequirements";
     public static final String CACHE_CREDIT_SUMMARY = "creditSummary";
+    
+    // 考勤缓存名称
+    public static final String CACHE_COURSE_STATISTICS = "courseStatistics";
+    public static final String CACHE_STUDENT_STATISTICS = "studentStatistics";
+    public static final String CACHE_ATTENDANCE_CONFIG = "attendanceConfig";
 
     /**
      * 配置缓存管理器
@@ -75,6 +80,32 @@ public class CacheConfig {
                 .initialCapacity(100)
                 .maximumSize(1000)
                 .expireAfterWrite(10, TimeUnit.MINUTES)
+                .recordStats();
+    }
+
+    /**
+     * 考勤统计缓存配置
+     * 用于缓存课程和学生的考勤统计数据
+     */
+    @Bean
+    public Caffeine<Object, Object> attendanceStatisticsCacheConfig() {
+        return Caffeine.newBuilder()
+                .initialCapacity(100)
+                .maximumSize(1000)
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                .recordStats();
+    }
+
+    /**
+     * 考勤配置缓存
+     * 用于缓存系统配置参数
+     */
+    @Bean
+    public Caffeine<Object, Object> attendanceConfigCacheConfig() {
+        return Caffeine.newBuilder()
+                .initialCapacity(50)
+                .maximumSize(200)
+                .expireAfterWrite(1, TimeUnit.HOURS)
                 .recordStats();
     }
 }

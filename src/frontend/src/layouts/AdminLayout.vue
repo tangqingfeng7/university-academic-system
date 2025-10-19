@@ -199,6 +199,25 @@
               </el-menu-item>
             </el-sub-menu>
 
+            <el-sub-menu index="attendance">
+              <template #title>
+                <el-icon><CircleCheck /></el-icon>
+                <span>考勤管理</span>
+              </template>
+              <el-menu-item index="/admin/attendance/statistics">
+                <el-icon><DataLine /></el-icon>
+                <template #title>考勤统计</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/attendance/warnings">
+                <el-icon><Warning /></el-icon>
+                <template #title>考勤预警</template>
+              </el-menu-item>
+              <el-menu-item index="/admin/attendance/config">
+                <el-icon><Setting /></el-icon>
+                <template #title>考勤配置</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/admin/disciplines">
               <el-icon><Warning /></el-icon>
               <template #title>处分管理</template>
@@ -356,7 +375,7 @@ import {
   Platform, TrendCharts, UserFilled, User, Reading, Calendar, Memo, Clock, 
   OfficeBuilding, School, Setting, Document, DataAnalysis, Bell,
   Expand, Fold, Lock, SwitchButton, DocumentChecked, List, DataLine,
-  Coin, Tickets, Files, Select, RefreshLeft, Medal, Trophy, Star
+  Coin, Tickets, Files, Select, RefreshLeft, Medal, Trophy, Star, CircleCheck, Warning, Grid
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'
@@ -550,6 +569,59 @@ const handlePasswordSubmit = () => {
       font-size: 18px;
       color: var(--text-secondary);
       transition: color var(--transition-fast);
+    }
+  }
+
+  :deep(.el-sub-menu) {
+    .el-sub-menu__title {
+      height: 40px;
+      line-height: 40px;
+      margin-bottom: 2px;
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      transition: all var(--transition-fast);
+      font-size: 15px;
+      font-weight: 500;
+
+      &:hover {
+        background: var(--bg-secondary);
+      }
+
+      .el-icon {
+        font-size: 18px;
+        color: var(--text-secondary);
+        transition: color var(--transition-fast);
+      }
+    }
+
+    &.is-active .el-sub-menu__title {
+      background: var(--primary-color);
+      color: white;
+
+      .el-icon {
+        color: white;
+      }
+    }
+
+    .el-menu {
+      background: transparent;
+    }
+
+    .el-menu-item {
+      height: 36px;
+      line-height: 36px;
+      padding-left: 56px !important;
+      font-size: 14px;
+      margin-bottom: 2px;
+
+      &.is-active {
+        background: rgba(64, 158, 255, 0.1);
+        color: var(--primary-color);
+
+        .el-icon {
+          color: var(--primary-color);
+        }
+      }
     }
   }
 

@@ -57,6 +57,21 @@
               <template #title>课程评价</template>
             </el-menu-item>
 
+            <el-sub-menu index="attendance">
+              <template #title>
+                <el-icon><CircleCheck /></el-icon>
+                <span>考勤管理</span>
+              </template>
+              <el-menu-item index="/student/attendance">
+                <el-icon><Document /></el-icon>
+                <template #title>考勤记录</template>
+              </el-menu-item>
+              <el-menu-item index="/student/attendance/requests">
+                <el-icon><Files /></el-icon>
+                <template #title>我的申请</template>
+              </el-menu-item>
+            </el-sub-menu>
+
             <el-menu-item index="/student/status-changes">
               <el-icon><Files /></el-icon>
               <template #title>学籍异动</template>
@@ -258,7 +273,7 @@ import { ElMessage } from 'element-plus'
 import {
   School, TrendCharts, Tickets, Calendar, Document, Notebook, Reading, Bell, User,
   Expand, Fold, Lock, SwitchButton, Edit, Files, Wallet, Medal, DocumentChecked,
-  Trophy, Star
+  Trophy, Star, CircleCheck, Warning
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import NotificationBell from '@/components/NotificationBell.vue'

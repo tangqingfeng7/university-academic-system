@@ -283,6 +283,28 @@ public enum ErrorCode {
     APPEAL_ALREADY_REVIEWED(5313, "申诉已被审核"),
     APPEAL_CANNOT_CANCEL(5314, "申诉无法撤销"),
     
+    // ========== 考勤管理模块错误码 5400-5499 ==========
+    ATTENDANCE_RECORD_NOT_FOUND(5401, "考勤记录不存在"),
+    ATTENDANCE_ALREADY_SUBMITTED(5402, "考勤已提交，无法修改"),
+    QRCODE_EXPIRED(5403, "二维码已过期"),
+    LOCATION_OUT_OF_RANGE(5404, "不在签到范围内"),
+    DUPLICATE_CHECKIN(5405, "重复签到"),
+    INVALID_ATTENDANCE_TIME(5406, "签到时间已过"),
+    ATTENDANCE_PERMISSION_DENIED(5407, "无权限操作此考勤"),
+    STUDENT_NOT_IN_COURSE(5408, "学生不在选课名单中"),
+    ATTENDANCE_METHOD_NOT_SUPPORTED(5409, "考勤方式不支持"),
+    ATTENDANCE_REQUEST_ALREADY_PROCESSED(5410, "申请已处理，无法修改"),
+    ATTENDANCE_DETAIL_NOT_FOUND(5411, "考勤明细不存在"),
+    ATTENDANCE_CONFIG_NOT_FOUND(5412, "考勤配置不存在"),
+    ATTENDANCE_WARNING_NOT_FOUND(5413, "考勤预警不存在"),
+    ATTENDANCE_REQUEST_NOT_FOUND(5414, "考勤申请不存在"),
+    ATTENDANCE_NOT_IN_PROGRESS(5415, "考勤未在进行中"),
+    ATTENDANCE_ALREADY_CANCELLED(5416, "考勤已取消"),
+    QRCODE_INVALID(5417, "二维码无效"),
+    ATTENDANCE_TIME_NOT_VALID(5418, "不在考勤时间范围内"),
+    CHECKIN_TOO_LATE(5419, "签到时间过晚"),
+    OFFERING_NOT_STARTED(5420, "课程尚未开始"),
+    
     // ========== 通用错误码 9000-9999 ==========
     EXPORT_FAILED(9001, "导出失败"),
     IMPORT_FAILED(9002, "导入失败");

@@ -308,7 +308,8 @@ public class RefundServiceImpl implements RefundService {
     public Page<RefundApplicationDTO> searchRefundApplications(RefundQueryDTO query, Pageable pageable) {
         log.info("查询退费申请: query={}", query);
 
-        // TODO: 实现复杂查询逻辑（使用Specification）
+        // 
+        
         // 这里暂时使用简单实现
         Page<RefundApplication> applications;
         if (query.getStatus() != null) {
