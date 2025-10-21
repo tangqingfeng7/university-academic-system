@@ -137,10 +137,12 @@ public class DisciplineController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public Result<StudentDisciplineDTO> removeDiscipline(
             @PathVariable Long id,
-            @RequestParam String reason,
-            Authentication authentication) {
+            @RequestParam String reason) {
 
-        Long operatorId = ((User) authentication.getPrincipal()).getId();
+        Long operatorId = SecurityUtils.getCurrentUserId();
+        if (operatorId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
         
         StudentDiscipline removed = disciplineService.removeDiscipline(id, reason, operatorId);
         
@@ -278,10 +280,12 @@ public class DisciplineController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public Result<DisciplineAppealDTO> reviewAppeal(
             @PathVariable Long id,
-            @Valid @RequestBody ReviewAppealRequest request,
-            Authentication authentication) {
+            @Valid @RequestBody ReviewAppealRequest request) {
 
-        Long reviewerId = ((User) authentication.getPrincipal()).getId();
+        Long reviewerId = SecurityUtils.getCurrentUserId();
+        if (reviewerId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
         
         DisciplineAppeal reviewed = appealService.reviewAppeal(
                 id,

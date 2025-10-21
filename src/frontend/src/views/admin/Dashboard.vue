@@ -94,34 +94,88 @@
       
       <div class="quick-actions">
         <div class="action-item" @click="goTo('/admin/students')">
-          <el-icon class="action-icon" :size="24"><Plus /></el-icon>
-          <span class="action-label">添加学生</span>
+          <el-icon class="action-icon" :size="24"><User /></el-icon>
+          <span class="action-label">学生管理</span>
         </div>
         <div class="action-item" @click="goTo('/admin/teachers')">
-          <el-icon class="action-icon" :size="24"><Plus /></el-icon>
-          <span class="action-label">添加教师</span>
+          <el-icon class="action-icon" :size="24"><UserFilled /></el-icon>
+          <span class="action-label">教师管理</span>
         </div>
         <div class="action-item" @click="goTo('/admin/courses')">
-          <el-icon class="action-icon" :size="24"><Plus /></el-icon>
-          <span class="action-label">添加课程</span>
+          <el-icon class="action-icon" :size="24"><Reading /></el-icon>
+          <span class="action-label">课程管理</span>
         </div>
         <div class="action-item" @click="goTo('/admin/offerings')">
-          <el-icon class="action-icon" :size="24"><Plus /></el-icon>
-          <span class="action-label">创建开课</span>
+          <el-icon class="action-icon" :size="24"><Notebook /></el-icon>
+          <span class="action-label">开课管理</span>
+        </div>
+        <div class="action-item" @click="goTo('/admin/exam')">
+          <el-icon class="action-icon" :size="24"><EditPen /></el-icon>
+          <span class="action-label">考试管理</span>
+        </div>
+        <div class="action-item" @click="goTo('/admin/attendance')">
+          <el-icon class="action-icon" :size="24"><Clock /></el-icon>
+          <span class="action-label">考勤管理</span>
+        </div>
+        <div class="action-item" @click="goTo('/admin/discipline')">
+          <el-icon class="action-icon" :size="24"><Warning /></el-icon>
+          <span class="action-label">处分管理</span>
+        </div>
+        <div class="action-item" @click="goTo('/admin/classrooms')">
+          <el-icon class="action-icon" :size="24"><Office /></el-icon>
+          <span class="action-label">教室管理</span>
         </div>
         <div class="action-item" @click="goTo('/admin/semesters')">
-          <el-icon class="action-icon" :size="24"><Setting /></el-icon>
+          <el-icon class="action-icon" :size="24"><Calendar /></el-icon>
           <span class="action-label">学期管理</span>
         </div>
         <div class="action-item" @click="goTo('/admin/statistics')">
-          <el-icon class="action-icon" :size="24"><DocumentCopy /></el-icon>
+          <el-icon class="action-icon" :size="24"><DataAnalysis /></el-icon>
           <span class="action-label">统计报表</span>
+        </div>
+        <div class="action-item" @click="goTo('/admin/notifications')">
+          <el-icon class="action-icon" :size="24"><Bell /></el-icon>
+          <span class="action-label">通知中心</span>
+        </div>
+        <div class="action-item" @click="goTo('/admin/system-config')">
+          <el-icon class="action-icon" :size="24"><Setting /></el-icon>
+          <span class="action-label">系统设置</span>
         </div>
       </div>
     </div>
 
-    <!-- 系统通知 -->
+    <!-- 日历视图 -->
     <div class="content-section animate-fade-in-up" style="animation-delay: 0.4s;">
+      <div class="section-header">
+        <h2 class="section-title">日历</h2>
+        <el-button text @click="goTo('/admin/exam')">查看所有考试</el-button>
+      </div>
+      
+      <div class="calendar-wrapper">
+        <el-calendar>
+          <template #date-cell="{ data }">
+            <div class="calendar-day">
+              <div class="day-number">{{ data.day.split('-').slice(2).join('') }}</div>
+              <div class="day-events" v-if="getEventsForDate(data.day).length > 0">
+                <div 
+                  v-for="(event, index) in getEventsForDate(data.day).slice(0, 2)" 
+                  :key="index"
+                  class="event-dot"
+                  :class="event.type"
+                  :title="event.title"
+                ></div>
+                <span v-if="getEventsForDate(data.day).length > 2" class="more-events">
+                  +{{ getEventsForDate(data.day).length - 2 }}
+                </span>
+              </div>
+            </div>
+          </template>
+        </el-calendar>
+      </div>
+    </div>
+
+    <!-- 系统通知 -->
+    <div class="content-section animate-fade-in-up" style="animation-delay: 0.5s;">
       <div class="section-header">
         <h2 class="section-title">系统通知</h2>
         <el-button type="primary" link @click="goTo('/admin/notifications')">
@@ -184,13 +238,42 @@ const loadStatistics = async () => {
   }
 }
 
+// 日历事件数据
+const calendarEvents = ref([])
+
+// 获取指定日期的事件
+const getEventsForDate = (date) => {
+  return calendarEvents.value.filter(event => {
+    const eventDate = new Date(event.date).toISOString().split('T')[0]
+    return eventDate === date
+  })
+}
+
 const goTo = (path) => {
   router.push(path)
 }
 
 onMounted(() => {
   loadStatistics()
+  loadCalendarEvents()
 })
+
+// 加载日历事件
+const loadCalendarEvents = async () => {
+  try {
+    const response = await fetch('/api/admin/dashboard/calendar-events', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    const result = await response.json()
+    if (result.success && result.data) {
+      calendarEvents.value = result.data
+    }
+  } catch (error) {
+    console.error('加载日历事件失败:', error)
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -429,6 +512,116 @@ onMounted(() => {
     font-size: 14px;
     color: var(--text-primary);
     font-weight: 500;
+  }
+
+  // ===================================
+  // 日历样式
+  // ===================================
+
+  .calendar-wrapper {
+    :deep(.el-calendar) {
+      background: transparent;
+      
+      .el-calendar__header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-light);
+        
+        .el-calendar__title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+        
+        .el-button-group {
+          button {
+            border-color: var(--border-color);
+            
+            &:hover {
+              color: var(--primary-color);
+              border-color: var(--primary-color);
+            }
+          }
+        }
+      }
+      
+      .el-calendar__body {
+        padding: 12px;
+      }
+      
+      .el-calendar-table {
+        thead th {
+          padding: 12px 0;
+          font-weight: 600;
+          color: var(--text-secondary);
+          font-size: 13px;
+        }
+        
+        .el-calendar-day {
+          height: 80px;
+          padding: 8px;
+          
+          &:hover {
+            background: var(--bg-secondary);
+          }
+        }
+      }
+    }
+    
+    .calendar-day {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .day-number {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+      
+      .day-events {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: auto;
+        
+        .event-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          
+          &.exam {
+            background: #f56c6c;
+          }
+          
+          &.activity {
+            background: #409eff;
+          }
+          
+          &.meeting {
+            background: #67c23a;
+          }
+        }
+        
+        .more-events {
+          font-size: 11px;
+          color: var(--text-tertiary);
+        }
+      }
+    }
+    
+    :deep(.is-today) {
+      .day-number {
+        color: var(--primary-color);
+        font-weight: 600;
+      }
+    }
+    
+    :deep(.is-selected) {
+      background: var(--primary-light);
+    }
   }
 }
 </style>

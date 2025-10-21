@@ -356,12 +356,14 @@ public class ClassroomBookingServiceImpl implements ClassroomBookingService {
             notification.setTitle(title);
             notification.setContent(content);
             notification.setType("SYSTEM");
-            notification.setTargetRole("ALL");
+            // 使用PERSONAL作为targetRole，不匹配任何角色，只通过publisherId控制可见性
+            notification.setTargetRole("PERSONAL");
             
-            // 使用审批人ID发送通知
-            notificationService.publishNotification(notification, booking.getApprovedBy());
+            // 使用申请人ID发送通知，这样只有申请人能看到
+            notificationService.publishNotification(notification, booking.getApplicantId());
             
-            log.info("已发送审批结果通知: bookingId={}", booking.getId());
+            log.info("已发送审批结果通知给申请人: bookingId={}, applicantId={}", 
+                    booking.getId(), booking.getApplicantId());
         } catch (Exception e) {
             log.error("发送通知失败: ", e);
             // 不影响主流程

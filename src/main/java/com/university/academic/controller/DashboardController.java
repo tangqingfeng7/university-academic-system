@@ -1,15 +1,21 @@
 package com.university.academic.controller;
 
+import com.university.academic.entity.Exam;
+import com.university.academic.repository.ExamRepository;
 import com.university.academic.service.*;
 import com.university.academic.vo.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +36,7 @@ public class DashboardController {
     private final CourseService courseService;
     private final CourseOfferingService offeringService;
     private final SemesterService semesterService;
+    private final ExamRepository examRepository;
 
     /**
      * 获取仪表盘统计数据
@@ -98,6 +105,41 @@ public class DashboardController {
         trends.put("courseSelections", new int[]{45, 52, 38, 56, 42, 78, 65});
 
         return Result.success(trends);
+    }
+
+    /**
+     * 获取日历事件
+     */
+    @GetMapping("/calendar-events")
+    public Result<List<Map<String, String>>> getCalendarEvents() {
+        log.info("获取管理员日历事件");
+
+        List<Map<String, String>> events = new ArrayList<>();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        try {
+            // 获取当前学期的考试
+            var activeSemester = semesterService.findActiveSemester();
+            List<Exam> exams = examRepository.findBySemesterAndStatus(activeSemester.getId(), null, Pageable.unpaged()).getContent();
+
+            for (Exam exam : exams) {
+                if (exam.getExamTime() != null) {
+                    Map<String, String> event = new HashMap<>();
+                    event.put("date", exam.getExamTime().format(dateFormatter));
+                    event.put("type", "exam");
+                    event.put("title", exam.getName());
+                    events.add(event);
+                }
+            }
+
+            // 可以添加其他类型的事件，如会议、活动等
+            // 这里作为示例，可以从其他服务获取
+
+        } catch (Exception e) {
+            log.error("获取日历事件失败", e);
+        }
+
+        return Result.success(events);
     }
 }
 

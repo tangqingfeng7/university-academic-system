@@ -113,13 +113,13 @@
           </div>
         </div>
 
-        <div class="action-card" @click="goTo('/student/grades')">
+        <div class="action-card" @click="goTo('/student/courses')">
           <div class="action-icon">
-            <el-icon :size="28"><Document /></el-icon>
+            <el-icon :size="28"><Notebook /></el-icon>
           </div>
           <div class="action-content">
-            <div class="action-title">成绩查询</div>
-            <div class="action-desc">查看课程成绩</div>
+            <div class="action-title">我的课程</div>
+            <div class="action-desc">查看已选课程</div>
           </div>
           <div class="action-arrow">
             <el-icon><ArrowRight /></el-icon>
@@ -139,18 +139,97 @@
           </div>
         </div>
 
-        <div class="action-card" @click="goTo('/student/transcript')">
+        <div class="action-card" @click="goTo('/student/grades')">
           <div class="action-icon">
-            <el-icon :size="28"><Tickets /></el-icon>
+            <el-icon :size="28"><Document /></el-icon>
           </div>
           <div class="action-content">
-            <div class="action-title">成绩单</div>
-            <div class="action-desc">查看完整成绩单</div>
+            <div class="action-title">成绩查询</div>
+            <div class="action-desc">查看课程成绩</div>
           </div>
           <div class="action-arrow">
             <el-icon><ArrowRight /></el-icon>
           </div>
         </div>
+
+        <div class="action-card" @click="goTo('/student/exams')">
+          <div class="action-icon">
+            <el-icon :size="28"><EditPen /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">考试安排</div>
+            <div class="action-desc">查看考试信息</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div class="action-card" @click="goTo('/student/attendance')">
+          <div class="action-icon">
+            <el-icon :size="28"><Clock /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">考勤记录</div>
+            <div class="action-desc">查看出勤情况</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div class="action-card" @click="goTo('/student/tuition')">
+          <div class="action-icon">
+            <el-icon :size="28"><Money /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">学费缴纳</div>
+            <div class="action-desc">查看缴费情况</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div class="action-card" @click="goTo('/student/scholarships')">
+          <div class="action-icon">
+            <el-icon :size="28"><Trophy /></el-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">奖学金</div>
+            <div class="action-desc">申请和查看奖学金</div>
+          </div>
+          <div class="action-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 日历视图 -->
+    <div class="calendar-section animate-fade-in-up" style="animation-delay: 0.4s;">
+      <h2 class="section-title">日程安排</h2>
+      <div class="calendar-wrapper">
+        <el-calendar>
+          <template #date-cell="{ data }">
+            <div class="calendar-day">
+              <div class="day-number">{{ data.day.split('-').slice(2).join('') }}</div>
+              <div class="day-events" v-if="getEventsForDate(data.day).length > 0">
+                <div 
+                  v-for="(event, index) in getEventsForDate(data.day).slice(0, 2)" 
+                  :key="index"
+                  class="event-item"
+                  :class="event.type"
+                >
+                  <span class="event-text">{{ event.title }}</span>
+                </div>
+                <span v-if="getEventsForDate(data.day).length > 2" class="more-indicator">
+                  +{{ getEventsForDate(data.day).length - 2 }}
+                </span>
+              </div>
+            </div>
+          </template>
+        </el-calendar>
       </div>
     </div>
   </div>
@@ -212,12 +291,41 @@ const formatDate = (dateStr) => {
 }
 
 // 跳转到指定页面
+// 日历事件数据
+const calendarEvents = ref([])
+
+// 获取指定日期的事件
+const getEventsForDate = (date) => {
+  return calendarEvents.value.filter(event => {
+    const eventDate = new Date(event.date).toISOString().split('T')[0]
+    return eventDate === date
+  })
+}
+
+// 加载日历事件
+const loadCalendarEvents = async () => {
+  try {
+    const response = await fetch('/api/student/dashboard/calendar-events', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    const result = await response.json()
+    if (result.success && result.data) {
+      calendarEvents.value = result.data
+    }
+  } catch (error) {
+    console.error('加载日历事件失败:', error)
+  }
+}
+
 const goTo = (path) => {
   router.push(path)
 }
 
 onMounted(() => {
   fetchStatistics()
+  loadCalendarEvents()
 })
 </script>
 
@@ -423,8 +531,12 @@ onMounted(() => {
 
   .action-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -485,6 +597,114 @@ onMounted(() => {
     color: var(--text-tertiary);
     font-size: 20px;
     flex-shrink: 0;
+  }
+
+  // ===================================
+  // 日历样式
+  // ===================================
+
+  .calendar-section {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .calendar-wrapper {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid var(--border-light);
+
+    :deep(.el-calendar) {
+      background: transparent;
+      
+      .el-calendar__header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-light);
+        
+        .el-calendar__title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+      }
+      
+      .el-calendar__body {
+        padding: 12px 0;
+      }
+      
+      .el-calendar-table {
+        thead th {
+          padding: 10px 0;
+          font-weight: 600;
+          color: var(--text-secondary);
+          font-size: 13px;
+        }
+        
+        .el-calendar-day {
+          height: 90px;
+          padding: 6px;
+          
+          &:hover {
+            background: var(--bg-secondary);
+          }
+        }
+      }
+    }
+    
+    .calendar-day {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      
+      .day-number {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+      
+      .day-events {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        
+        .event-item {
+          font-size: 11px;
+          padding: 2px 6px;
+          border-radius: 3px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          
+          &.course {
+            background: #e1f3ff;
+            color: #409eff;
+          }
+          
+          &.exam {
+            background: #ffe1e1;
+            color: #f56c6c;
+          }
+          
+          .event-text {
+            font-size: 11px;
+          }
+        }
+        
+        .more-indicator {
+          font-size: 10px;
+          color: var(--text-tertiary);
+          padding: 2px;
+        }
+      }
+    }
+    
+    :deep(.is-today) {
+      .day-number {
+        color: var(--primary-color);
+        font-weight: 700;
+      }
+    }
   }
 }
 </style>
