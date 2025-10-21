@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,7 +27,8 @@ public interface MajorRepository extends JpaRepository<Major, Long> {
      * @return 专业对象
      */
     @Query("SELECT m FROM Major m LEFT JOIN FETCH m.department WHERE m.id = :id")
-    Optional<Major> findById(@Param("id") Long id);
+    @NonNull
+    Optional<Major> findById(@NonNull @Param("id") Long id);
 
     /**
      * 根据专业代码查询专业（带院系信息）

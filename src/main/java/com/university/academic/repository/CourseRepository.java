@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
      * @return 课程对象
      */
     @Query("SELECT c FROM Course c LEFT JOIN FETCH c.department WHERE c.id = :id")
-    Optional<Course> findById(@Param("id") Long id);
+    @NonNull
+    Optional<Course> findById(@NonNull @Param("id") Long id);
 
     /**
      * 根据课程编号查询课程

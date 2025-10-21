@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
      * @return 教师对象
      */
     @Query("SELECT t FROM Teacher t LEFT JOIN FETCH t.department LEFT JOIN FETCH t.user WHERE t.id = :id")
-    Optional<Teacher> findById(@Param("id") Long id);
+    @NonNull
+    Optional<Teacher> findById(@NonNull @Param("id") Long id);
 
     /**
      * 根据工号查询教师

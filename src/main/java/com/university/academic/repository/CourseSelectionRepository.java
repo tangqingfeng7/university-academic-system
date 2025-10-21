@@ -4,6 +4,7 @@ import com.university.academic.entity.CourseSelection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,7 +36,8 @@ public interface CourseSelectionRepository extends JpaRepository<CourseSelection
             "LEFT JOIN FETCH co.teacher t " +
             "LEFT JOIN FETCH t.department " +
             "WHERE cs.id = :id")
-    Optional<CourseSelection> findById(@Param("id") Long id);
+    @NonNull
+    Optional<CourseSelection> findById(@NonNull @Param("id") Long id);
 
     /**
      * 查询学生的所有选课记录
