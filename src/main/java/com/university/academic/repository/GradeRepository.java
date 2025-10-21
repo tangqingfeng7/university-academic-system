@@ -68,10 +68,13 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     @Query("SELECT DISTINCT g FROM Grade g " +
             "LEFT JOIN FETCH g.courseSelection cs " +
             "LEFT JOIN FETCH cs.student st " +
+            "LEFT JOIN FETCH st.major m " +
             "LEFT JOIN FETCH cs.offering co " +
             "LEFT JOIN FETCH co.course c " +
+            "LEFT JOIN FETCH c.department cd " +
             "LEFT JOIN FETCH co.semester s " +
             "LEFT JOIN FETCH co.teacher t " +
+            "LEFT JOIN FETCH t.department td " +
             "WHERE st.id = :studentId " +
             "AND g.status = 'PUBLISHED'")
     List<Grade> findPublishedByStudentId(@Param("studentId") Long studentId);
@@ -86,10 +89,13 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     @Query("SELECT DISTINCT g FROM Grade g " +
             "LEFT JOIN FETCH g.courseSelection cs " +
             "LEFT JOIN FETCH cs.student st " +
+            "LEFT JOIN FETCH st.major m " +
             "LEFT JOIN FETCH cs.offering co " +
             "LEFT JOIN FETCH co.course c " +
+            "LEFT JOIN FETCH c.department cd " +
             "LEFT JOIN FETCH co.semester s " +
             "LEFT JOIN FETCH co.teacher t " +
+            "LEFT JOIN FETCH t.department td " +
             "WHERE st.id = :studentId " +
             "AND s.id = :semesterId " +
             "AND g.status = 'PUBLISHED'")

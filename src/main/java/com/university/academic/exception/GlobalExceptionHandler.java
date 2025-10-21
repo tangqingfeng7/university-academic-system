@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 @RestControllerAdvice(basePackages = "com.university.academic.controller")
 public class GlobalExceptionHandler {
 
+    @org.springframework.beans.factory.annotation.Value("${spring.profiles.active:prod}")
+    private String activeProfile;
+
     /**
      * 处理业务异常
      */
@@ -213,11 +216,10 @@ public class GlobalExceptionHandler {
         // 开发环境返回详细错误信息，生产环境返回通用错误信息
         String message = ErrorCode.SYSTEM_ERROR.getMessage();
         
-        // 如果是开发环境，可以返回详细错误（可通过配置控制）
-        // String profile = environment.getActiveProfiles()[0];
-        // if ("dev".equals(profile)) {
-        //     message = e.getMessage();
-        // }
+        // 如果是开发环境，返回详细错误信息便于调试
+        if ("dev".equals(activeProfile)) {
+            message = e.getClass().getSimpleName() + ": " + e.getMessage();
+        }
         
         return Result.error(ErrorCode.SYSTEM_ERROR.getCode(), message);
     }
