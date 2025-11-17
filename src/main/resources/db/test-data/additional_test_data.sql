@@ -3,6 +3,10 @@
 
 USE academic_system;
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- 1. 为学生添加选课记录 (为前50个学生添加选课)
 -- 每个学生选5-8门课
 INSERT IGNORE INTO course_selection (student_id, course_offering_id, selection_time, status, created_at, updated_at)

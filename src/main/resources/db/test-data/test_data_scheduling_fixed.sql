@@ -1,6 +1,10 @@
 -- 排课优化模块测试数据（修正版）
 -- 包含：排课约束、教师偏好、排课方案
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- 先删除可能存在的旧数据
 DELETE FROM scheduling_solution WHERE id IN (1, 2, 3);
 DELETE FROM teacher_preference WHERE id IN (1, 2, 3, 4, 5);

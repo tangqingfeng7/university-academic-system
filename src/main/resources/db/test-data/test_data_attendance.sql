@@ -2,6 +2,10 @@
 -- 考勤管理模块测试数据
 -- =============================================
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- 清空现有数据（按依赖顺序）
 DELETE FROM attendance_request;
 DELETE FROM attendance_detail;

@@ -4,6 +4,10 @@
 
 USE academic_system;
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- ==================== 1. 考试数据 ====================
 -- 使用实际的开课计划ID（从course_offering表查询得到）
 -- 当前学期ID为3（2024-2025秋季）

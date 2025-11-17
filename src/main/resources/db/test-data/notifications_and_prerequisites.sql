@@ -1,6 +1,10 @@
 -- 添加通知公告和先修课程关系
 USE academic_system;
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- 添加通知公告
 INSERT IGNORE INTO notification (title, content, type, publisher_id, target_role, publish_time, active, created_at) VALUES
 ('关于2024-2025学年秋季学期课程安排的通知', '各位老师、同学：\n\n2024-2025学年秋季学期课程安排已经发布，请登录系统查看。如有疑问请及时联系教务处。\n\n教务处\n2024年8月15日', 'SYSTEM', 1, 'ALL', '2024-08-15 10:00:00', TRUE, '2024-08-15 10:00:00'),

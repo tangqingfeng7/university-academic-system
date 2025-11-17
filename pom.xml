@@ -19,7 +19,7 @@
     <description>大学教务管理系统</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jwt.version>0.12.3</jwt.version>
         <poi.version>5.2.5</poi.version>
@@ -163,6 +163,16 @@
     <build>
         <finalName>academic-system</finalName>
         <plugins>
+            <!-- Ensure compilation uses Java release level 21 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <!-- Use release to set platform and API compatibility -->
+                    <release>${java.version}</release>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
