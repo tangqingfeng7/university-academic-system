@@ -163,8 +163,8 @@ spring:
 # 1. 清空数据库（谨慎操作！）
 mysql -u root -p -e "DROP DATABASE IF EXISTS academic_system; CREATE DATABASE academic_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 2. 执行迁移脚本
-mvn flyway:migrate
+# 2. 重新创建数据库架构（需要有完整的schema.sql）
+# mysql -u root -p academic_system < schema.sql
 
 # 3. 导入测试数据
 mysql -u root -p academic_system < test_data.sql
@@ -205,8 +205,8 @@ mysql -u root -p academic_system < additional_test_data.sql
 ## 注意事项
 
 ### 1. 数据一致性
-- 所有测试数据脚本假设数据库架构已通过 Flyway 迁移完成
-- 请确保先执行 `flyway:migrate`，再导入测试数据
+- 所有测试数据脚本假设数据库架构已经创建完成
+- 请确保先创建数据库表结构，再导入测试数据
 
 ### 2. 外键约束
 测试数据严格遵循外键约束，执行顺序很重要：
@@ -265,12 +265,13 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 ## 相关文档
 
-- [数据库迁移文档](../migration/README.md)
-- [Flyway 官方文档](https://flywaydb.org/documentation/)
+- [数据库架构指南](../MIGRATION_GUIDE.md)
+- [MySQL 8.0 官方文档](https://dev.mysql.com/doc/refman/8.0/en/)
 - [项目开发环境搭建指南](../../../../DEPLOY.md)
 
 ## 更新日志
 
+- **2025-11-17**: 清理Flyway相关引用
 - **2025-10-13**: 整理测试数据，创建文档，移动废弃文件到 deprecated/
 - **2025-10-12**: 添加排课模块测试数据（test_data_scheduling_fixed.sql）
 - **2025-10-10**: 添加教室利用率测试数据

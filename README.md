@@ -108,7 +108,7 @@ university-academic-system/
 │   │       └── db/                   # 数据库资源
 │   │           ├── README.md         # 数据库文档总览
 │   │           ├── MIGRATION_GUIDE.md # 迁移指南
-│   │           ├── migration/        # Flyway 迁移脚本 (V5-V29)
+│   │           ├── migration/        # Flyway迁移脚本
 │   │           └── test-data/        # 测试数据
 │   └── frontend/
 │       ├── src/
@@ -153,13 +153,14 @@ cd university-academic-system
 CREATE DATABASE academic_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-**推荐方式：使用 Flyway 自动迁移**（推荐）
+**方式一：使用Flyway自动迁移**（推荐）
 ```bash
-# Flyway 会在应用启动时自动执行数据库迁移
-# 无需手动导入，直接进行下一步配置即可
+# Flyway会在应用启动时自动执行数据库迁移
+# 无需手动操作，直接启动应用即可
+mvn spring-boot:run
 ```
 
-**手动方式：导入测试数据**（可选，仅开发环境）
+**方式二：手动导入测试数据**（可选，仅开发环境）
 ```bash
 # 导入核心测试数据
 mysql -u root -p academic_system < src/main/resources/db/test-data/test_data.sql
@@ -784,7 +785,7 @@ java -jar target/academic-system.jar
 - 使用软删除而非物理删除
 - 添加created_at和updated_at字段
 - 外键关联使用@ManyToOne/@OneToMany
-- 使用 Flyway 进行版本化迁移管理
+- 使用Flyway进行版本化迁移管理
 - 迁移文件命名：`V{version}__{description}.sql`
 - 测试数据与迁移脚本分离存放
 
@@ -875,11 +876,9 @@ npm run test
 - 所有表添加完整中文注释（49个业务表）
 
 **数据库文档完善**
-- 整理迁移文件，解决版本冲突（V20, V21 重复问题）
 - 创建完整的数据库文档体系（3份 README + 1份迁移指南）
-- 归档未版本化的 SQL 文件到 archive/ 目录
+- 归档未使用的 SQL 文件到 archive/ 目录
 - 整理测试数据，移动废弃文件到 deprecated/ 目录
-- 建立清晰的 Flyway 迁移版本管理（V5-V28 共 24 个版本）
 
 ### v1.5.0 (2025-10-12)
 **新增模块**
